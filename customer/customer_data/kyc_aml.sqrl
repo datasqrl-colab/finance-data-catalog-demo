@@ -11,15 +11,15 @@
 
 /** KYC verification records documenting customer identity verification events.
     Grain: one row per verification_id. */
-CREATE TABLE Kyc_Verification (
+CREATE TABLE Kyc_Verification_schema (
   /** Unique identifier for the verification event */
-  verification_id STRING,
+  verification_id STRING NOT NULL,
   /** Reference to customer being verified @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Type of verification: INITIAL, PERIODIC_REVIEW, ENHANCED_DUE_DILIGENCE, TRIGGER_EVENT */
-  verification_type STRING,
+  verification_type STRING NOT NULL,
   /** Verification method: DOCUMENTARY, NON_DOCUMENTARY, ELECTRONIC, IN_PERSON */
-  verification_method STRING,
+  verification_method STRING NOT NULL,
   /** Document type used: PASSPORT, DRIVERS_LICENSE, STATE_ID, UTILITY_BILL, BANK_STATEMENT */
   document_type STRING,
   /** Document number @spii @tokenize */
@@ -29,11 +29,11 @@ CREATE TABLE Kyc_Verification (
   /** Document expiration date */
   document_expiration_date DATE,
   /** Verification result: PASS, FAIL, PENDING, REVIEW_REQUIRED */
-  verification_result STRING,
+  verification_result STRING NOT NULL,
   /** Verification score from identity provider (0-100) */
   verification_score INT,
   /** Date and time verification was performed */
-  verified_at TIMESTAMP,
+  verified_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Identity verification provider used */
   verification_provider STRING,
   /** Reference ID from verification provider */
@@ -43,26 +43,24 @@ CREATE TABLE Kyc_Verification (
   /** Additional notes or comments @confidential */
   notes STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Sanctions screening results against OFAC and other watchlists.
     Grain: one row per screening_id. */
-CREATE TABLE Sanctions_Screening (
+CREATE TABLE Sanctions_Screening_schema (
   /** Unique identifier for the screening event */
-  screening_id STRING,
+  screening_id STRING NOT NULL,
   /** Reference to customer being screened @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Screening type: ONBOARDING, PERIODIC, REAL_TIME, AD_HOC */
-  screening_type STRING,
+  screening_type STRING NOT NULL,
   /** Lists screened against: OFAC_SDN, OFAC_CONSOLIDATED, UN_SANCTIONS, EU_SANCTIONS, PEP, ADVERSE_MEDIA */
-  lists_screened STRING,
+  lists_screened STRING NOT NULL,
   /** Screening result: CLEAR, POTENTIAL_MATCH, CONFIRMED_MATCH */
-  screening_result STRING,
+  screening_result STRING NOT NULL,
   /** Number of potential matches found */
   match_count INT,
   /** Match score for highest-scoring hit (0-100) */
@@ -70,7 +68,7 @@ CREATE TABLE Sanctions_Screening (
   /** Disposition after review: FALSE_POSITIVE, TRUE_MATCH, PENDING_REVIEW */
   disposition STRING,
   /** Date and time screening was performed */
-  screened_at TIMESTAMP,
+  screened_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Screening vendor or system used */
   screening_provider STRING,
   /** Reference ID from screening provider */
@@ -78,26 +76,24 @@ CREATE TABLE Sanctions_Screening (
   /** Employee ID who reviewed screening results @pii */
   reviewed_by STRING,
   /** Date and time review was completed */
-  reviewed_at TIMESTAMP,
+  reviewed_at TIMESTAMP_LTZ(3),
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Politically Exposed Person (PEP) screening and monitoring results.
     Grain: one row per screening_id. */
-CREATE TABLE Pep_Screening (
+CREATE TABLE Pep_Screening_schema (
   /** Unique identifier for the PEP screening event */
-  screening_id STRING,
+  screening_id STRING NOT NULL,
   /** Reference to customer being screened @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Screening type: ONBOARDING, PERIODIC, TRIGGER_EVENT */
-  screening_type STRING,
+  screening_type STRING NOT NULL,
   /** Whether customer is identified as a PEP */
-  is_pep BOOLEAN,
+  is_pep BOOLEAN NOT NULL,
   /** PEP category: FOREIGN_OFFICIAL, DOMESTIC_OFFICIAL, INTERNATIONAL_ORG, STATE_OWNED_ENTERPRISE, FAMILY_MEMBER, CLOSE_ASSOCIATE */
   pep_category STRING,
   /** Level of PEP: SENIOR, MID_LEVEL, JUNIOR */
@@ -107,34 +103,32 @@ CREATE TABLE Pep_Screening (
   /** Position or role that qualifies as PEP @pii */
   pep_position STRING,
   /** Date PEP status was identified */
-  identified_at TIMESTAMP,
+  identified_at TIMESTAMP_LTZ(3),
   /** Date PEP status ended (if applicable) */
-  pep_ended_at TIMESTAMP,
+  pep_ended_at TIMESTAMP_LTZ(3),
   /** Enhanced due diligence required flag */
-  edd_required BOOLEAN,
+  edd_required BOOLEAN NOT NULL,
   /** Source of PEP identification */
   pep_source STRING,
   /** Screening provider reference ID */
   provider_reference_id STRING,
   /** Date and time screening was performed */
-  screened_at TIMESTAMP,
+  screened_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Customer risk ratings for AML and compliance monitoring purposes.
     Grain: one row per customer_id, effective_from combination (SCD Type 2). */
-CREATE TABLE Customer_Risk_Rating (
+CREATE TABLE Customer_Risk_Rating_schema (
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Overall risk rating: LOW, MEDIUM, HIGH, PROHIBITED */
-  risk_rating STRING,
+  risk_rating STRING NOT NULL,
   /** Numeric risk score (0-100) */
-  risk_score INT,
+  risk_score INT NOT NULL,
   /** Geographic risk component score (0-100) */
   geographic_risk_score INT,
   /** Product risk component score (0-100) */
@@ -148,13 +142,13 @@ CREATE TABLE Customer_Risk_Rating (
   /** Reason codes contributing to rating @confidential */
   reason_codes STRING,
   /** Date this rating became effective */
-  effective_from DATE,
+  effective_from DATE NOT NULL,
   /** Date this rating was superseded */
   effective_to DATE,
   /** Whether this is the current active rating */
-  is_current BOOLEAN,
+  is_current BOOLEAN NOT NULL,
   /** Whether rating was manually overridden */
-  is_override BOOLEAN,
+  is_override BOOLEAN NOT NULL,
   /** Employee ID who approved override @pii */
   override_approved_by STRING,
   /** Reason for manual override @confidential */
@@ -162,9 +156,7 @@ CREATE TABLE Customer_Risk_Rating (
   /** Next scheduled review date */
   next_review_date DATE,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

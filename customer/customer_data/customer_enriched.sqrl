@@ -12,11 +12,11 @@
 
 /** Consolidated customer profile combining identity, contact, and status information.
     Grain: one row per customer_id. */
-CREATE TABLE Customer_Profile (
+CREATE TABLE Customer_Profile_schema (
   /** Unique identifier for the customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Full legal name @pii @encrypt */
-  full_name STRING,
+  full_name STRING NOT NULL,
   /** Primary email address @pii @encrypt */
   primary_email STRING,
   /** Primary phone number @pii @encrypt */
@@ -38,44 +38,42 @@ CREATE TABLE Customer_Profile (
   /** Tenure band: NEW (0-6mo), DEVELOPING (6-24mo), ESTABLISHED (24-60mo), MATURE (60mo+) */
   tenure_band STRING,
   /** Customer type: INDIVIDUAL, JOINT, TRUST, BUSINESS */
-  customer_type STRING,
+  customer_type STRING NOT NULL,
   /** Customer status: ACTIVE, INACTIVE, CLOSED, DECEASED */
-  customer_status STRING,
+  customer_status STRING NOT NULL,
   /** Current AML risk rating: LOW, MEDIUM, HIGH */
   risk_rating STRING,
   /** Whether customer has verified identity */
-  is_kyc_verified BOOLEAN,
+  is_kyc_verified BOOLEAN NOT NULL,
   /** Whether customer is a Politically Exposed Person */
-  is_pep BOOLEAN,
+  is_pep BOOLEAN NOT NULL,
   /** Number of active deposit accounts */
-  active_deposit_account_count INT,
+  active_deposit_account_count INT NOT NULL,
   /** Number of active credit products */
-  active_credit_product_count INT,
+  active_credit_product_count INT NOT NULL,
   /** Number of active loan products */
-  active_loan_count INT,
+  active_loan_count INT NOT NULL,
   /** Total relationship balance in cents @npi @confidential */
   total_relationship_balance_cents BIGINT,
   /** Whether customer is enrolled in digital banking */
-  is_digital_enrolled BOOLEAN,
+  is_digital_enrolled BOOLEAN NOT NULL,
   /** Preferred communication channel: EMAIL, SMS, MAIL, PHONE */
   preferred_channel STRING,
   /** Timestamp of last customer interaction */
-  last_interaction_at TIMESTAMP,
-  /** Timestamp when profile was last computed */
-  computed_at TIMESTAMP
+  last_interaction_at TIMESTAMP_LTZ(3)
 );
 
 /** Customer segmentation for marketing and analytics purposes.
     Grain: one row per customer_id, segment_type combination. */
-CREATE TABLE Customer_Segment (
+CREATE TABLE Customer_Segment_schema (
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Segment type: BEHAVIORAL, DEMOGRAPHIC, VALUE, LIFECYCLE, PRODUCT_PROPENSITY */
-  segment_type STRING,
+  segment_type STRING NOT NULL,
   /** Segment code within the segment type */
-  segment_code STRING,
+  segment_code STRING NOT NULL,
   /** Human-readable segment name */
-  segment_name STRING,
+  segment_name STRING NOT NULL,
   /** Segment description */
   segment_description STRING,
   /** Confidence score for segment assignment (0-100) */
@@ -83,28 +81,26 @@ CREATE TABLE Customer_Segment (
   /** Model version used for segmentation */
   model_version STRING,
   /** Date segment assignment became effective */
-  effective_from DATE,
+  effective_from DATE NOT NULL,
   /** Date segment assignment was superseded */
   effective_to DATE,
   /** Whether this is the current active segment */
-  is_current BOOLEAN,
-  /** Timestamp when segment was computed */
-  computed_at TIMESTAMP
+  is_current BOOLEAN NOT NULL
 );
 
 /** Household groupings linking related customers for household-level analytics.
     Grain: one row per household_id, customer_id combination. */
-CREATE TABLE Customer_Household (
+CREATE TABLE Customer_Household_schema (
   /** Unique identifier for the household */
-  household_id STRING,
+  household_id STRING NOT NULL,
   /** Reference to customer in household @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Role in household: HEAD, SPOUSE, DEPENDENT, OTHER */
-  household_role STRING,
+  household_role STRING NOT NULL,
   /** Whether this customer is the primary household contact */
-  is_primary BOOLEAN,
+  is_primary BOOLEAN NOT NULL,
   /** Household size (number of members) */
-  household_size INT,
+  household_size INT NOT NULL,
   /** Estimated household income band @npi @confidential */
   household_income_band STRING,
   /** Household address @pii @encrypt */
@@ -120,26 +116,24 @@ CREATE TABLE Customer_Household (
   /** Total household products count */
   household_product_count INT,
   /** Method used for householding: ADDRESS_MATCH, RELATIONSHIP, SURNAME_ADDRESS, MANUAL */
-  match_method STRING,
+  match_method STRING NOT NULL,
   /** Confidence score for household assignment (0-100) */
   confidence_score INT,
   /** Date this household assignment became effective */
-  effective_from DATE,
+  effective_from DATE NOT NULL,
   /** Date this household assignment was superseded */
   effective_to DATE,
   /** Whether this is the current active assignment */
-  is_current BOOLEAN,
-  /** Timestamp when household was computed */
-  computed_at TIMESTAMP
+  is_current BOOLEAN NOT NULL
 );
 
 /** Customer lifetime value calculations and predictions.
     Grain: one row per customer_id, calculation_date combination. */
-CREATE TABLE Customer_Lifetime_Value (
+CREATE TABLE Customer_Lifetime_Value_schema (
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Date of CLV calculation */
-  calculation_date DATE,
+  calculation_date DATE NOT NULL,
   /** Historical lifetime value in cents (actual realized) @npi @confidential */
   historical_ltv_cents BIGINT,
   /** Predicted future lifetime value in cents @npi @confidential */
@@ -163,7 +157,5 @@ CREATE TABLE Customer_Lifetime_Value (
   /** Predicted months until churn */
   predicted_tenure_months INT,
   /** Model version used for calculation */
-  model_version STRING,
-  /** Timestamp when CLV was computed */
-  computed_at TIMESTAMP
+  model_version STRING
 );

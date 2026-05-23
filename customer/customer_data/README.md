@@ -29,3 +29,8 @@ The Customer Data team owns foundational customer identity, demographics, and co
 - **Regulatory Scope**: GLBA, GDPR, CCPA, FCRA, BSA
 - **Data Steward**: Customer Data Management
 - **Refresh Frequency**: Real-time for bronze, hourly for silver
+
+## Environments
+
+- **-test**: Local data for testing
+- **-prod**: Production data (Kafka or Iceberg)
