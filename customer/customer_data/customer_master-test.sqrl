@@ -4,127 +4,57 @@ IMPORT customer_master.*;
 
 CREATE TABLE Customer (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
-
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/customer_master-customer.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_schema;
 
 /** Customer address records supporting multiple address types per customer.
     Grain: one row per customer_id, address_type, effective_from combination. */
 CREATE TABLE Customer_Address (
-  /** Reference to customer @pii */
-  customer_id STRING,
-  /** Address type: PRIMARY, MAILING, BILLING, WORK, SECONDARY */
-  address_type STRING,
-  /** Street address line 1 @pii @encrypt */
-  address_line_1 STRING,
-  /** Street address line 2 @pii @encrypt */
-  address_line_2 STRING,
-  /** City name @pii */
-  city STRING,
-  /** State or province code */
-  state_province STRING,
-  /** Postal or ZIP code @pii */
-  postal_code STRING,
-  /** Country code (ISO 3166-1 alpha-2) */
-  country_code STRING,
-  /** Date this address became effective */
-  effective_from DATE,
-  /** Date this address was superseded */
-  effective_to DATE,
-  /** Whether this is the current active address for this type */
-  is_current BOOLEAN,
-  /** Address verification status: VERIFIED, UNVERIFIED, INVALID */
-  verification_status STRING,
-  /** Date address was last verified */
-  verified_at TIMESTAMP,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
-);
+    /** Timestamp when record was ingested into the data platform */
+    ingested_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/customer_master-customer_address.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Address_schema;
 
-/** Customer contact information including phone numbers and email addresses.
-    Grain: one row per customer_id, contact_type, contact_value combination. */
 CREATE TABLE Customer_Contact (
-  /** Reference to customer @pii */
-  customer_id STRING,
-  /** Contact type: MOBILE, HOME_PHONE, WORK_PHONE, EMAIL, FAX */
-  contact_type STRING,
-  /** Contact value (phone number or email address) @pii @encrypt */
-  contact_value STRING,
-  /** Whether this is the primary contact for this type */
-  is_primary BOOLEAN,
-  /** Contact verification status: VERIFIED, UNVERIFIED, INVALID */
-  verification_status STRING,
-  /** Date contact was last verified */
-  verified_at TIMESTAMP,
-  /** Whether customer has opted in for marketing via this contact */
-  marketing_opt_in BOOLEAN,
-  /** Whether customer consents to transactional communications */
-  transactional_opt_in BOOLEAN,
-  /** Source system identifier */
-  source_system STRING,
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
-);
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/customer_master-customer_contact.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Contact_schema;
 
-/** Customer employment and income information used for credit decisions.
-    Grain: one row per customer_id, employer_name, employment_start_date combination. */
 CREATE TABLE Customer_Employment (
-  /** Reference to customer @pii */
-  customer_id STRING,
-  /** Name of employer @pii */
-  employer_name STRING,
-  /** Job title or position @pii */
-  job_title STRING,
-  /** Employment type: FULL_TIME, PART_TIME, SELF_EMPLOYED, RETIRED, UNEMPLOYED */
-  employment_type STRING,
-  /** Employment status: CURRENT, FORMER */
-  employment_status STRING,
-  /** Date employment began */
-  employment_start_date DATE,
-  /** Date employment ended (if applicable) */
-  employment_end_date DATE,
-  /** Annual income in cents @npi @confidential */
-  annual_income_cents BIGINT,
-  /** Currency code for income (ISO 4217) */
-  income_currency STRING,
-  /** Income verification status: VERIFIED, STATED, UNVERIFIED */
-  income_verification_status STRING,
-  /** Date income was last verified */
-  income_verified_at TIMESTAMP,
-  /** Source system identifier */
-  source_system STRING,
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
-);
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/customer_master-customer_employment.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Employment_schema;
 
-/** Relationships between customers (household members, authorized users, etc.).
-    Grain: one row per primary_customer_id, related_customer_id, relationship_type combination. */
 CREATE TABLE Customer_Relationship (
-  /** Primary customer in the relationship @pii */
-  primary_customer_id STRING,
-  /** Related customer @pii */
-  related_customer_id STRING,
-  /** Relationship type: SPOUSE, DEPENDENT, AUTHORIZED_USER, POWER_OF_ATTORNEY, BENEFICIARY, JOINT_OWNER */
-  relationship_type STRING,
-  /** Date relationship was established */
-  relationship_start_date DATE,
-  /** Date relationship ended (if applicable) */
-  relationship_end_date DATE,
-  /** Whether this relationship is currently active */
-  is_active BOOLEAN,
-  /** Source system identifier */
-  source_system STRING,
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
-);
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/customer_master-customer_relationship.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Relationship_schema;

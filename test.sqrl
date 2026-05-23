@@ -1,4 +1,4 @@
-IMPORT customer.customer_master-{{environment}} AS cm;
+IMPORT customer.customer_data.customer_master-{{environment}} AS cm;
 
 Customer := SELECT * FROM cm.Customer;
 
