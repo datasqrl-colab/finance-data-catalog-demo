@@ -4,6 +4,7 @@
 -- screening data required for regulatory compliance. Includes identity verification
 -- results, sanctions and PEP screening outcomes, and customer risk ratings used
 -- for ongoing monitoring and due diligence.
+-- Data is a CDC stream from source system.
 --
 -- Layer:            bronze
 -- Classification:   Restricted

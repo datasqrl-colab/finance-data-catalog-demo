@@ -3,6 +3,7 @@
 -- Personal and auto loan data including loan applications, funded loans,
 -- payment history, and delinquency tracking. Supports the full consumer
 -- lending lifecycle from application through payoff or charge-off.
+-- Data is a CDC stream from source system.
 --
 -- Layer:            bronze
 -- Classification:   Restricted

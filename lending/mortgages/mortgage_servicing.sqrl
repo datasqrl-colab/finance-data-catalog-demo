@@ -3,6 +3,7 @@
 -- Mortgage loan servicing data including payment history, escrow account
 -- management, delinquency events, loan modifications, and property valuations.
 -- Supports ongoing loan administration and loss mitigation activities.
+-- Data is a CDC stream from source system.
 --
 -- Layer:            bronze
 -- Classification:   Restricted

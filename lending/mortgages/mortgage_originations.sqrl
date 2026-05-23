@@ -4,6 +4,7 @@
 -- funded loans, property collateral information, and borrower details.
 -- Supports the full mortgage origination lifecycle from application
 -- through funding and boarding to servicing.
+-- Data is a CDC stream from source system.
 --
 -- Layer:            bronze
 -- Classification:   Restricted

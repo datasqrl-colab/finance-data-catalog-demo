@@ -4,6 +4,7 @@
 -- and virtual cards, statements, payments, credit limit changes, and delinquency
 -- events. Supports credit card portfolio management, billing, collections, and
 -- regulatory compliance.
+-- Data is a CDC stream from source system.
 --
 -- Layer:            bronze
 -- Classification:   Restricted

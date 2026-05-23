@@ -5,6 +5,7 @@
 -- information, employment details, and relationship linkages between customers.
 -- This dataset serves as the authoritative source for customer identity across
 -- all lines of business.
+-- Data is a CDC stream from source system.
 --
 -- Layer:            bronze
 -- Classification:   Restricted
