@@ -1,6 +1,42 @@
 IMPORT customer.customer_data.customer_master-{{environment}} AS cm;
-IMPORT customer.customer_data.customer_enriched-{{environment}} AS cn;
 
 Customer := SELECT * FROM cm.Customer;
+Customer_Address := SELECT * FROM cm.Customer_Address;
+Customer_Contact := SELECT * FROM cm.Customer_Contact;
+Customer_Employment := SELECT * FROM cm.Customer_Employment;
+Customer_Relationship := SELECT * FROM cm.Customer_Relationship;
 
-Customer_profile := SELECT * FROM cn.Customer_Profile;
+-- IMPORT customer.customer_data.customer_enriched-{{environment}} AS cn;
+-- Customer_profile := SELECT * FROM cn.Customer_Profile;
+
+IMPORT lending.cards_consumer_credit.consumer_loans-{{environment}} AS cl;
+
+Personal_Loan := SELECT * FROM cl.Personal_Loan;
+Auto_Loan := SELECT * FROM cl.Auto_Loan;
+Loan_Payment := SELECT * FROM cl.Loan_Payment;
+Loan_Application := SELECT * FROM cl.Loan_Application;
+Consumer_Loan_Delinquency_Event := SELECT * FROM cl.Consumer_Loan_Delinquency_Event;
+
+IMPORT lending.cards_consumer_credit.credit_cards-{{environment}} AS cc;
+
+Credit_Card_Account := SELECT * FROM cc.Credit_Card_Account;
+Credit_Card := SELECT * FROM cc.Credit_Card;
+Credit_Card_Statement := SELECT * FROM cc.Credit_Card_Statement;
+Credit_Card_Payment := SELECT * FROM cc.Credit_Card_Payment;
+Credit_Limit_History := SELECT * FROM cc.Credit_Limit_History;
+Card_Delinquency_Event := SELECT * FROM cc.Card_Delinquency_Event;
+
+IMPORT lending.mortgages.mortgage_originations-{{environment}} AS mo;
+
+Mortgage_Application := SELECT * FROM mo.Mortgage_Application;
+Mortgage_Loan := SELECT * FROM mo.Mortgage_Loan;
+Property_Collateral := SELECT * FROM mo.Property_Collateral;
+Mortgage_Borrower := SELECT * FROM mo.Mortgage_Borrower;
+
+IMPORT lending.mortgages.mortgage_servicing-{{environment}} AS ms;
+
+Mortgage_Payment := SELECT * FROM ms.Mortgage_Payment;
+Escrow_Account := SELECT * FROM ms.Escrow_Account;
+Delinquency_Event := SELECT * FROM ms.Delinquency_Event;
+Loan_Modification := SELECT * FROM ms.Loan_Modification;
+Property_Valuation := SELECT * FROM ms.Property_Valuation;
