@@ -6,7 +6,8 @@ IMPORT mortgage_originations.*;
 
 CREATE TABLE Mortgage_Application (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_application.jsonl',
@@ -17,7 +18,8 @@ CREATE TABLE Mortgage_Application (
 
 CREATE TABLE Mortgage_Loan (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_loan.jsonl',
@@ -28,7 +30,8 @@ CREATE TABLE Mortgage_Loan (
 
 CREATE TABLE Property_Collateral (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-property_collateral.jsonl',
@@ -39,7 +42,8 @@ CREATE TABLE Property_Collateral (
 
 CREATE TABLE Mortgage_Borrower (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_borrower.jsonl',

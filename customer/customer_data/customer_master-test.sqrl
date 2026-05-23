@@ -6,7 +6,8 @@ IMPORT customer_master.*;
 
 CREATE TABLE Customer (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer.jsonl',
@@ -19,7 +20,8 @@ CREATE TABLE Customer (
     Grain: one row per customer_id, address_type, effective_from combination. */
 CREATE TABLE Customer_Address (
     /** Timestamp when record was ingested into the data platform */
-    ingested_at TIMESTAMP_LTZ(3) NOT NULL
+    ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+    WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_address.jsonl',
@@ -30,7 +32,8 @@ CREATE TABLE Customer_Address (
 
 CREATE TABLE Customer_Contact (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_contact.jsonl',
@@ -41,7 +44,8 @@ CREATE TABLE Customer_Contact (
 
 CREATE TABLE Customer_Employment (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_employment.jsonl',
@@ -52,7 +56,8 @@ CREATE TABLE Customer_Employment (
 
 CREATE TABLE Customer_Relationship (
   /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL
+  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_relationship.jsonl',
