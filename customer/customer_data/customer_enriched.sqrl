@@ -1,0 +1,169 @@
+-- ## Customer Enriched Data
+--
+-- Curated and enriched customer data combining information from multiple bronze
+-- sources to create comprehensive customer profiles, segmentation, household
+-- groupings, and lifetime value calculations. These silver-layer datasets support
+-- analytics, marketing, and relationship management use cases.
+--
+-- Layer:            silver
+-- Classification:   Restricted
+-- Regulatory scope: GLBA, GDPR, CCPA
+-- Upstream:         customer_master.sqrl, kyc_aml.sqrl
+
+/** Consolidated customer profile combining identity, contact, and status information.
+    Grain: one row per customer_id. */
+CREATE TABLE Customer_Profile (
+  /** Unique identifier for the customer @pii */
+  customer_id STRING,
+  /** Full legal name @pii @encrypt */
+  full_name STRING,
+  /** Primary email address @pii @encrypt */
+  primary_email STRING,
+  /** Primary phone number @pii @encrypt */
+  primary_phone STRING,
+  /** Primary mailing address formatted @pii @encrypt */
+  primary_address STRING,
+  /** City of primary address @pii */
+  primary_city STRING,
+  /** State of primary address */
+  primary_state STRING,
+  /** Postal code of primary address @pii */
+  primary_postal_code STRING,
+  /** Customer age in years */
+  age_years INT,
+  /** Age band: 18-24, 25-34, 35-44, 45-54, 55-64, 65+ */
+  age_band STRING,
+  /** Customer tenure in months */
+  tenure_months INT,
+  /** Tenure band: NEW (0-6mo), DEVELOPING (6-24mo), ESTABLISHED (24-60mo), MATURE (60mo+) */
+  tenure_band STRING,
+  /** Customer type: INDIVIDUAL, JOINT, TRUST, BUSINESS */
+  customer_type STRING,
+  /** Customer status: ACTIVE, INACTIVE, CLOSED, DECEASED */
+  customer_status STRING,
+  /** Current AML risk rating: LOW, MEDIUM, HIGH */
+  risk_rating STRING,
+  /** Whether customer has verified identity */
+  is_kyc_verified BOOLEAN,
+  /** Whether customer is a Politically Exposed Person */
+  is_pep BOOLEAN,
+  /** Number of active deposit accounts */
+  active_deposit_account_count INT,
+  /** Number of active credit products */
+  active_credit_product_count INT,
+  /** Number of active loan products */
+  active_loan_count INT,
+  /** Total relationship balance in cents @npi @confidential */
+  total_relationship_balance_cents BIGINT,
+  /** Whether customer is enrolled in digital banking */
+  is_digital_enrolled BOOLEAN,
+  /** Preferred communication channel: EMAIL, SMS, MAIL, PHONE */
+  preferred_channel STRING,
+  /** Timestamp of last customer interaction */
+  last_interaction_at TIMESTAMP,
+  /** Timestamp when profile was last computed */
+  computed_at TIMESTAMP
+);
+
+/** Customer segmentation for marketing and analytics purposes.
+    Grain: one row per customer_id, segment_type combination. */
+CREATE TABLE Customer_Segment (
+  /** Reference to customer @pii */
+  customer_id STRING,
+  /** Segment type: BEHAVIORAL, DEMOGRAPHIC, VALUE, LIFECYCLE, PRODUCT_PROPENSITY */
+  segment_type STRING,
+  /** Segment code within the segment type */
+  segment_code STRING,
+  /** Human-readable segment name */
+  segment_name STRING,
+  /** Segment description */
+  segment_description STRING,
+  /** Confidence score for segment assignment (0-100) */
+  confidence_score INT,
+  /** Model version used for segmentation */
+  model_version STRING,
+  /** Date segment assignment became effective */
+  effective_from DATE,
+  /** Date segment assignment was superseded */
+  effective_to DATE,
+  /** Whether this is the current active segment */
+  is_current BOOLEAN,
+  /** Timestamp when segment was computed */
+  computed_at TIMESTAMP
+);
+
+/** Household groupings linking related customers for household-level analytics.
+    Grain: one row per household_id, customer_id combination. */
+CREATE TABLE Customer_Household (
+  /** Unique identifier for the household */
+  household_id STRING,
+  /** Reference to customer in household @pii */
+  customer_id STRING,
+  /** Role in household: HEAD, SPOUSE, DEPENDENT, OTHER */
+  household_role STRING,
+  /** Whether this customer is the primary household contact */
+  is_primary BOOLEAN,
+  /** Household size (number of members) */
+  household_size INT,
+  /** Estimated household income band @npi @confidential */
+  household_income_band STRING,
+  /** Household address @pii @encrypt */
+  household_address STRING,
+  /** Household city @pii */
+  household_city STRING,
+  /** Household state */
+  household_state STRING,
+  /** Household postal code @pii */
+  household_postal_code STRING,
+  /** Total household relationship balance in cents @npi @confidential */
+  household_balance_cents BIGINT,
+  /** Total household products count */
+  household_product_count INT,
+  /** Method used for householding: ADDRESS_MATCH, RELATIONSHIP, SURNAME_ADDRESS, MANUAL */
+  match_method STRING,
+  /** Confidence score for household assignment (0-100) */
+  confidence_score INT,
+  /** Date this household assignment became effective */
+  effective_from DATE,
+  /** Date this household assignment was superseded */
+  effective_to DATE,
+  /** Whether this is the current active assignment */
+  is_current BOOLEAN,
+  /** Timestamp when household was computed */
+  computed_at TIMESTAMP
+);
+
+/** Customer lifetime value calculations and predictions.
+    Grain: one row per customer_id, calculation_date combination. */
+CREATE TABLE Customer_Lifetime_Value (
+  /** Reference to customer @pii */
+  customer_id STRING,
+  /** Date of CLV calculation */
+  calculation_date DATE,
+  /** Historical lifetime value in cents (actual realized) @npi @confidential */
+  historical_ltv_cents BIGINT,
+  /** Predicted future lifetime value in cents @npi @confidential */
+  predicted_ltv_cents BIGINT,
+  /** Total lifetime value (historical + predicted) in cents @npi @confidential */
+  total_ltv_cents BIGINT,
+  /** LTV percentile rank (1-100) */
+  ltv_percentile INT,
+  /** LTV tier: PLATINUM, GOLD, SILVER, BRONZE */
+  ltv_tier STRING,
+  /** Revenue from deposit products in cents @npi @confidential */
+  deposit_revenue_cents BIGINT,
+  /** Revenue from lending products in cents @npi @confidential */
+  lending_revenue_cents BIGINT,
+  /** Revenue from fee income in cents @npi @confidential */
+  fee_revenue_cents BIGINT,
+  /** Revenue from card interchange in cents @npi @confidential */
+  interchange_revenue_cents BIGINT,
+  /** Probability of customer churn in next 12 months (0-1) */
+  churn_probability DOUBLE,
+  /** Predicted months until churn */
+  predicted_tenure_months INT,
+  /** Model version used for calculation */
+  model_version STRING,
+  /** Timestamp when CLV was computed */
+  computed_at TIMESTAMP
+);

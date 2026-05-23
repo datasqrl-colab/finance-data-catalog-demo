@@ -1,0 +1,244 @@
+-- ## Mortgage Servicing
+--
+-- Mortgage loan servicing data including payment history, escrow account
+-- management, delinquency events, loan modifications, and property valuations.
+-- Supports ongoing loan administration and loss mitigation activities.
+--
+-- Layer:            bronze
+-- Classification:   Restricted
+-- Regulatory scope: GLBA, GDPR, CCPA, RESPA, CFPB Servicing Rules
+
+/** Mortgage payment transaction records.
+    Grain: one row per payment_id. */
+CREATE TABLE Mortgage_Payment (
+  /** Unique identifier for the payment */
+  payment_id STRING,
+  /** Reference to loan */
+  loan_id STRING,
+  /** Payment amount in cents @npi @confidential */
+  payment_amount_cents BIGINT,
+  /** Principal portion in cents @npi @confidential */
+  principal_cents BIGINT,
+  /** Interest portion in cents @npi @confidential */
+  interest_cents BIGINT,
+  /** Escrow portion in cents @npi @confidential */
+  escrow_cents BIGINT,
+  /** Late fee amount in cents */
+  late_fee_cents BIGINT,
+  /** Other fees in cents */
+  other_fees_cents BIGINT,
+  /** Payment type: REGULAR, PRINCIPAL_ONLY, PAYOFF, PARTIAL, ESCROW_ONLY */
+  payment_type STRING,
+  /** Payment status: APPLIED, PENDING, RETURNED, REVERSED */
+  payment_status STRING,
+  /** Date payment was due */
+  due_date DATE,
+  /** Date payment was received */
+  received_date DATE,
+  /** Date payment was applied */
+  applied_date DATE,
+  /** Payment channel: ACH, CHECK, ONLINE, PHONE, WIRE */
+  payment_channel STRING,
+  /** Principal balance after payment in cents @npi @confidential */
+  principal_balance_after_cents BIGINT,
+  /** Payment for period (month/year) */
+  payment_period STRING,
+  /** Days past due at time of payment */
+  days_past_due_at_payment INT,
+  /** Suspense amount (if partial) in cents */
+  suspense_amount_cents BIGINT,
+  /** Unapplied amount in cents */
+  unapplied_amount_cents BIGINT,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Escrow account for taxes and insurance.
+    Grain: one row per escrow_account_id, as_of_date combination. */
+CREATE TABLE Escrow_Account (
+  /** Unique identifier for the escrow account @npi */
+  escrow_account_id STRING,
+  /** Reference to loan */
+  loan_id STRING,
+  /** As-of date for balances */
+  as_of_date DATE,
+  /** Current escrow balance in cents @npi @confidential */
+  escrow_balance_cents BIGINT,
+  /** Target escrow balance in cents */
+  target_balance_cents BIGINT,
+  /** Escrow shortage/surplus in cents */
+  shortage_surplus_cents BIGINT,
+  /** Monthly escrow payment required in cents @npi @confidential */
+  monthly_payment_cents BIGINT,
+  /** Annual property tax amount in cents @npi @confidential */
+  annual_tax_cents BIGINT,
+  /** Next tax due date */
+  next_tax_due_date DATE,
+  /** Annual hazard insurance premium in cents */
+  annual_hazard_insurance_cents BIGINT,
+  /** Next insurance due date */
+  next_insurance_due_date DATE,
+  /** Annual flood insurance premium in cents */
+  annual_flood_insurance_cents BIGINT,
+  /** Annual PMI/MIP amount in cents */
+  annual_pmi_cents BIGINT,
+  /** Annual HOA amount in cents */
+  annual_hoa_cents BIGINT,
+  /** Escrow waiver flag */
+  escrow_waived BOOLEAN,
+  /** Date of last escrow analysis */
+  last_analysis_date DATE,
+  /** Next scheduled analysis date */
+  next_analysis_date DATE,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Delinquency events and collection activities.
+    Grain: one row per delinquency_event_id. */
+CREATE TABLE Delinquency_Event (
+  /** Unique identifier for the delinquency event */
+  delinquency_event_id STRING,
+  /** Reference to loan */
+  loan_id STRING,
+  /** Reference to customer @pii */
+  customer_id STRING,
+  /** Event type: MISSED_PAYMENT, LATE_PAYMENT, DELINQUENCY_START, DELINQUENCY_CURED, FORBEARANCE_START, FORBEARANCE_END, DEFAULT, FORECLOSURE_START, FORECLOSURE_COMPLETE, REO */
+  event_type STRING,
+  /** Days past due at event */
+  days_past_due INT,
+  /** Delinquency bucket: CURRENT, 30_DAY, 60_DAY, 90_DAY, 120_PLUS */
+  delinquency_bucket STRING,
+  /** Amount past due in cents @npi @confidential */
+  amount_past_due_cents BIGINT,
+  /** Total amount due in cents @npi @confidential */
+  total_amount_due_cents BIGINT,
+  /** Event date */
+  event_date DATE,
+  /** Date cured (if applicable) */
+  cured_date DATE,
+  /** Collection action taken @confidential */
+  collection_action STRING,
+  /** Loss mitigation status: NONE, IN_REVIEW, APPROVED, DENIED, COMPLETE */
+  loss_mitigation_status STRING,
+  /** Loss mitigation option: FORBEARANCE, MODIFICATION, SHORT_SALE, DEED_IN_LIEU, REPAYMENT_PLAN */
+  loss_mitigation_option STRING,
+  /** Attorney referral date (if foreclosure) */
+  attorney_referral_date DATE,
+  /** Foreclosure sale date */
+  foreclosure_sale_date DATE,
+  /** REO date */
+  reo_date DATE,
+  /** Estimated loss in cents @confidential */
+  estimated_loss_cents BIGINT,
+  /** Actual loss in cents @confidential */
+  actual_loss_cents BIGINT,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Loan modification records for workouts and restructures.
+    Grain: one row per modification_id. */
+CREATE TABLE Loan_Modification (
+  /** Unique identifier for the modification */
+  modification_id STRING,
+  /** Reference to loan */
+  loan_id STRING,
+  /** Reference to customer @pii */
+  customer_id STRING,
+  /** Modification type: RATE_REDUCTION, TERM_EXTENSION, PRINCIPAL_FORBEARANCE, PRINCIPAL_FORGIVENESS, CAPITALIZATION, COMBINATION */
+  modification_type STRING,
+  /** Modification status: TRIAL, PERMANENT, FAILED, CANCELLED */
+  modification_status STRING,
+  /** Modification program: HAMP, PROPRIETARY, GSE_FLEX, FHA_LOSS_MIT */
+  modification_program STRING,
+  /** Date modification was requested */
+  request_date DATE,
+  /** Date modification was approved */
+  approval_date DATE,
+  /** Date trial period started */
+  trial_start_date DATE,
+  /** Date permanent modification effective */
+  permanent_date DATE,
+  /** Number of trial payments required */
+  trial_payments_required INT,
+  /** Number of trial payments made */
+  trial_payments_made INT,
+  /** Pre-modification interest rate */
+  pre_mod_rate DECIMAL(6, 4),
+  /** Post-modification interest rate */
+  post_mod_rate DECIMAL(6, 4),
+  /** Pre-modification monthly payment in cents @npi @confidential */
+  pre_mod_payment_cents BIGINT,
+  /** Post-modification monthly payment in cents @npi @confidential */
+  post_mod_payment_cents BIGINT,
+  /** Pre-modification principal in cents @npi @confidential */
+  pre_mod_principal_cents BIGINT,
+  /** Post-modification principal in cents @npi @confidential */
+  post_mod_principal_cents BIGINT,
+  /** Principal deferred in cents @npi @confidential */
+  principal_deferred_cents BIGINT,
+  /** Principal forgiven in cents @npi @confidential */
+  principal_forgiven_cents BIGINT,
+  /** Arrears capitalized in cents @npi @confidential */
+  arrears_capitalized_cents BIGINT,
+  /** Pre-modification term remaining months */
+  pre_mod_term_months INT,
+  /** Post-modification term months */
+  post_mod_term_months INT,
+  /** New maturity date */
+  new_maturity_date DATE,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Property valuation history for ongoing LTV monitoring.
+    Grain: one row per valuation_id. */
+CREATE TABLE Property_Valuation (
+  /** Unique identifier for the valuation */
+  valuation_id STRING,
+  /** Reference to property */
+  property_id STRING,
+  /** Reference to loan */
+  loan_id STRING,
+  /** Valuation type: APPRAISAL, AVM, BPO, DESKTOP, DRIVE_BY */
+  valuation_type STRING,
+  /** Valuation purpose: ORIGINATION, MODIFICATION, MONITORING, FORECLOSURE, PMI_REMOVAL */
+  valuation_purpose STRING,
+  /** Valuation amount in cents @npi @confidential */
+  valuation_amount_cents BIGINT,
+  /** Valuation date */
+  valuation_date DATE,
+  /** Confidence score (for AVMs) */
+  confidence_score INT,
+  /** Forecast standard deviation (for AVMs) */
+  fsd DECIMAL(5, 2),
+  /** Valuation provider */
+  valuation_provider STRING,
+  /** Provider reference number */
+  provider_reference STRING,
+  /** Current LTV based on this valuation */
+  current_ltv DECIMAL(5, 2),
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);

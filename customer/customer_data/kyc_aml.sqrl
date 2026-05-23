@@ -1,0 +1,170 @@
+-- ## KYC and AML Compliance Data
+--
+-- Know Your Customer (KYC) verification records and Anti-Money Laundering (AML)
+-- screening data required for regulatory compliance. Includes identity verification
+-- results, sanctions and PEP screening outcomes, and customer risk ratings used
+-- for ongoing monitoring and due diligence.
+--
+-- Layer:            bronze
+-- Classification:   Restricted
+-- Regulatory scope: BSA, USA PATRIOT Act, OFAC, GLBA, GDPR
+
+/** KYC verification records documenting customer identity verification events.
+    Grain: one row per verification_id. */
+CREATE TABLE Kyc_Verification (
+  /** Unique identifier for the verification event */
+  verification_id STRING,
+  /** Reference to customer being verified @pii */
+  customer_id STRING,
+  /** Type of verification: INITIAL, PERIODIC_REVIEW, ENHANCED_DUE_DILIGENCE, TRIGGER_EVENT */
+  verification_type STRING,
+  /** Verification method: DOCUMENTARY, NON_DOCUMENTARY, ELECTRONIC, IN_PERSON */
+  verification_method STRING,
+  /** Document type used: PASSPORT, DRIVERS_LICENSE, STATE_ID, UTILITY_BILL, BANK_STATEMENT */
+  document_type STRING,
+  /** Document number @spii @tokenize */
+  document_number STRING,
+  /** Document issuing country or state */
+  document_issuer STRING,
+  /** Document expiration date */
+  document_expiration_date DATE,
+  /** Verification result: PASS, FAIL, PENDING, REVIEW_REQUIRED */
+  verification_result STRING,
+  /** Verification score from identity provider (0-100) */
+  verification_score INT,
+  /** Date and time verification was performed */
+  verified_at TIMESTAMP,
+  /** Identity verification provider used */
+  verification_provider STRING,
+  /** Reference ID from verification provider */
+  provider_reference_id STRING,
+  /** Employee ID who performed or approved verification @pii */
+  verified_by STRING,
+  /** Additional notes or comments @confidential */
+  notes STRING,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Sanctions screening results against OFAC and other watchlists.
+    Grain: one row per screening_id. */
+CREATE TABLE Sanctions_Screening (
+  /** Unique identifier for the screening event */
+  screening_id STRING,
+  /** Reference to customer being screened @pii */
+  customer_id STRING,
+  /** Screening type: ONBOARDING, PERIODIC, REAL_TIME, AD_HOC */
+  screening_type STRING,
+  /** Lists screened against: OFAC_SDN, OFAC_CONSOLIDATED, UN_SANCTIONS, EU_SANCTIONS, PEP, ADVERSE_MEDIA */
+  lists_screened STRING,
+  /** Screening result: CLEAR, POTENTIAL_MATCH, CONFIRMED_MATCH */
+  screening_result STRING,
+  /** Number of potential matches found */
+  match_count INT,
+  /** Match score for highest-scoring hit (0-100) */
+  highest_match_score INT,
+  /** Disposition after review: FALSE_POSITIVE, TRUE_MATCH, PENDING_REVIEW */
+  disposition STRING,
+  /** Date and time screening was performed */
+  screened_at TIMESTAMP,
+  /** Screening vendor or system used */
+  screening_provider STRING,
+  /** Reference ID from screening provider */
+  provider_reference_id STRING,
+  /** Employee ID who reviewed screening results @pii */
+  reviewed_by STRING,
+  /** Date and time review was completed */
+  reviewed_at TIMESTAMP,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Politically Exposed Person (PEP) screening and monitoring results.
+    Grain: one row per screening_id. */
+CREATE TABLE Pep_Screening (
+  /** Unique identifier for the PEP screening event */
+  screening_id STRING,
+  /** Reference to customer being screened @pii */
+  customer_id STRING,
+  /** Screening type: ONBOARDING, PERIODIC, TRIGGER_EVENT */
+  screening_type STRING,
+  /** Whether customer is identified as a PEP */
+  is_pep BOOLEAN,
+  /** PEP category: FOREIGN_OFFICIAL, DOMESTIC_OFFICIAL, INTERNATIONAL_ORG, STATE_OWNED_ENTERPRISE, FAMILY_MEMBER, CLOSE_ASSOCIATE */
+  pep_category STRING,
+  /** Level of PEP: SENIOR, MID_LEVEL, JUNIOR */
+  pep_level STRING,
+  /** Country associated with PEP status */
+  pep_country STRING,
+  /** Position or role that qualifies as PEP @pii */
+  pep_position STRING,
+  /** Date PEP status was identified */
+  identified_at TIMESTAMP,
+  /** Date PEP status ended (if applicable) */
+  pep_ended_at TIMESTAMP,
+  /** Enhanced due diligence required flag */
+  edd_required BOOLEAN,
+  /** Source of PEP identification */
+  pep_source STRING,
+  /** Screening provider reference ID */
+  provider_reference_id STRING,
+  /** Date and time screening was performed */
+  screened_at TIMESTAMP,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);
+
+/** Customer risk ratings for AML and compliance monitoring purposes.
+    Grain: one row per customer_id, effective_from combination (SCD Type 2). */
+CREATE TABLE Customer_Risk_Rating (
+  /** Reference to customer @pii */
+  customer_id STRING,
+  /** Overall risk rating: LOW, MEDIUM, HIGH, PROHIBITED */
+  risk_rating STRING,
+  /** Numeric risk score (0-100) */
+  risk_score INT,
+  /** Geographic risk component score (0-100) */
+  geographic_risk_score INT,
+  /** Product risk component score (0-100) */
+  product_risk_score INT,
+  /** Customer type risk component score (0-100) */
+  customer_type_risk_score INT,
+  /** Transaction behavior risk component score (0-100) */
+  transaction_risk_score INT,
+  /** Risk rating model version used */
+  model_version STRING,
+  /** Reason codes contributing to rating @confidential */
+  reason_codes STRING,
+  /** Date this rating became effective */
+  effective_from DATE,
+  /** Date this rating was superseded */
+  effective_to DATE,
+  /** Whether this is the current active rating */
+  is_current BOOLEAN,
+  /** Whether rating was manually overridden */
+  is_override BOOLEAN,
+  /** Employee ID who approved override @pii */
+  override_approved_by STRING,
+  /** Reason for manual override @confidential */
+  override_reason STRING,
+  /** Next scheduled review date */
+  next_review_date DATE,
+  /** Source system identifier */
+  source_system STRING,
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP,
+  /** Timestamp when record was last updated in source system */
+  source_updated_at TIMESTAMP
+);

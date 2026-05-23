@@ -1,0 +1,172 @@
+-- ## Mortgage Performance
+--
+-- Silver-layer analytics datasets for mortgage portfolio performance monitoring
+-- including monthly loan-level performance snapshots, prepayment signal detection,
+-- and vintage cohort analysis. Supports portfolio management, investor reporting,
+-- and risk assessment.
+--
+-- Layer:            silver
+-- Classification:   Restricted
+-- Regulatory scope: GLBA, GDPR, CCPA
+-- Upstream:         mortgage_originations.sqrl, mortgage_servicing.sqrl
+
+/** Monthly loan-level performance snapshot for portfolio monitoring.
+    Grain: one row per loan_id, reporting_month combination. */
+CREATE TABLE Loan_Performance_Monthly (
+  /** Reference to loan */
+  loan_id STRING,
+  /** Reporting month (first day of month) */
+  reporting_month DATE,
+  /** Loan status as of month end: CURRENT, DQ_30, DQ_60, DQ_90, DQ_120_PLUS, FORECLOSURE, REO, PAID_OFF, MODIFIED */
+  loan_status STRING,
+  /** Days past due as of month end */
+  days_past_due INT,
+  /** Current principal balance in cents @npi @confidential */
+  current_upb_cents BIGINT,
+  /** Scheduled principal balance in cents @npi @confidential */
+  scheduled_upb_cents BIGINT,
+  /** Principal paid down this month in cents @npi @confidential */
+  principal_paid_cents BIGINT,
+  /** Interest paid this month in cents @npi @confidential */
+  interest_paid_cents BIGINT,
+  /** Prepaid principal this month in cents @npi @confidential */
+  prepaid_principal_cents BIGINT,
+  /** Curtailment amount this month in cents */
+  curtailment_cents BIGINT,
+  /** Current interest rate */
+  current_rate DECIMAL(6, 4),
+  /** Current monthly payment in cents @npi @confidential */
+  current_payment_cents BIGINT,
+  /** Number of payments made this month */
+  payments_made INT,
+  /** Total payments made lifetime */
+  lifetime_payments_made INT,
+  /** Total payments scheduled lifetime */
+  lifetime_payments_due INT,
+  /** Current credit score (if refreshed) @npi @confidential */
+  current_credit_score INT,
+  /** Current LTV based on AVM */
+  current_ltv DECIMAL(5, 2),
+  /** Current property value in cents @npi @confidential */
+  current_property_value_cents BIGINT,
+  /** Whether loan was modified */
+  is_modified BOOLEAN,
+  /** Modification effective date */
+  modification_date DATE,
+  /** Whether in forbearance */
+  in_forbearance BOOLEAN,
+  /** Whether in foreclosure */
+  in_foreclosure BOOLEAN,
+  /** Loan age in months */
+  loan_age_months INT,
+  /** Remaining term in months */
+  remaining_term_months INT,
+  /** Months to maturity */
+  months_to_maturity INT,
+  /** Servicer ID */
+  servicer_id STRING,
+  /** Investor ID */
+  investor_id STRING,
+  /** Pool ID */
+  pool_id STRING,
+  /** Timestamp when snapshot was computed */
+  computed_at TIMESTAMP
+);
+
+/** Prepayment risk signals and prediction features.
+    Grain: one row per loan_id, signal_date combination. */
+CREATE TABLE Prepayment_Signal (
+  /** Reference to loan */
+  loan_id STRING,
+  /** Date of signal calculation */
+  signal_date DATE,
+  /** Overall prepayment probability (0-1) */
+  prepayment_probability DOUBLE,
+  /** Prepayment risk tier: LOW, MEDIUM, HIGH, VERY_HIGH */
+  prepayment_risk_tier STRING,
+  /** Rate incentive (market rate - loan rate) in basis points */
+  rate_incentive_bps INT,
+  /** Current market rate for similar loans */
+  market_rate DECIMAL(6, 4),
+  /** Loan current rate */
+  loan_rate DECIMAL(6, 4),
+  /** Burnout factor (0-1, higher = more burnout) */
+  burnout_factor DOUBLE,
+  /** Seasoning in months */
+  seasoning_months INT,
+  /** Current LTV */
+  current_ltv DECIMAL(5, 2),
+  /** Home price appreciation since origination */
+  hpa_since_origination DECIMAL(6, 2),
+  /** Local unemployment rate */
+  local_unemployment_rate DECIMAL(4, 2),
+  /** Credit score change since origination */
+  credit_score_change INT,
+  /** Months since last refinance */
+  months_since_refi INT,
+  /** Whether loan is assumable */
+  is_assumable BOOLEAN,
+  /** Whether loan has prepayment penalty */
+  has_prepay_penalty BOOLEAN,
+  /** Prepayment penalty months remaining */
+  penalty_months_remaining INT,
+  /** Primary driver: RATE, EQUITY, RELOCATION, CASHOUT */
+  primary_driver STRING,
+  /** Model version used */
+  model_version STRING,
+  /** Timestamp when signal was computed */
+  computed_at TIMESTAMP
+);
+
+/** Vintage cohort performance analysis for portfolio comparison.
+    Grain: one row per vintage_month, age_months, loan_program, property_state combination. */
+CREATE TABLE Vintage_Performance (
+  /** Origination vintage (month loans were funded) */
+  vintage_month DATE,
+  /** Age in months since origination */
+  age_months INT,
+  /** Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO */
+  loan_program STRING,
+  /** Property state */
+  property_state STRING,
+  /** Number of loans in cohort */
+  loan_count INT,
+  /** Original UPB in cents @npi @confidential */
+  original_upb_cents BIGINT,
+  /** Current UPB in cents @npi @confidential */
+  current_upb_cents BIGINT,
+  /** UPB remaining percentage */
+  upb_remaining_pct DECIMAL(6, 4),
+  /** Cumulative default rate */
+  cumulative_default_rate DECIMAL(6, 4),
+  /** Cumulative prepayment rate */
+  cumulative_prepay_rate DECIMAL(6, 4),
+  /** Current 30+ DPD rate */
+  current_dq_30_rate DECIMAL(6, 4),
+  /** Current 60+ DPD rate */
+  current_dq_60_rate DECIMAL(6, 4),
+  /** Current 90+ DPD rate */
+  current_dq_90_rate DECIMAL(6, 4),
+  /** Single month mortality (SMM) */
+  smm DECIMAL(6, 4),
+  /** Conditional prepayment rate (CPR) */
+  cpr DECIMAL(6, 4),
+  /** Conditional default rate (CDR) */
+  cdr DECIMAL(6, 4),
+  /** Loss severity rate */
+  loss_severity DECIMAL(6, 4),
+  /** Cumulative loss in cents @confidential */
+  cumulative_loss_cents BIGINT,
+  /** Average original credit score @confidential */
+  avg_original_credit_score INT,
+  /** Average original LTV */
+  avg_original_ltv DECIMAL(5, 2),
+  /** Average original DTI @confidential */
+  avg_original_dti DECIMAL(5, 2),
+  /** Average note rate */
+  avg_note_rate DECIMAL(6, 4),
+  /** Percentage first-time homebuyers */
+  first_time_buyer_pct DECIMAL(5, 2),
+  /** Timestamp when vintage analysis was computed */
+  computed_at TIMESTAMP
+);
