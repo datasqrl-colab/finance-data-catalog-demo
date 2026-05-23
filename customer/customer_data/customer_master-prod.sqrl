@@ -1,0 +1,65 @@
+-- ## Customer Master Data - Production
+--
+-- Ingests source data from Kafka
+
+IMPORT customer_master.*;
+
+CREATE TABLE Customer (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'topic' = 'customer_master.customer',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_schema;
+
+CREATE TABLE Customer_Address (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'topic' = 'customer_master.customer_address',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Address_schema;
+
+CREATE TABLE Customer_Contact (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'topic' = 'customer_master.customer_contact',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Contact_schema;
+
+CREATE TABLE Customer_Employment (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'topic' = 'customer_master.customer_employment',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Employment_schema;
+
+CREATE TABLE Customer_Relationship (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'topic' = 'customer_master.customer_relationship',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Customer_Relationship_schema;

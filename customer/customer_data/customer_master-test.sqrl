@@ -1,4 +1,6 @@
 -- ## Customer Master Data - Test Data
+--
+-- Use local filesystem data for testing
 
 IMPORT customer_master.*;
 

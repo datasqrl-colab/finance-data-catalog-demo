@@ -259,10 +259,10 @@ This matrix is the verification that Section 5's silver datasets are fully build
 
 | Silver dataset | Required bronze inputs |
 |---|---|
-| `customer/customer_data/customer_360.customer_profile` | `customer_master.customer`, `customer_master.customer_address`, `customer_master.customer_contact`, `kyc_aml.customer_risk_rating` |
-| `customer/customer_data/customer_360.customer_segment` | `customer_master.customer`, `account_balances.account_balance_daily`, `credit_cards.credit_card_account`, `consumer_loans.personal_loan`, `consumer_loans.auto_loan`, `mortgage_originations.mortgage_loan` |
-| `customer/customer_data/customer_360.customer_household` | `customer_master.customer_address`, `customer_master.customer_relationship` |
-| `customer/customer_data/customer_360.customer_lifetime_value` | `account_balances.account_balance_daily`, `account_balances.interest_accrual`, `core_transactions.transaction` (fee codes), `credit_card_statement.interest_charged`, `loan_payment` (interest split) |
+| `customer/customer_data/customer_enriched.customer_profile` | `customer_master.customer`, `customer_master.customer_address`, `customer_master.customer_contact`, `kyc_aml.customer_risk_rating` |
+| `customer/customer_data/customer_enriched.customer_household` | `customer_master.customer_address`, `customer_master.customer_relationship` |
+| `customer/customer_data/customer_enriched.customer_segment` | `customer_master.customer`, `account_balances.account_balance_daily`, `credit_cards.credit_card_account`, `consumer_loans.personal_loan`, `consumer_loans.auto_loan`, `mortgage_originations.mortgage_loan` |
+| `customer/customer_data/customer_enriched.customer_lifetime_value` | `account_balances.account_balance_daily`, `account_balances.interest_accrual`, `core_transactions.transaction` (fee codes), `credit_card_statement.interest_charged`, `loan_payment` (interest split) |
 | `deposits_payments/accounts/account_analytics.account_activity_summary` | `core_transactions.transaction` (channel, fee codes), `account_balances.account_balance_daily` |
 | `deposits_payments/accounts/account_analytics.account_balance_trend` | `account_balances.account_balance_daily` |
 | `deposits_payments/accounts/account_analytics.dormancy_signal` | `core_transactions.transaction` (posting_date), `account_status_history` |
@@ -360,7 +360,7 @@ Multiple regulatory tags are common (e.g. `@glba @gdpr @ccpa` on customer identi
 
 Silver datasets join across teams. File headers must list upstream tables by fully qualified path. Known cross-team links:
 
-- `customer/customer_data/customer_360.sqrl` depends on `deposits_payments/accounts/account_balances.sqrl`, `deposits_payments/accounts/deposit_accounts.sqrl`, `lending/mortgages/mortgage_originations.sqrl`, `lending/cards_consumer_credit/credit_cards.sqrl`, and `lending/cards_consumer_credit/consumer_loans.sqrl`.
+- `customer/customer_data/customer_enriched.sqrl` depends on `deposits_payments/accounts/account_balances.sqrl`, `deposits_payments/accounts/deposit_accounts.sqrl`, `lending/mortgages/mortgage_originations.sqrl`, `lending/cards_consumer_credit/credit_cards.sqrl`, and `lending/cards_consumer_credit/consumer_loans.sqrl`.
 - `deposits_payments/accounts/account_analytics.sqrl` depends on `deposits_payments/transactions/core_transactions.sqrl`.
 - `deposits_payments/transactions/enriched_transactions.sqrl` depends on `deposits_payments/accounts/deposit_accounts.sqrl` (for the `account_holder` link to customer).
 - `lending/cards_consumer_credit/credit_risk_signals.sqrl` depends on `lending/mortgages/mortgage_servicing.sqrl` and `lending/mortgages/mortgage_originations.sqrl` for cross-product exposure and payment behavior.
