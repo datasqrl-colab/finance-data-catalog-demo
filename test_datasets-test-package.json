@@ -2,9 +2,9 @@
   "version": "1",
   "enabled-engines": ["flink", "postgres", "vertx"],
   "script": {
-    "main": "test.sqrl",
+    "main": "test_datasets.sqrl",
     "config": {
-      "environment": "prod"
+      "environment": "test"
     }
   },
   "engines": {

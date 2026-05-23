@@ -30,4 +30,9 @@ The Cards & Consumer Credit team owns credit card, personal loan, and auto loan 
 - **Classification**: Restricted
 - **Regulatory Scope**: GLBA, GDPR, CCPA, FCRA, TILA, CARD Act, ECOA, PCI-DSS
 - **Data Steward**: Consumer Credit Operations
-- **Refresh Frequency**: Daily for bronze, daily for silver
+- **Refresh Frequency**: Realtime for bronze, daily for silver
+
+## Environments
+
+- **-test**: Local data for testing
+- **-prod**: Production data (Kafka or Iceberg)

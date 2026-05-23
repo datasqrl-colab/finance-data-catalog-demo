@@ -11,13 +11,13 @@
 
 /** Mortgage loan application records from initial submission through decision.
     Grain: one row per application_id. */
-CREATE TABLE Mortgage_Application (
+CREATE TABLE Mortgage_Application_schema (
   /** Unique identifier for the application */
-  application_id STRING,
+  application_id STRING NOT NULL,
   /** Reference to primary borrower @pii */
-  primary_borrower_customer_id STRING,
+  primary_borrower_customer_id STRING NOT NULL,
   /** Application type: PURCHASE, REFINANCE, CASH_OUT_REFINANCE, HOME_EQUITY */
-  application_type STRING,
+  application_type STRING NOT NULL,
   /** Loan purpose: PRIMARY_RESIDENCE, SECOND_HOME, INVESTMENT */
   loan_purpose STRING,
   /** Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED */
@@ -25,7 +25,7 @@ CREATE TABLE Mortgage_Application (
   /** Number of units (for multi-family) */
   number_of_units INT,
   /** Requested loan amount in cents @npi @confidential */
-  requested_loan_amount_cents BIGINT,
+  requested_loan_amount_cents BIGINT NOT NULL,
   /** Estimated property value in cents @npi @confidential */
   estimated_property_value_cents BIGINT,
   /** Loan-to-value ratio at application */
@@ -39,9 +39,9 @@ CREATE TABLE Mortgage_Application (
   /** Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO */
   loan_program STRING,
   /** Application status: SUBMITTED, IN_REVIEW, APPROVED, CONDITIONALLY_APPROVED, DENIED, WITHDRAWN, FUNDED */
-  application_status STRING,
+  application_status STRING NOT NULL,
   /** Date application was submitted */
-  submitted_at TIMESTAMP,
+  submitted_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Date application was received */
   received_date DATE,
   /** Date decision was made */
@@ -65,34 +65,32 @@ CREATE TABLE Mortgage_Application (
   /** HMDA preapproval flag */
   hmda_preapproval STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Funded mortgage loan records with final terms and conditions.
     Grain: one row per loan_id. */
-CREATE TABLE Mortgage_Loan (
+CREATE TABLE Mortgage_Loan_schema (
   /** Unique identifier for the loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reference to originating application */
   application_id STRING,
   /** Reference to primary borrower @pii */
-  primary_borrower_customer_id STRING,
+  primary_borrower_customer_id STRING NOT NULL,
   /** Loan number displayed to customer @npi @mask */
-  loan_number STRING,
+  loan_number STRING NOT NULL,
   /** Loan status: ACTIVE, PAID_OFF, FORECLOSURE, REO, TRANSFERRED, CHARGED_OFF */
-  loan_status STRING,
+  loan_status STRING NOT NULL,
   /** Original principal balance in cents @npi @confidential */
-  original_principal_cents BIGINT,
+  original_principal_cents BIGINT NOT NULL,
   /** Current principal balance in cents @npi @confidential */
-  current_principal_cents BIGINT,
+  current_principal_cents BIGINT NOT NULL,
   /** Interest rate (annual percentage) @confidential */
-  interest_rate DECIMAL(6, 4),
+  interest_rate DECIMAL(6, 4) NOT NULL,
   /** Rate type: FIXED, ARM */
-  rate_type STRING,
+  rate_type STRING NOT NULL,
   /** ARM index (if applicable): LIBOR, SOFR, TREASURY, PRIME */
   arm_index STRING,
   /** ARM margin (if applicable) */
@@ -106,29 +104,29 @@ CREATE TABLE Mortgage_Loan (
   /** ARM lifetime rate cap */
   arm_lifetime_cap DECIMAL(5, 2),
   /** Original loan term in months */
-  original_term_months INT,
+  original_term_months INT NOT NULL,
   /** Remaining term in months */
   remaining_term_months INT,
   /** Monthly principal and interest payment in cents @npi @confidential */
-  monthly_pi_payment_cents BIGINT,
+  monthly_pi_payment_cents BIGINT NOT NULL,
   /** Monthly escrow payment in cents @npi @confidential */
   monthly_escrow_payment_cents BIGINT,
   /** Total monthly payment in cents @npi @confidential */
-  total_monthly_payment_cents BIGINT,
+  total_monthly_payment_cents BIGINT NOT NULL,
   /** Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO */
   loan_program STRING,
   /** Lien position: FIRST, SECOND, HELOC */
-  lien_position STRING,
+  lien_position STRING NOT NULL,
   /** Loan purpose: PURCHASE, REFINANCE, CASH_OUT, HOME_EQUITY */
   loan_purpose STRING,
   /** Occupancy type: PRIMARY, SECOND_HOME, INVESTMENT */
   occupancy_type STRING,
   /** Date loan was funded */
-  funding_date DATE,
+  funding_date DATE NOT NULL,
   /** First payment due date */
-  first_payment_date DATE,
+  first_payment_date DATE NOT NULL,
   /** Maturity date */
-  maturity_date DATE,
+  maturity_date DATE NOT NULL,
   /** Next payment due date */
   next_payment_due_date DATE,
   /** Date loan was paid off */
@@ -144,32 +142,30 @@ CREATE TABLE Mortgage_Loan (
   /** Pool ID (if securitized) */
   pool_id STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Property collateral information for mortgage loans.
     Grain: one row per property_id. */
-CREATE TABLE Property_Collateral (
+CREATE TABLE Property_Collateral_schema (
   /** Unique identifier for the property */
-  property_id STRING,
+  property_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Property street address @pii @encrypt */
-  property_address STRING,
+  property_address STRING NOT NULL,
   /** Property city @pii */
-  property_city STRING,
+  property_city STRING NOT NULL,
   /** Property state */
-  property_state STRING,
+  property_state STRING NOT NULL,
   /** Property zip code @pii */
-  property_zip STRING,
+  property_zip STRING NOT NULL,
   /** Property county */
   property_county STRING,
   /** Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED */
-  property_type STRING,
+  property_type STRING NOT NULL,
   /** Number of units */
   number_of_units INT,
   /** Year property was built */
@@ -183,9 +179,9 @@ CREATE TABLE Property_Collateral (
   /** Number of bathrooms */
   bathrooms DECIMAL(3, 1),
   /** Original appraised value in cents @npi @confidential */
-  original_appraised_value_cents BIGINT,
+  original_appraised_value_cents BIGINT NOT NULL,
   /** Original appraisal date */
-  original_appraisal_date DATE,
+  original_appraisal_date DATE NOT NULL,
   /** Current estimated value in cents @npi @confidential */
   current_estimated_value_cents BIGINT,
   /** Current value as-of date */
@@ -203,22 +199,20 @@ CREATE TABLE Property_Collateral (
   /** MSA code for HMDA */
   msa_code STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Borrower information for mortgage loans (may have multiple per loan).
     Grain: one row per loan_id, customer_id combination. */
-CREATE TABLE Mortgage_Borrower (
+CREATE TABLE Mortgage_Borrower_schema (
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Borrower type: PRIMARY, CO_BORROWER, GUARANTOR */
-  borrower_type STRING,
+  borrower_type STRING NOT NULL,
   /** Ownership percentage */
   ownership_percentage DECIMAL(5, 2),
   /** Credit score at origination @npi @confidential */
@@ -244,9 +238,7 @@ CREATE TABLE Mortgage_Borrower (
   /** Citizenship status: US_CITIZEN, PERMANENT_RESIDENT, NON_RESIDENT */
   citizenship_status STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

@@ -12,17 +12,17 @@
 
 /** Monthly loan-level performance snapshot for portfolio monitoring.
     Grain: one row per loan_id, reporting_month combination. */
-CREATE TABLE Loan_Performance_Monthly (
+CREATE TABLE Loan_Performance_Monthly_schema (
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reporting month (first day of month) */
-  reporting_month DATE,
+  reporting_month DATE NOT NULL,
   /** Loan status as of month end: CURRENT, DQ_30, DQ_60, DQ_90, DQ_120_PLUS, FORECLOSURE, REO, PAID_OFF, MODIFIED */
-  loan_status STRING,
+  loan_status STRING NOT NULL,
   /** Days past due as of month end */
   days_past_due INT,
   /** Current principal balance in cents @npi @confidential */
-  current_upb_cents BIGINT,
+  current_upb_cents BIGINT NOT NULL,
   /** Scheduled principal balance in cents @npi @confidential */
   scheduled_upb_cents BIGINT,
   /** Principal paid down this month in cents @npi @confidential */
@@ -34,9 +34,9 @@ CREATE TABLE Loan_Performance_Monthly (
   /** Curtailment amount this month in cents */
   curtailment_cents BIGINT,
   /** Current interest rate */
-  current_rate DECIMAL(6, 4),
+  current_rate DECIMAL(6, 4) NOT NULL,
   /** Current monthly payment in cents @npi @confidential */
-  current_payment_cents BIGINT,
+  current_payment_cents BIGINT NOT NULL,
   /** Number of payments made this month */
   payments_made INT,
   /** Total payments made lifetime */
@@ -68,18 +68,16 @@ CREATE TABLE Loan_Performance_Monthly (
   /** Investor ID */
   investor_id STRING,
   /** Pool ID */
-  pool_id STRING,
-  /** Timestamp when snapshot was computed */
-  computed_at TIMESTAMP
+  pool_id STRING
 );
 
 /** Prepayment risk signals and prediction features.
     Grain: one row per loan_id, signal_date combination. */
-CREATE TABLE Prepayment_Signal (
+CREATE TABLE Prepayment_Signal_schema (
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Date of signal calculation */
-  signal_date DATE,
+  signal_date DATE NOT NULL,
   /** Overall prepayment probability (0-1) */
   prepayment_probability DOUBLE,
   /** Prepayment risk tier: LOW, MEDIUM, HIGH, VERY_HIGH */
@@ -89,7 +87,7 @@ CREATE TABLE Prepayment_Signal (
   /** Current market rate for similar loans */
   market_rate DECIMAL(6, 4),
   /** Loan current rate */
-  loan_rate DECIMAL(6, 4),
+  loan_rate DECIMAL(6, 4) NOT NULL,
   /** Burnout factor (0-1, higher = more burnout) */
   burnout_factor DOUBLE,
   /** Seasoning in months */
@@ -113,26 +111,24 @@ CREATE TABLE Prepayment_Signal (
   /** Primary driver: RATE, EQUITY, RELOCATION, CASHOUT */
   primary_driver STRING,
   /** Model version used */
-  model_version STRING,
-  /** Timestamp when signal was computed */
-  computed_at TIMESTAMP
+  model_version STRING
 );
 
 /** Vintage cohort performance analysis for portfolio comparison.
     Grain: one row per vintage_month, age_months, loan_program, property_state combination. */
-CREATE TABLE Vintage_Performance (
+CREATE TABLE Vintage_Performance_schema (
   /** Origination vintage (month loans were funded) */
-  vintage_month DATE,
+  vintage_month DATE NOT NULL,
   /** Age in months since origination */
-  age_months INT,
+  age_months INT NOT NULL,
   /** Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO */
-  loan_program STRING,
+  loan_program STRING NOT NULL,
   /** Property state */
-  property_state STRING,
+  property_state STRING NOT NULL,
   /** Number of loans in cohort */
-  loan_count INT,
+  loan_count INT NOT NULL,
   /** Original UPB in cents @npi @confidential */
-  original_upb_cents BIGINT,
+  original_upb_cents BIGINT NOT NULL,
   /** Current UPB in cents @npi @confidential */
   current_upb_cents BIGINT,
   /** UPB remaining percentage */
@@ -166,7 +162,5 @@ CREATE TABLE Vintage_Performance (
   /** Average note rate */
   avg_note_rate DECIMAL(6, 4),
   /** Percentage first-time homebuyers */
-  first_time_buyer_pct DECIMAL(5, 2),
-  /** Timestamp when vintage analysis was computed */
-  computed_at TIMESTAMP
+  first_time_buyer_pct DECIMAL(5, 2)
 );

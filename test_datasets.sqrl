@@ -3,7 +3,4 @@ IMPORT customer.customer_data.customer_enriched-{{environment}} AS cn;
 
 Customer := SELECT * FROM cm.Customer;
 
-EXPORT Customer TO logger.Customer;
-
-
 Customer_profile := SELECT * FROM cn.Customer_Profile;

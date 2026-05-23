@@ -12,11 +12,11 @@
 
 /** Customer-level credit exposure aggregation across all credit products.
     Grain: one row per customer_id, snapshot_date combination. */
-CREATE TABLE Customer_Credit_Exposure (
+CREATE TABLE Customer_Credit_Exposure_schema (
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Date of exposure snapshot */
-  snapshot_date DATE,
+  snapshot_date DATE NOT NULL,
   /** Total credit card limit in cents @npi @confidential */
   total_card_limit_cents BIGINT,
   /** Total credit card balance in cents @npi @confidential */
@@ -62,18 +62,16 @@ CREATE TABLE Customer_Credit_Exposure (
   /** Credit risk tier: PRIME, NEAR_PRIME, SUBPRIME, DEEP_SUBPRIME */
   risk_tier STRING,
   /** Risk score (internal model, 0-100) @confidential */
-  risk_score INT,
-  /** Timestamp when exposure was computed */
-  computed_at TIMESTAMP
+  risk_score INT
 );
 
 /** Payment behavior analytics across credit products.
     Grain: one row per customer_id, analysis_month combination. */
-CREATE TABLE Payment_Behavior (
+CREATE TABLE Payment_Behavior_schema (
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Analysis month (first day of month) */
-  analysis_month DATE,
+  analysis_month DATE NOT NULL,
   /** Total payments made in cents @npi @confidential */
   total_payments_cents BIGINT,
   /** Total minimum payments due in cents @npi @confidential */
@@ -111,28 +109,26 @@ CREATE TABLE Payment_Behavior (
   /** Primary payment method: ACH, CHECK, DEBIT_CARD, ONLINE */
   primary_payment_method STRING,
   /** Payment consistency score (0-100) */
-  payment_consistency_score INT,
-  /** Timestamp when behavior was computed */
-  computed_at TIMESTAMP
+  payment_consistency_score INT
 );
 
 /** Delinquency rollforward analysis tracking migration between buckets.
     Grain: one row per loan_id, loan_type, from_month, to_month combination. */
-CREATE TABLE Delinquency_Rollforward (
+CREATE TABLE Delinquency_Rollforward_schema (
   /** Reference to loan or credit card account */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Product type: CREDIT_CARD, PERSONAL_LOAN, AUTO_LOAN, MORTGAGE */
-  loan_type STRING,
+  loan_type STRING NOT NULL,
   /** Starting month of transition */
-  from_month DATE,
+  from_month DATE NOT NULL,
   /** Ending month of transition */
-  to_month DATE,
+  to_month DATE NOT NULL,
   /** Delinquency bucket at start of period */
-  from_bucket STRING,
+  from_bucket STRING NOT NULL,
   /** Delinquency bucket at end of period */
-  to_bucket STRING,
+  to_bucket STRING NOT NULL,
   /** Transition type: CURE, ROLL, STAY, PAYOFF, CHARGE_OFF */
-  transition_type STRING,
+  transition_type STRING NOT NULL,
   /** Balance at start of period in cents @npi @confidential */
   from_balance_cents BIGINT,
   /** Balance at end of period in cents @npi @confidential */
@@ -152,20 +148,18 @@ CREATE TABLE Delinquency_Rollforward (
   /** Credit score at transition @npi @confidential */
   credit_score INT,
   /** Months on books */
-  months_on_books INT,
-  /** Timestamp when rollforward was computed */
-  computed_at TIMESTAMP
+  months_on_books INT
 );
 
 /** Credit utilization tracking and trends.
     Grain: one row per credit_card_account_id, utilization_date combination. */
-CREATE TABLE Credit_Utilization (
+CREATE TABLE Credit_Utilization_schema (
   /** Reference to credit card account @npi */
-  credit_card_account_id STRING,
+  credit_card_account_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Date of utilization calculation */
-  utilization_date DATE,
+  utilization_date DATE NOT NULL,
   /** Current balance in cents @npi @confidential */
   current_balance_cents BIGINT,
   /** Credit limit in cents @npi @confidential */
@@ -197,7 +191,5 @@ CREATE TABLE Credit_Utilization (
   /** Utilization trend: INCREASING, STABLE, DECREASING */
   trend_direction STRING,
   /** Utilization risk flag */
-  high_utilization_flag BOOLEAN,
-  /** Timestamp when utilization was computed */
-  computed_at TIMESTAMP
+  high_utilization_flag BOOLEAN
 );

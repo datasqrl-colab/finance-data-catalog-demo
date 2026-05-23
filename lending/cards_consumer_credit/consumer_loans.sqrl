@@ -10,39 +10,39 @@
 
 /** Personal/unsecured loan records.
     Grain: one row per loan_id. */
-CREATE TABLE Personal_Loan (
+CREATE TABLE Personal_Loan_schema (
   /** Unique identifier for the loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reference to application */
   application_id STRING,
   /** Reference to primary borrower @pii */
-  primary_borrower_customer_id STRING,
+  primary_borrower_customer_id STRING NOT NULL,
   /** Loan number displayed to customer @npi @mask */
-  loan_number STRING,
+  loan_number STRING NOT NULL,
   /** Loan status: ACTIVE, PAID_OFF, CHARGED_OFF, SETTLED */
-  loan_status STRING,
+  loan_status STRING NOT NULL,
   /** Loan purpose: DEBT_CONSOLIDATION, HOME_IMPROVEMENT, MAJOR_PURCHASE, MEDICAL, VACATION, OTHER */
   loan_purpose STRING,
   /** Original loan amount in cents @npi @confidential */
-  original_amount_cents BIGINT,
+  original_amount_cents BIGINT NOT NULL,
   /** Current principal balance in cents @npi @confidential */
-  current_balance_cents BIGINT,
+  current_balance_cents BIGINT NOT NULL,
   /** Interest rate (APR) @confidential */
-  interest_rate DECIMAL(6, 4),
+  interest_rate DECIMAL(6, 4) NOT NULL,
   /** Rate type: FIXED, VARIABLE */
-  rate_type STRING,
+  rate_type STRING NOT NULL,
   /** Original term in months */
-  original_term_months INT,
+  original_term_months INT NOT NULL,
   /** Remaining term in months */
   remaining_term_months INT,
   /** Monthly payment amount in cents @npi @confidential */
-  monthly_payment_cents BIGINT,
+  monthly_payment_cents BIGINT NOT NULL,
   /** Date loan was funded */
-  funding_date DATE,
+  funding_date DATE NOT NULL,
   /** First payment due date */
-  first_payment_date DATE,
+  first_payment_date DATE NOT NULL,
   /** Maturity date */
-  maturity_date DATE,
+  maturity_date DATE NOT NULL,
   /** Next payment due date */
   next_payment_due_date DATE,
   /** Date loan was paid off */
@@ -54,7 +54,7 @@ CREATE TABLE Personal_Loan (
   /** DTI ratio at origination @npi @confidential */
   dti_at_origination DECIMAL(5, 2),
   /** Autopay enrolled */
-  autopay_enrolled BOOLEAN,
+  autopay_enrolled BOOLEAN NOT NULL,
   /** Disbursement account @npi */
   disbursement_account_id STRING,
   /** Payment account @npi */
@@ -62,66 +62,64 @@ CREATE TABLE Personal_Loan (
   /** Origination channel: ONLINE, BRANCH, PHONE, PARTNER */
   origination_channel STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Auto loan records with vehicle collateral information.
     Grain: one row per loan_id. */
-CREATE TABLE Auto_Loan (
+CREATE TABLE Auto_Loan_schema (
   /** Unique identifier for the loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reference to application */
   application_id STRING,
   /** Reference to primary borrower @pii */
-  primary_borrower_customer_id STRING,
+  primary_borrower_customer_id STRING NOT NULL,
   /** Loan number displayed to customer @npi @mask */
-  loan_number STRING,
+  loan_number STRING NOT NULL,
   /** Loan status: ACTIVE, PAID_OFF, CHARGED_OFF, REPOSSESSED */
-  loan_status STRING,
+  loan_status STRING NOT NULL,
   /** Loan type: NEW_VEHICLE, USED_VEHICLE, REFINANCE, LEASE_BUYOUT */
-  loan_type STRING,
+  loan_type STRING NOT NULL,
   /** Original loan amount in cents @npi @confidential */
-  original_amount_cents BIGINT,
+  original_amount_cents BIGINT NOT NULL,
   /** Current principal balance in cents @npi @confidential */
-  current_balance_cents BIGINT,
+  current_balance_cents BIGINT NOT NULL,
   /** Interest rate (APR) @confidential */
-  interest_rate DECIMAL(6, 4),
+  interest_rate DECIMAL(6, 4) NOT NULL,
   /** Rate type: FIXED, VARIABLE */
-  rate_type STRING,
+  rate_type STRING NOT NULL,
   /** Original term in months */
-  original_term_months INT,
+  original_term_months INT NOT NULL,
   /** Remaining term in months */
   remaining_term_months INT,
   /** Monthly payment amount in cents @npi @confidential */
-  monthly_payment_cents BIGINT,
+  monthly_payment_cents BIGINT NOT NULL,
   /** Date loan was funded */
-  funding_date DATE,
+  funding_date DATE NOT NULL,
   /** First payment due date */
-  first_payment_date DATE,
+  first_payment_date DATE NOT NULL,
   /** Maturity date */
-  maturity_date DATE,
+  maturity_date DATE NOT NULL,
   /** Next payment due date */
   next_payment_due_date DATE,
   /** Date loan was paid off */
   paid_off_date DATE,
   /** Vehicle VIN @pii */
-  vehicle_vin STRING,
+  vehicle_vin STRING NOT NULL,
   /** Vehicle year */
-  vehicle_year INT,
+  vehicle_year INT NOT NULL,
   /** Vehicle make */
-  vehicle_make STRING,
+  vehicle_make STRING NOT NULL,
   /** Vehicle model */
-  vehicle_model STRING,
+  vehicle_model STRING NOT NULL,
   /** Vehicle trim */
   vehicle_trim STRING,
   /** Vehicle mileage at origination */
   mileage_at_origination INT,
   /** Vehicle condition: NEW, USED, CERTIFIED */
-  vehicle_condition STRING,
+  vehicle_condition STRING NOT NULL,
   /** Vehicle value at origination in cents @npi @confidential */
   vehicle_value_at_origination_cents BIGINT,
   /** Current estimated vehicle value in cents @npi @confidential */
@@ -147,26 +145,24 @@ CREATE TABLE Auto_Loan (
   /** Lien holder state */
   lien_state STRING,
   /** Autopay enrolled */
-  autopay_enrolled BOOLEAN,
+  autopay_enrolled BOOLEAN NOT NULL,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Consumer loan payment records (personal and auto).
     Grain: one row per payment_id. */
-CREATE TABLE Loan_Payment (
+CREATE TABLE Loan_Payment_schema (
   /** Unique identifier for the payment */
-  payment_id STRING,
+  payment_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Loan type: PERSONAL, AUTO */
-  loan_type STRING,
+  loan_type STRING NOT NULL,
   /** Payment amount in cents @npi @confidential */
-  payment_amount_cents BIGINT,
+  payment_amount_cents BIGINT NOT NULL,
   /** Principal portion in cents @npi @confidential */
   principal_cents BIGINT,
   /** Interest portion in cents @npi @confidential */
@@ -176,11 +172,11 @@ CREATE TABLE Loan_Payment (
   /** Other fees in cents */
   other_fees_cents BIGINT,
   /** Payment type: REGULAR, EXTRA_PRINCIPAL, PAYOFF, PARTIAL */
-  payment_type STRING,
+  payment_type STRING NOT NULL,
   /** Payment status: APPLIED, PENDING, RETURNED, REVERSED */
-  payment_status STRING,
+  payment_status STRING NOT NULL,
   /** Date payment was due */
-  due_date DATE,
+  due_date DATE NOT NULL,
   /** Date payment was received */
   received_date DATE,
   /** Date payment was applied */
@@ -196,34 +192,32 @@ CREATE TABLE Loan_Payment (
   /** Return reason code (if returned) */
   return_reason_code STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Consumer loan application records.
     Grain: one row per application_id. */
-CREATE TABLE Loan_Application (
+CREATE TABLE Loan_Application_schema (
   /** Unique identifier for the application */
-  application_id STRING,
+  application_id STRING NOT NULL,
   /** Reference to primary applicant @pii */
-  primary_applicant_customer_id STRING,
+  primary_applicant_customer_id STRING NOT NULL,
   /** Reference to co-applicant (if applicable) @pii */
   co_applicant_customer_id STRING,
   /** Loan type: PERSONAL, AUTO */
-  loan_type STRING,
+  loan_type STRING NOT NULL,
   /** Loan purpose: DEBT_CONSOLIDATION, HOME_IMPROVEMENT, VEHICLE_PURCHASE, REFINANCE, OTHER */
   loan_purpose STRING,
   /** Requested loan amount in cents @npi @confidential */
-  requested_amount_cents BIGINT,
+  requested_amount_cents BIGINT NOT NULL,
   /** Requested term in months */
   requested_term_months INT,
   /** Application status: SUBMITTED, IN_REVIEW, APPROVED, COUNTER_OFFER, DENIED, WITHDRAWN, FUNDED */
-  application_status STRING,
+  application_status STRING NOT NULL,
   /** Date application was submitted */
-  submitted_at TIMESTAMP,
+  submitted_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Date decision was made */
   decision_date DATE,
   /** Decision type: APPROVED, DENIED, COUNTER_OFFER */
@@ -257,36 +251,34 @@ CREATE TABLE Loan_Application (
   /** Date application was funded */
   funded_date DATE,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Consumer loan delinquency events.
     Grain: one row per delinquency_event_id. */
-CREATE TABLE Consumer_Loan_Delinquency_Event (
+CREATE TABLE Consumer_Loan_Delinquency_Event_schema (
   /** Unique identifier for the delinquency event */
-  delinquency_event_id STRING,
+  delinquency_event_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Loan type: PERSONAL, AUTO */
-  loan_type STRING,
+  loan_type STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Event type: MISSED_PAYMENT, DELINQUENCY_START, DELINQUENCY_CURED, CHARGE_OFF, REPOSSESSION, COLLECTION_ASSIGNED, RECOVERY */
-  event_type STRING,
+  event_type STRING NOT NULL,
   /** Days past due at event */
-  days_past_due INT,
+  days_past_due INT NOT NULL,
   /** Delinquency bucket: CURRENT, 30_DAY, 60_DAY, 90_DAY, 120_PLUS */
-  delinquency_bucket STRING,
+  delinquency_bucket STRING NOT NULL,
   /** Amount past due in cents @npi @confidential */
   amount_past_due_cents BIGINT,
   /** Total balance at event in cents @npi @confidential */
   total_balance_cents BIGINT,
   /** Event date */
-  event_date DATE,
+  event_date DATE NOT NULL,
   /** Date cured (if applicable) */
   cured_date DATE,
   /** Collection action taken @confidential */
@@ -310,9 +302,7 @@ CREATE TABLE Consumer_Loan_Delinquency_Event (
   /** Recovery amount in cents */
   recovery_amount_cents BIGINT,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

@@ -10,13 +10,13 @@
 
 /** Mortgage payment transaction records.
     Grain: one row per payment_id. */
-CREATE TABLE Mortgage_Payment (
+CREATE TABLE Mortgage_Payment_schema (
   /** Unique identifier for the payment */
-  payment_id STRING,
+  payment_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Payment amount in cents @npi @confidential */
-  payment_amount_cents BIGINT,
+  payment_amount_cents BIGINT NOT NULL,
   /** Principal portion in cents @npi @confidential */
   principal_cents BIGINT,
   /** Interest portion in cents @npi @confidential */
@@ -28,9 +28,9 @@ CREATE TABLE Mortgage_Payment (
   /** Other fees in cents */
   other_fees_cents BIGINT,
   /** Payment type: REGULAR, PRINCIPAL_ONLY, PAYOFF, PARTIAL, ESCROW_ONLY */
-  payment_type STRING,
+  payment_type STRING NOT NULL,
   /** Payment status: APPLIED, PENDING, RETURNED, REVERSED */
-  payment_status STRING,
+  payment_status STRING NOT NULL,
   /** Date payment was due */
   due_date DATE,
   /** Date payment was received */
@@ -50,24 +50,22 @@ CREATE TABLE Mortgage_Payment (
   /** Unapplied amount in cents */
   unapplied_amount_cents BIGINT,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Escrow account for taxes and insurance.
     Grain: one row per escrow_account_id, as_of_date combination. */
-CREATE TABLE Escrow_Account (
+CREATE TABLE Escrow_Account_schema (
   /** Unique identifier for the escrow account @npi */
-  escrow_account_id STRING,
+  escrow_account_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** As-of date for balances */
-  as_of_date DATE,
+  as_of_date DATE NOT NULL,
   /** Current escrow balance in cents @npi @confidential */
-  escrow_balance_cents BIGINT,
+  escrow_balance_cents BIGINT NOT NULL,
   /** Target escrow balance in cents */
   target_balance_cents BIGINT,
   /** Escrow shortage/surplus in cents */
@@ -95,34 +93,32 @@ CREATE TABLE Escrow_Account (
   /** Next scheduled analysis date */
   next_analysis_date DATE,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Delinquency events and collection activities.
     Grain: one row per delinquency_event_id. */
-CREATE TABLE Delinquency_Event (
+CREATE TABLE Delinquency_Event_schema (
   /** Unique identifier for the delinquency event */
-  delinquency_event_id STRING,
+  delinquency_event_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Event type: MISSED_PAYMENT, LATE_PAYMENT, DELINQUENCY_START, DELINQUENCY_CURED, FORBEARANCE_START, FORBEARANCE_END, DEFAULT, FORECLOSURE_START, FORECLOSURE_COMPLETE, REO */
-  event_type STRING,
+  event_type STRING NOT NULL,
   /** Days past due at event */
-  days_past_due INT,
+  days_past_due INT NOT NULL,
   /** Delinquency bucket: CURRENT, 30_DAY, 60_DAY, 90_DAY, 120_PLUS */
-  delinquency_bucket STRING,
+  delinquency_bucket STRING NOT NULL,
   /** Amount past due in cents @npi @confidential */
   amount_past_due_cents BIGINT,
   /** Total amount due in cents @npi @confidential */
   total_amount_due_cents BIGINT,
   /** Event date */
-  event_date DATE,
+  event_date DATE NOT NULL,
   /** Date cured (if applicable) */
   cured_date DATE,
   /** Collection action taken @confidential */
@@ -142,30 +138,28 @@ CREATE TABLE Delinquency_Event (
   /** Actual loss in cents @confidential */
   actual_loss_cents BIGINT,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Loan modification records for workouts and restructures.
     Grain: one row per modification_id. */
-CREATE TABLE Loan_Modification (
+CREATE TABLE Loan_Modification_schema (
   /** Unique identifier for the modification */
-  modification_id STRING,
+  modification_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Modification type: RATE_REDUCTION, TERM_EXTENSION, PRINCIPAL_FORBEARANCE, PRINCIPAL_FORGIVENESS, CAPITALIZATION, COMBINATION */
-  modification_type STRING,
+  modification_type STRING NOT NULL,
   /** Modification status: TRIAL, PERMANENT, FAILED, CANCELLED */
-  modification_status STRING,
+  modification_status STRING NOT NULL,
   /** Modification program: HAMP, PROPRIETARY, GSE_FLEX, FHA_LOSS_MIT */
   modification_program STRING,
   /** Date modification was requested */
-  request_date DATE,
+  request_date DATE NOT NULL,
   /** Date modification was approved */
   approval_date DATE,
   /** Date trial period started */
@@ -201,30 +195,28 @@ CREATE TABLE Loan_Modification (
   /** New maturity date */
   new_maturity_date DATE,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Property valuation history for ongoing LTV monitoring.
     Grain: one row per valuation_id. */
-CREATE TABLE Property_Valuation (
+CREATE TABLE Property_Valuation_schema (
   /** Unique identifier for the valuation */
-  valuation_id STRING,
+  valuation_id STRING NOT NULL,
   /** Reference to property */
-  property_id STRING,
+  property_id STRING NOT NULL,
   /** Reference to loan */
-  loan_id STRING,
+  loan_id STRING NOT NULL,
   /** Valuation type: APPRAISAL, AVM, BPO, DESKTOP, DRIVE_BY */
-  valuation_type STRING,
+  valuation_type STRING NOT NULL,
   /** Valuation purpose: ORIGINATION, MODIFICATION, MONITORING, FORECLOSURE, PMI_REMOVAL */
-  valuation_purpose STRING,
+  valuation_purpose STRING NOT NULL,
   /** Valuation amount in cents @npi @confidential */
-  valuation_amount_cents BIGINT,
+  valuation_amount_cents BIGINT NOT NULL,
   /** Valuation date */
-  valuation_date DATE,
+  valuation_date DATE NOT NULL,
   /** Confidence score (for AVMs) */
   confidence_score INT,
   /** Forecast standard deviation (for AVMs) */
@@ -236,9 +228,7 @@ CREATE TABLE Property_Valuation (
   /** Current LTV based on this valuation */
   current_ltv DECIMAL(5, 2),
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

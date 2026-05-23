@@ -29,4 +29,9 @@ The Mortgages team owns mortgage loan data from origination through servicing, i
 - **Classification**: Restricted
 - **Regulatory Scope**: GLBA, GDPR, CCPA, HMDA, RESPA, TILA, ECOA, CFPB Servicing Rules
 - **Data Steward**: Mortgage Operations
-- **Refresh Frequency**: Daily for bronze, monthly for silver
+- **Refresh Frequency**: Realtime for bronze, monthly for silver
+
+## Environments
+
+- **-test**: Local data for testing
+- **-prod**: Production data (Kafka or Iceberg)
