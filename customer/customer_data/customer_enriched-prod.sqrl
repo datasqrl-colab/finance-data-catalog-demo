@@ -19,8 +19,6 @@ CREATE TABLE Customer_Profile (
     'write.upsert.enabled' = 'true'
 ) LIKE Customer_Profile_schema;
 
-CREATE TABLE Customer_Profile_sink LIKE Customer_Profile;
-
 CREATE TABLE Customer_Segment (
   /** Timestamp when segment was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL,
@@ -50,8 +48,6 @@ CREATE TABLE Customer_Household (
     'format-version' = '2',
     'write.upsert.enabled' = 'true'
 ) LIKE Customer_Household_schema;
-
-CREATE TABLE Customer_Household_sink LIKE Customer_Household;
 
 CREATE TABLE Customer_Lifetime_Value (
   /** Timestamp when CLV was computed */
