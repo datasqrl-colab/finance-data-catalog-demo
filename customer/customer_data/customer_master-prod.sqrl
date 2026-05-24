@@ -11,8 +11,12 @@ CREATE TABLE Customer (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_schema;
@@ -24,8 +28,12 @@ CREATE TABLE Customer_Address (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_address',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Address_schema;
@@ -37,8 +45,12 @@ CREATE TABLE Customer_Contact (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_contact',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Contact_schema;
@@ -50,8 +62,12 @@ CREATE TABLE Customer_Employment (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_employment',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Employment_schema;
@@ -63,8 +79,12 @@ CREATE TABLE Customer_Relationship (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_relationship',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Relationship_schema;

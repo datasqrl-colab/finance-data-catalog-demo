@@ -11,8 +11,12 @@ CREATE TABLE Kyc_Verification (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'kyc_aml.kyc_verification',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Kyc_Verification_schema;
@@ -24,8 +28,12 @@ CREATE TABLE Sanctions_Screening (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'kyc_aml.sanctions_screening',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Sanctions_Screening_schema;
@@ -37,8 +45,12 @@ CREATE TABLE Pep_Screening (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'kyc_aml.pep_screening',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Pep_Screening_schema;
@@ -50,8 +62,12 @@ CREATE TABLE Customer_Risk_Rating (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'kyc_aml.customer_risk_rating',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Risk_Rating_schema;

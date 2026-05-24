@@ -11,7 +11,9 @@ CREATE TABLE Customer (
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_schema;
@@ -25,7 +27,9 @@ CREATE TABLE Customer_Address (
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_address.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Address_schema;
@@ -37,7 +41,9 @@ CREATE TABLE Customer_Contact (
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_contact.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Contact_schema;
@@ -49,7 +55,9 @@ CREATE TABLE Customer_Employment (
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_employment.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Employment_schema;
@@ -61,7 +69,9 @@ CREATE TABLE Customer_Relationship (
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_master-customer_relationship.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Relationship_schema;
