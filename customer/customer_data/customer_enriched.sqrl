@@ -47,20 +47,10 @@ CREATE TABLE Customer_Profile_schema (
   is_kyc_verified BOOLEAN NOT NULL,
   /** Whether customer is a Politically Exposed Person */
   is_pep BOOLEAN NOT NULL,
-  /** Number of active deposit accounts */
-  active_deposit_account_count INT NOT NULL,
-  /** Number of active credit products */
-  active_credit_product_count INT NOT NULL,
-  /** Number of active loan products */
-  active_loan_count INT NOT NULL,
-  /** Total relationship balance in cents @npi @confidential */
-  total_relationship_balance_cents BIGINT,
   /** Whether customer is enrolled in digital banking */
   is_digital_enrolled BOOLEAN NOT NULL,
   /** Preferred communication channel: EMAIL, SMS, MAIL, PHONE */
-  preferred_channel STRING,
-  /** Timestamp of last customer interaction */
-  last_interaction_at TIMESTAMP_LTZ(3)
+  preferred_channel STRING
 );
 
 /** Customer segmentation for marketing and analytics purposes.
