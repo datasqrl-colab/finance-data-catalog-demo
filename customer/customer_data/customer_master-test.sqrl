@@ -4,7 +4,7 @@
 
 IMPORT customer_master.*;
 
-CREATE TABLE Customer (
+CREATE TABLE _Customer_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -17,6 +17,8 @@ CREATE TABLE Customer (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_schema;
+
+Customer := SELECT * FROM _Customer_input WHERE customer_id <> '';
 
 /** Customer address records supporting multiple address types per customer.
     Grain: one row per customer_id, address_type, effective_from combination. */
