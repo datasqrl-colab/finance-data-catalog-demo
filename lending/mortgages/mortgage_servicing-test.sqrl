@@ -4,62 +4,82 @@
 
 IMPORT mortgage_servicing.*;
 
-CREATE TABLE Mortgage_Payment (
+CREATE TABLE _Mortgage_Payment_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_servicing-mortgage_payment.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Payment_schema;
 
-CREATE TABLE Escrow_Account (
+Mortgage_Payment := SELECT * FROM _Mortgage_Payment_input WHERE payment_id <> '';
+
+CREATE TABLE _Escrow_Account_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_servicing-escrow_account.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Escrow_Account_schema;
 
-CREATE TABLE Delinquency_Event (
+Escrow_Account := SELECT * FROM _Escrow_Account_input WHERE escrow_account_id <> '';
+
+CREATE TABLE _Delinquency_Event_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_servicing-delinquency_event.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Delinquency_Event_schema;
 
-CREATE TABLE Loan_Modification (
+Delinquency_Event := SELECT * FROM _Delinquency_Event_input WHERE delinquency_event_id <> '';
+
+CREATE TABLE _Loan_Modification_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_servicing-loan_modification.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Loan_Modification_schema;
 
-CREATE TABLE Property_Valuation (
+Loan_Modification := SELECT * FROM _Loan_Modification_input WHERE modification_id <> '';
+
+CREATE TABLE _Property_Valuation_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_servicing-property_valuation.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Property_Valuation_schema;
+
+Property_Valuation := SELECT * FROM _Property_Valuation_input WHERE valuation_id <> '';

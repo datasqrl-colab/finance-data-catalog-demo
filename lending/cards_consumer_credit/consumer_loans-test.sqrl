@@ -4,62 +4,82 @@
 
 IMPORT consumer_loans.*;
 
-CREATE TABLE Personal_Loan (
+CREATE TABLE _Personal_Loan_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-personal_loan.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Personal_Loan_schema;
 
-CREATE TABLE Auto_Loan (
+Personal_Loan := SELECT * FROM _Personal_Loan_input WHERE loan_id <> '';
+
+CREATE TABLE _Auto_Loan_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-auto_loan.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Auto_Loan_schema;
 
-CREATE TABLE Loan_Payment (
+Auto_Loan := SELECT * FROM _Auto_Loan_input WHERE loan_id <> '';
+
+CREATE TABLE _Loan_Payment_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-loan_payment.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Loan_Payment_schema;
 
-CREATE TABLE Loan_Application (
+Loan_Payment := SELECT * FROM _Loan_Payment_input WHERE payment_id <> '';
+
+CREATE TABLE _Loan_Application_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-loan_application.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Loan_Application_schema;
 
-CREATE TABLE Consumer_Loan_Delinquency_Event (
+Loan_Application := SELECT * FROM _Loan_Application_input WHERE application_id <> '';
+
+CREATE TABLE _Consumer_Loan_Delinquency_Event_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-consumer_loan_delinquency_event.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Consumer_Loan_Delinquency_Event_schema;
+
+Consumer_Loan_Delinquency_Event := SELECT * FROM _Consumer_Loan_Delinquency_Event_input WHERE delinquency_event_id <> '';

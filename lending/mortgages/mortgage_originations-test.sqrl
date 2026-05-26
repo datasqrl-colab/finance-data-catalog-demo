@@ -4,50 +4,66 @@
 
 IMPORT mortgage_originations.*;
 
-CREATE TABLE Mortgage_Application (
+CREATE TABLE _Mortgage_Application_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_application.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Application_schema;
 
-CREATE TABLE Mortgage_Loan (
+Mortgage_Application := SELECT * FROM _Mortgage_Application_input WHERE application_id <> '';
+
+CREATE TABLE _Mortgage_Loan_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_loan.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Loan_schema;
 
-CREATE TABLE Property_Collateral (
+Mortgage_Loan := SELECT * FROM _Mortgage_Loan_input WHERE loan_id <> '';
+
+CREATE TABLE _Property_Collateral_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-property_collateral.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Property_Collateral_schema;
 
-CREATE TABLE Mortgage_Borrower (
+Property_Collateral := SELECT * FROM _Property_Collateral_input WHERE property_id <> '';
+
+CREATE TABLE _Mortgage_Borrower_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_borrower.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Borrower_schema;
+
+Mortgage_Borrower := SELECT * FROM _Mortgage_Borrower_input WHERE loan_id <> '';

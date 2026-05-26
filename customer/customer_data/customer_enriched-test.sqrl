@@ -4,46 +4,62 @@
 
 IMPORT customer_enriched.*;
 
-CREATE TABLE Customer_Profile (
+CREATE TABLE _Customer_Profile_input (
   /** Timestamp when profile was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_enriched-customer_profile.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Profile_schema;
 
-CREATE TABLE Customer_Segment (
+Customer_Profile := SELECT * FROM _Customer_Profile_input WHERE customer_id <> '';
+
+CREATE TABLE _Customer_Segment_input (
   /** Timestamp when segment was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_enriched-customer_segment.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Segment_schema;
 
-CREATE TABLE Customer_Household (
+Customer_Segment := SELECT * FROM _Customer_Segment_input WHERE customer_id <> '';
+
+CREATE TABLE _Customer_Household_input (
   /** Timestamp when household was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_enriched-customer_household.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Household_schema;
 
-CREATE TABLE Customer_Lifetime_Value (
+Customer_Household := SELECT * FROM _Customer_Household_input WHERE household_id <> '';
+
+CREATE TABLE _Customer_Lifetime_Value_input (
   /** Timestamp when CLV was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/customer_enriched-customer_lifetime_value.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Lifetime_Value_schema;
+
+Customer_Lifetime_Value := SELECT * FROM _Customer_Lifetime_Value_input WHERE customer_id <> '';

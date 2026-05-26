@@ -4,74 +4,98 @@
 
 IMPORT credit_cards.*;
 
-CREATE TABLE Credit_Card_Account (
+CREATE TABLE _Credit_Card_Account_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/credit_cards-credit_card_account.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Account_schema;
 
-CREATE TABLE Credit_Card (
+Credit_Card_Account := SELECT * FROM _Credit_Card_Account_input WHERE credit_card_account_id <> '';
+
+CREATE TABLE _Credit_Card_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/credit_cards-credit_card.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_schema;
 
-CREATE TABLE Credit_Card_Statement (
+Credit_Card := SELECT * FROM _Credit_Card_input WHERE card_id <> '';
+
+CREATE TABLE _Credit_Card_Statement_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/credit_cards-credit_card_statement.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Statement_schema;
 
-CREATE TABLE Credit_Card_Payment (
+Credit_Card_Statement := SELECT * FROM _Credit_Card_Statement_input WHERE statement_id <> '';
+
+CREATE TABLE _Credit_Card_Payment_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/credit_cards-credit_card_payment.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Payment_schema;
 
-CREATE TABLE Credit_Limit_History (
+Credit_Card_Payment := SELECT * FROM _Credit_Card_Payment_input WHERE payment_id <> '';
+
+CREATE TABLE _Credit_Limit_History_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/credit_cards-credit_limit_history.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Limit_History_schema;
 
-CREATE TABLE Card_Delinquency_Event (
+Credit_Limit_History := SELECT * FROM _Credit_Limit_History_input WHERE limit_change_id <> '';
+
+CREATE TABLE _Card_Delinquency_Event_input (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/credit_cards-card_delinquency_event.jsonl',
+{{^is_batch}}
     'source.monitor-interval' = '10 min',
+{{/is_batch}}
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Card_Delinquency_Event_schema;
+
+Card_Delinquency_Event := SELECT * FROM _Card_Delinquency_Event_input WHERE delinquency_event_id <> '';
