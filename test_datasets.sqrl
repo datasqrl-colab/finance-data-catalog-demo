@@ -6,6 +6,13 @@ Customer_Contact := SELECT * FROM cm.Customer_Contact;
 Customer_Employment := SELECT * FROM cm.Customer_Employment;
 Customer_Relationship := SELECT * FROM cm.Customer_Relationship;
 
+IMPORT customer.customer_data.kyc_aml-{{environment}} AS kyc;
+
+Kyc_Verification := SELECT * FROM kyc.Kyc_Verification;
+Sanctions_Screening := SELECT * FROM kyc.Sanctions_Screening;
+Pep_Screening := SELECT * FROM kyc.Pep_Screening;
+Customer_Risk_Rating := SELECT * FROM kyc.Customer_Risk_Rating;
+
 -- IMPORT customer.customer_data.customer_enriched-{{environment}} AS cn;
 -- Customer_profile := SELECT * FROM cn.Customer_Profile;
 
