@@ -11,8 +11,12 @@ CREATE TABLE Mortgage_Application (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'mortgage_originations.mortgage_application',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Application_schema;
@@ -24,8 +28,12 @@ CREATE TABLE Mortgage_Loan (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'mortgage_originations.mortgage_loan',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Loan_schema;
@@ -37,8 +45,12 @@ CREATE TABLE Property_Collateral (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'mortgage_originations.property_collateral',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Property_Collateral_schema;
@@ -50,8 +62,12 @@ CREATE TABLE Mortgage_Borrower (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'mortgage_originations.mortgage_borrower',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Borrower_schema;

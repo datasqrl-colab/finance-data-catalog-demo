@@ -11,8 +11,12 @@ CREATE TABLE Personal_Loan (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.personal_loan',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Personal_Loan_schema;
@@ -24,8 +28,12 @@ CREATE TABLE Auto_Loan (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.auto_loan',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Auto_Loan_schema;
@@ -37,8 +45,12 @@ CREATE TABLE Loan_Payment (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.loan_payment',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Loan_Payment_schema;
@@ -50,8 +62,12 @@ CREATE TABLE Loan_Application (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.loan_application',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Loan_Application_schema;
@@ -63,8 +79,12 @@ CREATE TABLE Consumer_Loan_Delinquency_Event (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.consumer_loan_delinquency_event',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Consumer_Loan_Delinquency_Event_schema;

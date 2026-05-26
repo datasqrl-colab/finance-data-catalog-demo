@@ -50,7 +50,7 @@ CREATE TABLE _Customer_Contact_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Contact_schema;
 
-Customer_Contact := SELECT * FROM _Customer_Contact_input WHERE contact_id <> '';
+Customer_Contact := SELECT * FROM _Customer_Contact_input WHERE customer_id <> '';
 
 CREATE TABLE _Customer_Employment_input (
   /** Timestamp when record was ingested into the data platform */
@@ -82,4 +82,4 @@ CREATE TABLE _Customer_Relationship_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Relationship_schema;
 
-Customer_Relationship := SELECT * FROM _Customer_Relationship_input WHERE relationship_id <> '';
+Customer_Relationship := SELECT * FROM _Customer_Relationship_input WHERE primary_customer_id <> '';

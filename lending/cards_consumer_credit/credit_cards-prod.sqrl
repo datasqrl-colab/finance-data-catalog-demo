@@ -11,8 +11,12 @@ CREATE TABLE Credit_Card_Account (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card_account',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Account_schema;
@@ -24,8 +28,12 @@ CREATE TABLE Credit_Card (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_schema;
@@ -37,8 +45,12 @@ CREATE TABLE Credit_Card_Statement (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card_statement',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Statement_schema;
@@ -50,8 +62,12 @@ CREATE TABLE Credit_Card_Payment (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card_payment',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Payment_schema;
@@ -63,8 +79,12 @@ CREATE TABLE Credit_Limit_History (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_limit_history',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Limit_History_schema;
@@ -76,8 +96,12 @@ CREATE TABLE Card_Delinquency_Event (
 ) WITH (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.card_delinquency_event',
     'scan.startup.mode' = 'earliest-offset',
+{{#is_batch}}
+    'scan.bounded.mode' = 'latest-offset',
+{{/is_batch}}
     'value.format' = 'json',
     'value.json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Card_Delinquency_Event_schema;

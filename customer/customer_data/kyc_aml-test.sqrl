@@ -66,4 +66,4 @@ CREATE TABLE _Customer_Risk_Rating_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Risk_Rating_schema;
 
-Customer_Risk_Rating := SELECT * FROM _Customer_Risk_Rating_input WHERE rating_id <> '';
+Customer_Risk_Rating := SELECT * FROM _Customer_Risk_Rating_input WHERE customer_id <> '';
