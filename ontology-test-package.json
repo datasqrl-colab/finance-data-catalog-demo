@@ -15,6 +15,15 @@
       }
     }
   },
+  "compiler": {
+    "predicate-pushdown-rules": "LIMITED_RULES",
+    "api": {
+      "protocols": ["GRAPHQL", "REST", "MCP"],
+      "endpoints": "FULL",
+      "max-result-depth": 1,
+      "add-prefix": true
+    }
+  },
   "test-runner": {
     "delay-sec": -1,
     "required-checkpoints": 1
