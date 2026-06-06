@@ -2,7 +2,7 @@
   "version": "1",
   "enabled-engines": ["flink", "postgres", "vertx"],
   "script": {
-    "main": "test_datasets.sqrl",
+    "main": "ontology.sqrl",
     "config": {
       "environment": "test"
     }
@@ -13,15 +13,6 @@
         "execution.runtime-mode": "STREAMING",
         "table.exec.source.idle-timeout": "1 s"
       }
-    }
-  },
-  "compiler": {
-    "predicate-pushdown-rules": "LIMITED_RULES",
-    "api": {
-      "protocols": ["GRAPHQL", "REST", "MCP"],
-      "endpoints": "FULL",
-      "add-prefix": true,
-      "default-limit": 20
     }
   },
   "test-runner": {

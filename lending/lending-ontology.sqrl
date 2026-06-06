@@ -1,0 +1,4 @@
+IMPORT cards_consumer_credit.credit_cards-{{environment}}.*;
+IMPORT cards_consumer_credit.consumer_loans-{{environment}}.*;
+IMPORT mortgages.mortgage_originations-{{environment}}.*;
+IMPORT mortgages.mortgage_servicing-{{environment}}.*;

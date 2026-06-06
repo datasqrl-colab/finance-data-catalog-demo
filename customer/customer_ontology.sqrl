@@ -1,0 +1,54 @@
+IMPORT customer_data.customer_master-{{environment}}.*;
+IMPORT customer_data.kyc_aml-{{environment}}.*;
+
+/** Current customer addresses */
+Customer.address := SELECT * FROM Customer_Address a WHERE this.customer_id = a.customer_id
+                                  AND is_current ORDER BY effective_to DESC NULLS FIRST;
+
+/** Complete history of customer addresses */
+Customer.address_history := SELECT * FROM Customer_Address a WHERE this.customer_id = a.customer_id
+                                                       ORDER BY effective_to DESC NULLS FIRST;
+
+/** All contact information for the customer */
+Customer.contacts := SELECT * FROM Customer_Contact c WHERE this.customer_id = c.customer_id;
+
+/** Primary contact methods for the customer */
+Customer.primary_contacts := SELECT * FROM Customer_Contact c WHERE this.customer_id = c.customer_id
+                                                          AND is_primary;
+
+/** Current employment information */
+Customer.current_employment := SELECT * FROM Customer_Employment e WHERE this.customer_id = e.customer_id
+                                                              AND employment_status = 'CURRENT';
+
+/** Complete employment history */
+Customer.employment_history := SELECT * FROM Customer_Employment e WHERE this.customer_id = e.customer_id
+                                                              ORDER BY employment_start_date DESC;
+
+/** Active relationships where this customer is the primary party */
+Customer.relationships := SELECT * FROM Customer_Relationship r WHERE this.customer_id = r.primary_customer_id
+                                                            AND is_active;
+
+/** Complete relationship history where this customer is the primary party */
+Customer.relationships_history := SELECT * FROM Customer_Relationship r WHERE this.customer_id = r.primary_customer_id
+                                                                    ORDER BY relationship_start_date DESC;
+
+/** KYC verification events for the customer */
+Customer.kyc_verifications := SELECT * FROM Kyc_Verification k WHERE this.customer_id = k.customer_id
+                                                           ORDER BY verified_at DESC;
+
+/** Sanctions screening events for the customer */
+Customer.sanctions_screenings := SELECT * FROM Sanctions_Screening s WHERE this.customer_id = s.customer_id
+                                                                 ORDER BY screened_at DESC;
+
+/** PEP screening events for the customer */
+Customer.pep_screenings := SELECT * FROM Pep_Screening p WHERE this.customer_id = p.customer_id
+                                                     ORDER BY screened_at DESC;
+
+/** Current risk rating for the customer */
+Customer.risk_rating := SELECT * FROM Customer_Risk_Rating r WHERE this.customer_id = r.customer_id
+                                                         AND is_current ORDER BY effective_to DESC NULLS FIRST;
+
+/** Complete risk rating history for the customer */
+Customer.risk_rating_history := SELECT * FROM Customer_Risk_Rating r WHERE this.customer_id = r.customer_id
+                                                                 ORDER BY effective_to DESC NULLS FIRST;
+

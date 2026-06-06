@@ -1,0 +1,2 @@
+IMPORT customer.customer_ontology.*;
+IMPORT lending.lending-ontology.*;
