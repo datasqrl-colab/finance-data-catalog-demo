@@ -62,31 +62,31 @@ Customer.risk_rating_history := SELECT * FROM Customer_Risk_Rating r WHERE this.
 
 /** Customer ID must be between 6-15 characters */
 /*+test(no_rows) */
-CustomerHasValidId := SELECT * FROM Customer WHERE char_length(customer_id) < 6 OR char_length(customer_id) > 15;
+CustomerHasValidId_Test := SELECT * FROM Customer WHERE char_length(customer_id) < 6 OR char_length(customer_id) > 15;
 
 /** Customer type must be a valid enumeration value */
 /*+test(no_rows) */
-CustomerHasValidType := SELECT * FROM Customer
+CustomerHasValidType_Test := SELECT * FROM Customer
     WHERE customer_type NOT IN ('INDIVIDUAL', 'JOINT', 'TRUST', 'BUSINESS');
 
 /** Customer status must be a valid enumeration value */
 /*+test(no_rows) */
-CustomerHasValidStatus := SELECT * FROM Customer
+CustomerHasValidStatus_Test := SELECT * FROM Customer
     WHERE customer_status NOT IN ('ACTIVE', 'INACTIVE', 'CLOSED', 'DECEASED');
 
 /** INDIVIDUAL customers must have date of birth; BUSINESS customers must not */
 /*+test(no_rows) */
-CustomerDOBConsistentWithType := SELECT * FROM Customer
+CustomerDOBConsistentWithType_Test := SELECT * FROM Customer
     WHERE (customer_type = 'INDIVIDUAL' AND date_of_birth IS NULL)
        OR (customer_type = 'BUSINESS' AND date_of_birth IS NOT NULL);
 
 /** Every address must reference a customer that exists in Customer table */
 /*+test(no_rows) */
-AddressReferencesValidCustomer := SELECT a.* FROM Customer_Address a
+AddressReferencesValidCustomer_Test := SELECT a.* FROM Customer_Address a
     LEFT JOIN Customer c ON a.customer_id = c.customer_id
     WHERE c.customer_id IS NULL;
 
 /** Customer relationships cannot be self-referential (customer related to themselves) */
 /*+test(no_rows) */
-RelationshipNotSelfReferential := SELECT * FROM Customer_Relationship
+RelationshipNotSelfReferential_Test := SELECT * FROM Customer_Relationship
     WHERE primary_customer_id = related_customer_id;
