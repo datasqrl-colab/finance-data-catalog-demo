@@ -11,235 +11,243 @@
 -- Regulatory scope: GLBA, GDPR, CCPA, HMDA, RESPA, TILA, ECOA, Fair Housing Act
 
 /** Mortgage loan application records from initial submission through decision.
-    Grain: one row per application_id. */
+    Grain: one row per application_id.
+
+    # Columns:
+    * application_id: Unique identifier for the application
+    * primary_borrower_customer_id: Reference to primary borrower @pii
+    * application_type: Application type: PURCHASE, REFINANCE, CASH_OUT_REFINANCE, HOME_EQUITY
+    * loan_purpose: Loan purpose: PRIMARY_RESIDENCE, SECOND_HOME, INVESTMENT
+    * property_type: Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED
+    * number_of_units: Number of units (for multi-family)
+    * requested_loan_amount_cents: Requested loan amount in cents @npi @confidential
+    * estimated_property_value_cents: Estimated property value in cents @npi @confidential
+    * ltv_ratio: Loan-to-value ratio at application
+    * cltv_ratio: Combined loan-to-value ratio
+    * requested_term_months: Requested loan term in months
+    * requested_rate_type: Requested rate type: FIXED, ARM
+    * loan_program: Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO
+    * application_status: Application status: SUBMITTED, IN_REVIEW, APPROVED, CONDITIONALLY_APPROVED, DENIED, WITHDRAWN, FUNDED
+    * submitted_at: Date application was submitted
+    * received_date: Date application was received
+    * decision_date: Date decision was made
+    * decision_type: Decision type: APPROVED, DENIED, COUNTER_OFFER
+    * denial_reasons: Denial reason codes (if denied) @confidential
+    * funded_date: Date application was funded
+    * loan_officer_id: Loan officer ID @pii
+    * loan_officer_name: Loan officer name @pii
+    * branch_id: Branch ID
+    * origination_channel: Channel: RETAIL, WHOLESALE, CORRESPONDENT, DIRECT
+    * hmda_action_taken: HMDA action taken code
+    * hmda_preapproval: HMDA preapproval flag
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Mortgage_Application_schema (
-  /** Unique identifier for the application */
   application_id STRING NOT NULL,
-  /** Reference to primary borrower @pii */
   primary_borrower_customer_id STRING NOT NULL,
-  /** Application type: PURCHASE, REFINANCE, CASH_OUT_REFINANCE, HOME_EQUITY */
   application_type STRING NOT NULL,
-  /** Loan purpose: PRIMARY_RESIDENCE, SECOND_HOME, INVESTMENT */
   loan_purpose STRING,
-  /** Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED */
   property_type STRING,
-  /** Number of units (for multi-family) */
   number_of_units INT,
-  /** Requested loan amount in cents @npi @confidential */
   requested_loan_amount_cents BIGINT NOT NULL,
-  /** Estimated property value in cents @npi @confidential */
   estimated_property_value_cents BIGINT,
-  /** Loan-to-value ratio at application */
   ltv_ratio DECIMAL(5, 2),
-  /** Combined loan-to-value ratio */
   cltv_ratio DECIMAL(5, 2),
-  /** Requested loan term in months */
   requested_term_months INT,
-  /** Requested rate type: FIXED, ARM */
   requested_rate_type STRING,
-  /** Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO */
   loan_program STRING,
-  /** Application status: SUBMITTED, IN_REVIEW, APPROVED, CONDITIONALLY_APPROVED, DENIED, WITHDRAWN, FUNDED */
   application_status STRING NOT NULL,
-  /** Date application was submitted */
   submitted_at TIMESTAMP_LTZ(3) NOT NULL,
-  /** Date application was received */
   received_date DATE,
-  /** Date decision was made */
   decision_date DATE,
-  /** Decision type: APPROVED, DENIED, COUNTER_OFFER */
   decision_type STRING,
-  /** Denial reason codes (if denied) @confidential */
   denial_reasons STRING,
-  /** Date application was funded */
   funded_date DATE,
-  /** Loan officer ID @pii */
   loan_officer_id STRING,
-  /** Loan officer name @pii */
   loan_officer_name STRING,
-  /** Branch ID */
   branch_id STRING,
-  /** Channel: RETAIL, WHOLESALE, CORRESPONDENT, DIRECT */
   origination_channel STRING,
-  /** HMDA action taken code */
   hmda_action_taken STRING,
-  /** HMDA preapproval flag */
   hmda_preapproval STRING,
-  /** Source system identifier */
   source_system STRING NOT NULL,
-  /** Timestamp when record was last updated in source system */
   source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Funded mortgage loan records with final terms and conditions.
-    Grain: one row per loan_id. */
+    Grain: one row per loan_id.
+
+    # Columns:
+    * loan_id: Unique identifier for the loan
+    * application_id: Reference to originating application
+    * primary_borrower_customer_id: Reference to primary borrower @pii
+    * loan_number: Loan number displayed to customer @npi @mask
+    * loan_status: Loan status: ACTIVE, PAID_OFF, FORECLOSURE, REO, TRANSFERRED, CHARGED_OFF
+    * original_principal_cents: Original principal balance in cents @npi @confidential
+    * current_principal_cents: Current principal balance in cents @npi @confidential
+    * interest_rate: Interest rate (annual percentage) @confidential
+    * rate_type: Rate type: FIXED, ARM
+    * arm_index: ARM index (if applicable): LIBOR, SOFR, TREASURY, PRIME
+    * arm_margin: ARM margin (if applicable)
+    * arm_initial_period_months: ARM initial fixed period in months
+    * arm_adjustment_frequency_months: ARM adjustment frequency in months
+    * arm_periodic_cap: ARM rate cap per adjustment
+    * arm_lifetime_cap: ARM lifetime rate cap
+    * original_term_months: Original loan term in months
+    * remaining_term_months: Remaining term in months
+    * monthly_pi_payment_cents: Monthly principal and interest payment in cents @npi @confidential
+    * monthly_escrow_payment_cents: Monthly escrow payment in cents @npi @confidential
+    * total_monthly_payment_cents: Total monthly payment in cents @npi @confidential
+    * loan_program: Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO
+    * lien_position: Lien position: FIRST, SECOND, HELOC
+    * loan_purpose: Loan purpose: PURCHASE, REFINANCE, CASH_OUT, HOME_EQUITY
+    * occupancy_type: Occupancy type: PRIMARY, SECOND_HOME, INVESTMENT
+    * funding_date: Date loan was funded
+    * first_payment_date: First payment due date
+    * maturity_date: Maturity date
+    * next_payment_due_date: Next payment due date
+    * paid_off_date: Date loan was paid off
+    * property_id: Property ID reference
+    * escrow_account_id: Escrow account ID @npi
+    * servicer_id: Servicer ID
+    * investor_id: Investor ID (if sold)
+    * pool_id: Pool ID (if securitized)
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Mortgage_Loan_schema (
-  /** Unique identifier for the loan */
   loan_id STRING NOT NULL,
-  /** Reference to originating application */
   application_id STRING,
-  /** Reference to primary borrower @pii */
   primary_borrower_customer_id STRING NOT NULL,
-  /** Loan number displayed to customer @npi @mask */
   loan_number STRING NOT NULL,
-  /** Loan status: ACTIVE, PAID_OFF, FORECLOSURE, REO, TRANSFERRED, CHARGED_OFF */
   loan_status STRING NOT NULL,
-  /** Original principal balance in cents @npi @confidential */
   original_principal_cents BIGINT NOT NULL,
-  /** Current principal balance in cents @npi @confidential */
   current_principal_cents BIGINT NOT NULL,
-  /** Interest rate (annual percentage) @confidential */
   interest_rate DECIMAL(6, 4) NOT NULL,
-  /** Rate type: FIXED, ARM */
   rate_type STRING NOT NULL,
-  /** ARM index (if applicable): LIBOR, SOFR, TREASURY, PRIME */
   arm_index STRING,
-  /** ARM margin (if applicable) */
   arm_margin DECIMAL(6, 4),
-  /** ARM initial fixed period in months */
   arm_initial_period_months INT,
-  /** ARM adjustment frequency in months */
   arm_adjustment_frequency_months INT,
-  /** ARM rate cap per adjustment */
   arm_periodic_cap DECIMAL(5, 2),
-  /** ARM lifetime rate cap */
   arm_lifetime_cap DECIMAL(5, 2),
-  /** Original loan term in months */
   original_term_months INT NOT NULL,
-  /** Remaining term in months */
   remaining_term_months INT,
-  /** Monthly principal and interest payment in cents @npi @confidential */
   monthly_pi_payment_cents BIGINT NOT NULL,
-  /** Monthly escrow payment in cents @npi @confidential */
   monthly_escrow_payment_cents BIGINT,
-  /** Total monthly payment in cents @npi @confidential */
   total_monthly_payment_cents BIGINT NOT NULL,
-  /** Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO */
   loan_program STRING,
-  /** Lien position: FIRST, SECOND, HELOC */
   lien_position STRING NOT NULL,
-  /** Loan purpose: PURCHASE, REFINANCE, CASH_OUT, HOME_EQUITY */
   loan_purpose STRING,
-  /** Occupancy type: PRIMARY, SECOND_HOME, INVESTMENT */
   occupancy_type STRING,
-  /** Date loan was funded */
   funding_date DATE NOT NULL,
-  /** First payment due date */
   first_payment_date DATE NOT NULL,
-  /** Maturity date */
   maturity_date DATE NOT NULL,
-  /** Next payment due date */
   next_payment_due_date DATE,
-  /** Date loan was paid off */
   paid_off_date DATE,
-  /** Property ID reference */
   property_id STRING,
-  /** Escrow account ID @npi */
   escrow_account_id STRING,
-  /** Servicer ID */
   servicer_id STRING,
-  /** Investor ID (if sold) */
   investor_id STRING,
-  /** Pool ID (if securitized) */
   pool_id STRING,
-  /** Source system identifier */
   source_system STRING NOT NULL,
-  /** Timestamp when record was last updated in source system */
   source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Property collateral information for mortgage loans.
-    Grain: one row per property_id. */
+    Grain: one row per property_id.
+
+    # Columns:
+    * property_id: Unique identifier for the property
+    * loan_id: Reference to loan
+    * property_address: Property street address @pii @encrypt
+    * property_city: Property city @pii
+    * property_state: Property state
+    * property_zip: Property zip code @pii
+    * property_county: Property county
+    * property_type: Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED
+    * number_of_units: Number of units
+    * year_built: Year property was built
+    * square_footage: Square footage
+    * lot_size_sqft: Lot size in square feet
+    * bedrooms: Number of bedrooms
+    * bathrooms: Number of bathrooms
+    * original_appraised_value_cents: Original appraised value in cents @npi @confidential
+    * original_appraisal_date: Original appraisal date
+    * current_estimated_value_cents: Current estimated value in cents @npi @confidential
+    * current_value_date: Current value as-of date
+    * value_source: Value source: APPRAISAL, AVM, BPO
+    * parcel_number: APN/parcel number
+    * flood_zone: Flood zone designation
+    * flood_insurance_required: Whether flood insurance is required
+    * census_tract: Census tract for HMDA
+    * msa_code: MSA code for HMDA
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Property_Collateral_schema (
-  /** Unique identifier for the property */
   property_id STRING NOT NULL,
-  /** Reference to loan */
   loan_id STRING NOT NULL,
-  /** Property street address @pii @encrypt */
   property_address STRING NOT NULL,
-  /** Property city @pii */
   property_city STRING NOT NULL,
-  /** Property state */
   property_state STRING NOT NULL,
-  /** Property zip code @pii */
   property_zip STRING NOT NULL,
-  /** Property county */
   property_county STRING,
-  /** Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED */
   property_type STRING NOT NULL,
-  /** Number of units */
   number_of_units INT,
-  /** Year property was built */
   year_built INT,
-  /** Square footage */
   square_footage INT,
-  /** Lot size in square feet */
   lot_size_sqft INT,
-  /** Number of bedrooms */
   bedrooms INT,
-  /** Number of bathrooms */
   bathrooms DECIMAL(3, 1),
-  /** Original appraised value in cents @npi @confidential */
   original_appraised_value_cents BIGINT NOT NULL,
-  /** Original appraisal date */
   original_appraisal_date DATE NOT NULL,
-  /** Current estimated value in cents @npi @confidential */
   current_estimated_value_cents BIGINT,
-  /** Current value as-of date */
   current_value_date DATE,
-  /** Value source: APPRAISAL, AVM, BPO */
   value_source STRING,
-  /** APN/parcel number */
   parcel_number STRING,
-  /** Flood zone designation */
   flood_zone STRING,
-  /** Whether flood insurance is required */
   flood_insurance_required BOOLEAN,
-  /** Census tract for HMDA */
   census_tract STRING,
-  /** MSA code for HMDA */
   msa_code STRING,
-  /** Source system identifier */
   source_system STRING NOT NULL,
-  /** Timestamp when record was last updated in source system */
   source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Borrower information for mortgage loans (may have multiple per loan).
-    Grain: one row per loan_id, customer_id combination. */
+    Grain: one row per loan_id, customer_id combination.
+
+    # Columns:
+    * loan_id: Reference to loan
+    * customer_id: Reference to customer @pii
+    * borrower_type: Borrower type: PRIMARY, CO_BORROWER, GUARANTOR
+    * ownership_percentage: Ownership percentage
+    * credit_score_at_origination: Credit score at origination @npi @confidential
+    * credit_score_source: Credit score source: FICO, VANTAGE
+    * monthly_income_cents: Monthly income at origination in cents @npi @confidential
+    * monthly_debt_cents: Monthly debt at origination in cents @npi @confidential
+    * dti_ratio: Debt-to-income ratio at origination @npi @confidential
+    * front_end_dti: Front-end DTI ratio
+    * employment_status: Employment status at origination: EMPLOYED, SELF_EMPLOYED, RETIRED, OTHER
+    * employer_name: Employer name at origination @pii
+    * years_employed: Years at current employer
+    * first_time_homebuyer: First-time homebuyer flag (HMDA)
+    * citizenship_status: Citizenship status: US_CITIZEN, PERMANENT_RESIDENT, NON_RESIDENT
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Mortgage_Borrower_schema (
-  /** Reference to loan */
   loan_id STRING NOT NULL,
-  /** Reference to customer @pii */
   customer_id STRING NOT NULL,
-  /** Borrower type: PRIMARY, CO_BORROWER, GUARANTOR */
   borrower_type STRING NOT NULL,
-  /** Ownership percentage */
   ownership_percentage DECIMAL(5, 2),
-  /** Credit score at origination @npi @confidential */
   credit_score_at_origination INT,
-  /** Credit score source: FICO, VANTAGE */
   credit_score_source STRING,
-  /** Monthly income at origination in cents @npi @confidential */
   monthly_income_cents BIGINT,
-  /** Monthly debt at origination in cents @npi @confidential */
   monthly_debt_cents BIGINT,
-  /** Debt-to-income ratio at origination @npi @confidential */
   dti_ratio DECIMAL(5, 2),
-  /** Front-end DTI ratio */
   front_end_dti DECIMAL(5, 2),
-  /** Employment status at origination: EMPLOYED, SELF_EMPLOYED, RETIRED, OTHER */
   employment_status STRING,
-  /** Employer name at origination @pii */
   employer_name STRING,
-  /** Years at current employer */
   years_employed INT,
-  /** First-time homebuyer flag (HMDA) */
   first_time_homebuyer BOOLEAN,
-  /** Citizenship status: US_CITIZEN, PERMANENT_RESIDENT, NON_RESIDENT */
   citizenship_status STRING,
-  /** Source system identifier */
   source_system STRING NOT NULL,
-  /** Timestamp when record was last updated in source system */
   source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

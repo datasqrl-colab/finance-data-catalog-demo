@@ -11,141 +11,149 @@
 -- Upstream:         customer_master.sqrl, kyc_aml.sqrl
 
 /** Consolidated customer profile combining identity, contact, and status information.
-    Grain: one row per customer_id. */
+    Grain: one row per customer_id.
+
+    # Columns:
+    * customer_id: Unique identifier for the customer @pii
+    * full_name: Full legal name @pii @encrypt
+    * primary_email: Primary email address @pii @encrypt
+    * primary_phone: Primary phone number @pii @encrypt
+    * primary_address: Primary mailing address formatted @pii @encrypt
+    * primary_city: City of primary address @pii
+    * primary_state: State of primary address
+    * primary_postal_code: Postal code of primary address @pii
+    * age_years: Customer age in years
+    * age_band: Age band: 18-24, 25-34, 35-44, 45-54, 55-64, 65+
+    * tenure_months: Customer tenure in months
+    * tenure_band: Tenure band: NEW (0-6mo), DEVELOPING (6-24mo), ESTABLISHED (24-60mo), MATURE (60mo+)
+    * customer_type: Customer type: INDIVIDUAL, JOINT, TRUST, BUSINESS
+    * customer_status: Customer status: ACTIVE, INACTIVE, CLOSED, DECEASED
+    * risk_rating: Current AML risk rating: LOW, MEDIUM, HIGH
+    * is_kyc_verified: Whether customer has verified identity
+    * is_pep: Whether customer is a Politically Exposed Person
+    * is_digital_enrolled: Whether customer is enrolled in digital banking
+    * preferred_channel: Preferred communication channel: EMAIL, SMS, MAIL, PHONE */
 CREATE TABLE Customer_Profile_schema (
-  /** Unique identifier for the customer @pii */
   customer_id STRING NOT NULL,
-  /** Full legal name @pii @encrypt */
   full_name STRING NOT NULL,
-  /** Primary email address @pii @encrypt */
   primary_email STRING,
-  /** Primary phone number @pii @encrypt */
   primary_phone STRING,
-  /** Primary mailing address formatted @pii @encrypt */
   primary_address STRING,
-  /** City of primary address @pii */
   primary_city STRING,
-  /** State of primary address */
   primary_state STRING,
-  /** Postal code of primary address @pii */
   primary_postal_code STRING,
-  /** Customer age in years */
   age_years INT,
-  /** Age band: 18-24, 25-34, 35-44, 45-54, 55-64, 65+ */
   age_band STRING,
-  /** Customer tenure in months */
   tenure_months INT,
-  /** Tenure band: NEW (0-6mo), DEVELOPING (6-24mo), ESTABLISHED (24-60mo), MATURE (60mo+) */
   tenure_band STRING,
-  /** Customer type: INDIVIDUAL, JOINT, TRUST, BUSINESS */
   customer_type STRING NOT NULL,
-  /** Customer status: ACTIVE, INACTIVE, CLOSED, DECEASED */
   customer_status STRING NOT NULL,
-  /** Current AML risk rating: LOW, MEDIUM, HIGH */
   risk_rating STRING,
-  /** Whether customer has verified identity */
   is_kyc_verified BOOLEAN NOT NULL,
-  /** Whether customer is a Politically Exposed Person */
   is_pep BOOLEAN NOT NULL,
-  /** Whether customer is enrolled in digital banking */
   is_digital_enrolled BOOLEAN NOT NULL,
-  /** Preferred communication channel: EMAIL, SMS, MAIL, PHONE */
   preferred_channel STRING
 );
 
 /** Customer segmentation for marketing and analytics purposes.
-    Grain: one row per customer_id, segment_type combination. */
+    Grain: one row per customer_id, segment_type combination.
+
+    # Columns:
+    * customer_id: Reference to customer @pii
+    * segment_type: Segment type: BEHAVIORAL, DEMOGRAPHIC, VALUE, LIFECYCLE, PRODUCT_PROPENSITY
+    * segment_code: Segment code within the segment type
+    * segment_name: Human-readable segment name
+    * segment_description: Segment description
+    * confidence_score: Confidence score for segment assignment (0-100)
+    * model_version: Model version used for segmentation
+    * effective_from: Date segment assignment became effective
+    * effective_to: Date segment assignment was superseded
+    * is_current: Whether this is the current active segment */
 CREATE TABLE Customer_Segment_schema (
-  /** Reference to customer @pii */
   customer_id STRING NOT NULL,
-  /** Segment type: BEHAVIORAL, DEMOGRAPHIC, VALUE, LIFECYCLE, PRODUCT_PROPENSITY */
   segment_type STRING NOT NULL,
-  /** Segment code within the segment type */
   segment_code STRING NOT NULL,
-  /** Human-readable segment name */
   segment_name STRING NOT NULL,
-  /** Segment description */
   segment_description STRING,
-  /** Confidence score for segment assignment (0-100) */
   confidence_score INT,
-  /** Model version used for segmentation */
   model_version STRING,
-  /** Date segment assignment became effective */
   effective_from DATE NOT NULL,
-  /** Date segment assignment was superseded */
   effective_to DATE,
-  /** Whether this is the current active segment */
   is_current BOOLEAN NOT NULL
 );
 
 /** Household groupings linking related customers for household-level analytics.
-    Grain: one row per household_id, customer_id combination. */
+    Grain: one row per household_id, customer_id combination.
+
+    # Columns:
+    * household_id: Unique identifier for the household
+    * customer_id: Reference to customer in household @pii
+    * household_role: Role in household: HEAD, SPOUSE, DEPENDENT, OTHER
+    * is_primary: Whether this customer is the primary household contact
+    * household_size: Household size (number of members)
+    * household_income_band: Estimated household income band @npi @confidential
+    * household_address: Household address @pii @encrypt
+    * household_city: Household city @pii
+    * household_state: Household state
+    * household_postal_code: Household postal code @pii
+    * household_balance_cents: Total household relationship balance in cents @npi @confidential
+    * household_product_count: Total household products count
+    * match_method: Method used for householding: ADDRESS_MATCH, RELATIONSHIP, SURNAME_ADDRESS, MANUAL
+    * confidence_score: Confidence score for household assignment (0-100)
+    * effective_from: Date this household assignment became effective
+    * effective_to: Date this household assignment was superseded
+    * is_current: Whether this is the current active assignment */
 CREATE TABLE Customer_Household_schema (
-  /** Unique identifier for the household */
   household_id STRING NOT NULL,
-  /** Reference to customer in household @pii */
   customer_id STRING NOT NULL,
-  /** Role in household: HEAD, SPOUSE, DEPENDENT, OTHER */
   household_role STRING NOT NULL,
-  /** Whether this customer is the primary household contact */
   is_primary BOOLEAN NOT NULL,
-  /** Household size (number of members) */
   household_size INT NOT NULL,
-  /** Estimated household income band @npi @confidential */
   household_income_band STRING,
-  /** Household address @pii @encrypt */
   household_address STRING,
-  /** Household city @pii */
   household_city STRING,
-  /** Household state */
   household_state STRING,
-  /** Household postal code @pii */
   household_postal_code STRING,
-  /** Total household relationship balance in cents @npi @confidential */
   household_balance_cents BIGINT,
-  /** Total household products count */
   household_product_count INT,
-  /** Method used for householding: ADDRESS_MATCH, RELATIONSHIP, SURNAME_ADDRESS, MANUAL */
   match_method STRING NOT NULL,
-  /** Confidence score for household assignment (0-100) */
   confidence_score INT,
-  /** Date this household assignment became effective */
   effective_from DATE NOT NULL,
-  /** Date this household assignment was superseded */
   effective_to DATE,
-  /** Whether this is the current active assignment */
   is_current BOOLEAN NOT NULL
 );
 
 /** Customer lifetime value calculations and predictions.
-    Grain: one row per customer_id, calculation_date combination. */
+    Grain: one row per customer_id, calculation_date combination.
+
+    # Columns:
+    * customer_id: Reference to customer @pii
+    * calculation_date: Date of CLV calculation
+    * historical_ltv_cents: Historical lifetime value in cents (actual realized) @npi @confidential
+    * predicted_ltv_cents: Predicted future lifetime value in cents @npi @confidential
+    * total_ltv_cents: Total lifetime value (historical + predicted) in cents @npi @confidential
+    * ltv_percentile: LTV percentile rank (1-100)
+    * ltv_tier: LTV tier: PLATINUM, GOLD, SILVER, BRONZE
+    * deposit_revenue_cents: Revenue from deposit products in cents @npi @confidential
+    * lending_revenue_cents: Revenue from lending products in cents @npi @confidential
+    * fee_revenue_cents: Revenue from fee income in cents @npi @confidential
+    * interchange_revenue_cents: Revenue from card interchange in cents @npi @confidential
+    * churn_probability: Probability of customer churn in next 12 months (0-1)
+    * predicted_tenure_months: Predicted months until churn
+    * model_version: Model version used for calculation */
 CREATE TABLE Customer_Lifetime_Value_schema (
-  /** Reference to customer @pii */
   customer_id STRING NOT NULL,
-  /** Date of CLV calculation */
   calculation_date DATE NOT NULL,
-  /** Historical lifetime value in cents (actual realized) @npi @confidential */
   historical_ltv_cents BIGINT,
-  /** Predicted future lifetime value in cents @npi @confidential */
   predicted_ltv_cents BIGINT,
-  /** Total lifetime value (historical + predicted) in cents @npi @confidential */
   total_ltv_cents BIGINT,
-  /** LTV percentile rank (1-100) */
   ltv_percentile INT,
-  /** LTV tier: PLATINUM, GOLD, SILVER, BRONZE */
   ltv_tier STRING,
-  /** Revenue from deposit products in cents @npi @confidential */
   deposit_revenue_cents BIGINT,
-  /** Revenue from lending products in cents @npi @confidential */
   lending_revenue_cents BIGINT,
-  /** Revenue from fee income in cents @npi @confidential */
   fee_revenue_cents BIGINT,
-  /** Revenue from card interchange in cents @npi @confidential */
   interchange_revenue_cents BIGINT,
-  /** Probability of customer churn in next 12 months (0-1) */
   churn_probability DOUBLE,
-  /** Predicted months until churn */
   predicted_tenure_months INT,
-  /** Model version used for calculation */
   model_version STRING
 );
