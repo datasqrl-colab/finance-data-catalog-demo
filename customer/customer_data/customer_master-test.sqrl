@@ -4,7 +4,7 @@
 
 IMPORT customer_master.*;
 
-CREATE TABLE _Customer_input (
+CREATE TABLE Customer (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -18,9 +18,7 @@ CREATE TABLE _Customer_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_schema;
 
-Customer := SELECT * FROM _Customer_input WHERE customer_id <> '';
-
-CREATE TABLE _Customer_Address_input (
+CREATE TABLE Customer_Address (
     /** Timestamp when record was ingested into the data platform */
     ingested_at TIMESTAMP_LTZ(3) NOT NULL,
     WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -34,9 +32,7 @@ CREATE TABLE _Customer_Address_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Address_schema;
 
-Customer_Address := SELECT * FROM _Customer_Address_input WHERE customer_id <> '';
-
-CREATE TABLE _Customer_Contact_input (
+CREATE TABLE Customer_Contact (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -50,9 +46,7 @@ CREATE TABLE _Customer_Contact_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Contact_schema;
 
-Customer_Contact := SELECT * FROM _Customer_Contact_input WHERE customer_id <> '';
-
-CREATE TABLE _Customer_Employment_input (
+CREATE TABLE Customer_Employment (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -66,9 +60,7 @@ CREATE TABLE _Customer_Employment_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Employment_schema;
 
-Customer_Employment := SELECT * FROM _Customer_Employment_input WHERE customer_id <> '';
-
-CREATE TABLE _Customer_Relationship_input (
+CREATE TABLE Customer_Relationship (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -81,5 +73,3 @@ CREATE TABLE _Customer_Relationship_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Relationship_schema;
-
-Customer_Relationship := SELECT * FROM _Customer_Relationship_input WHERE primary_customer_id <> '';

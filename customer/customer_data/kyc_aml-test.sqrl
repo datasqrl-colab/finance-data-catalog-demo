@@ -4,7 +4,7 @@
 
 IMPORT kyc_aml.*;
 
-CREATE TABLE _Kyc_Verification_input (
+CREATE TABLE Kyc_Verification (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -18,9 +18,7 @@ CREATE TABLE _Kyc_Verification_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Kyc_Verification_schema;
 
-Kyc_Verification := SELECT * FROM _Kyc_Verification_input WHERE verification_id <> '';
-
-CREATE TABLE _Sanctions_Screening_input (
+CREATE TABLE Sanctions_Screening (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -34,9 +32,7 @@ CREATE TABLE _Sanctions_Screening_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Sanctions_Screening_schema;
 
-Sanctions_Screening := SELECT * FROM _Sanctions_Screening_input WHERE screening_id <> '';
-
-CREATE TABLE _Pep_Screening_input (
+CREATE TABLE Pep_Screening (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -50,9 +46,7 @@ CREATE TABLE _Pep_Screening_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Pep_Screening_schema;
 
-Pep_Screening := SELECT * FROM _Pep_Screening_input WHERE screening_id <> '';
-
-CREATE TABLE _Customer_Risk_Rating_input (
+CREATE TABLE Customer_Risk_Rating (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -65,5 +59,3 @@ CREATE TABLE _Customer_Risk_Rating_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Risk_Rating_schema;
-
-Customer_Risk_Rating := SELECT * FROM _Customer_Risk_Rating_input WHERE customer_id <> '';

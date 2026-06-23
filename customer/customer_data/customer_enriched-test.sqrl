@@ -4,7 +4,7 @@
 
 IMPORT customer_enriched.*;
 
-CREATE TABLE _Customer_Profile_input (
+CREATE TABLE Customer_Profile (
   /** Timestamp when profile was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -17,9 +17,7 @@ CREATE TABLE _Customer_Profile_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Profile_schema;
 
-Customer_Profile := SELECT * FROM _Customer_Profile_input WHERE customer_id <> '';
-
-CREATE TABLE _Customer_Segment_input (
+CREATE TABLE Customer_Segment (
   /** Timestamp when segment was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -32,9 +30,7 @@ CREATE TABLE _Customer_Segment_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Segment_schema;
 
-Customer_Segment := SELECT * FROM _Customer_Segment_input WHERE customer_id <> '';
-
-CREATE TABLE _Customer_Household_input (
+CREATE TABLE Customer_Household (
   /** Timestamp when household was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -47,9 +43,7 @@ CREATE TABLE _Customer_Household_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Household_schema;
 
-Customer_Household := SELECT * FROM _Customer_Household_input WHERE household_id <> '';
-
-CREATE TABLE _Customer_Lifetime_Value_input (
+CREATE TABLE Customer_Lifetime_Value (
   /** Timestamp when CLV was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -61,5 +55,3 @@ CREATE TABLE _Customer_Lifetime_Value_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Lifetime_Value_schema;
-
-Customer_Lifetime_Value := SELECT * FROM _Customer_Lifetime_Value_input WHERE customer_id <> '';

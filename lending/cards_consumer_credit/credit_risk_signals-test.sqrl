@@ -4,7 +4,7 @@
 
 IMPORT credit_risk_signals.*;
 
-CREATE TABLE _Customer_Credit_Exposure_input (
+CREATE TABLE Customer_Credit_Exposure (
   /** Timestamp when exposure was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -17,9 +17,7 @@ CREATE TABLE _Customer_Credit_Exposure_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Customer_Credit_Exposure_schema;
 
-Customer_Credit_Exposure := SELECT * FROM _Customer_Credit_Exposure_input WHERE customer_id <> '';
-
-CREATE TABLE _Payment_Behavior_input (
+CREATE TABLE Payment_Behavior (
   /** Timestamp when behavior was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -32,9 +30,7 @@ CREATE TABLE _Payment_Behavior_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Payment_Behavior_schema;
 
-Payment_Behavior := SELECT * FROM _Payment_Behavior_input WHERE customer_id <> '';
-
-CREATE TABLE _Delinquency_Rollforward_input (
+CREATE TABLE Delinquency_Rollforward (
   /** Timestamp when rollforward was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -47,9 +43,7 @@ CREATE TABLE _Delinquency_Rollforward_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Delinquency_Rollforward_schema;
 
-Delinquency_Rollforward := SELECT * FROM _Delinquency_Rollforward_input WHERE loan_id <> '';
-
-CREATE TABLE _Credit_Utilization_input (
+CREATE TABLE Credit_Utilization (
   /** Timestamp when utilization was computed */
   computed_at TIMESTAMP_LTZ(3) NOT NULL
 ) WITH (
@@ -61,5 +55,3 @@ CREATE TABLE _Credit_Utilization_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Utilization_schema;
-
-Credit_Utilization := SELECT * FROM _Credit_Utilization_input WHERE customer_id <> '';

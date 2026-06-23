@@ -4,7 +4,7 @@
 
 IMPORT credit_cards.*;
 
-CREATE TABLE _Credit_Card_Account_input (
+CREATE TABLE Credit_Card_Account (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -18,9 +18,7 @@ CREATE TABLE _Credit_Card_Account_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Account_schema;
 
-Credit_Card_Account := SELECT * FROM _Credit_Card_Account_input WHERE credit_card_account_id <> '';
-
-CREATE TABLE _Credit_Card_input (
+CREATE TABLE Credit_Card (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -34,9 +32,7 @@ CREATE TABLE _Credit_Card_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_schema;
 
-Credit_Card := SELECT * FROM _Credit_Card_input WHERE card_id <> '';
-
-CREATE TABLE _Credit_Card_Statement_input (
+CREATE TABLE Credit_Card_Statement (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -50,9 +46,7 @@ CREATE TABLE _Credit_Card_Statement_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Statement_schema;
 
-Credit_Card_Statement := SELECT * FROM _Credit_Card_Statement_input WHERE statement_id <> '';
-
-CREATE TABLE _Credit_Card_Payment_input (
+CREATE TABLE Credit_Card_Payment (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -66,9 +60,7 @@ CREATE TABLE _Credit_Card_Payment_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Card_Payment_schema;
 
-Credit_Card_Payment := SELECT * FROM _Credit_Card_Payment_input WHERE payment_id <> '';
-
-CREATE TABLE _Credit_Limit_History_input (
+CREATE TABLE Credit_Limit_History (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -82,9 +74,7 @@ CREATE TABLE _Credit_Limit_History_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Credit_Limit_History_schema;
 
-Credit_Limit_History := SELECT * FROM _Credit_Limit_History_input WHERE limit_change_id <> '';
-
-CREATE TABLE _Card_Delinquency_Event_input (
+CREATE TABLE Card_Delinquency_Event (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -97,5 +87,3 @@ CREATE TABLE _Card_Delinquency_Event_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Card_Delinquency_Event_schema;
-
-Card_Delinquency_Event := SELECT * FROM _Card_Delinquency_Event_input WHERE delinquency_event_id <> '';

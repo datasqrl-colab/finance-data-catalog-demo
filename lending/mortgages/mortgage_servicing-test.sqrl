@@ -4,7 +4,7 @@
 
 IMPORT mortgage_servicing.*;
 
-CREATE TABLE _Mortgage_Payment_input (
+CREATE TABLE Mortgage_Payment (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -18,9 +18,7 @@ CREATE TABLE _Mortgage_Payment_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Payment_schema;
 
-Mortgage_Payment := SELECT * FROM _Mortgage_Payment_input WHERE payment_id <> '';
-
-CREATE TABLE _Escrow_Account_input (
+CREATE TABLE Escrow_Account (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -34,9 +32,7 @@ CREATE TABLE _Escrow_Account_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Escrow_Account_schema;
 
-Escrow_Account := SELECT * FROM _Escrow_Account_input WHERE escrow_account_id <> '';
-
-CREATE TABLE _Delinquency_Event_input (
+CREATE TABLE Delinquency_Event (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -50,9 +46,7 @@ CREATE TABLE _Delinquency_Event_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Delinquency_Event_schema;
 
-Delinquency_Event := SELECT * FROM _Delinquency_Event_input WHERE delinquency_event_id <> '';
-
-CREATE TABLE _Loan_Modification_input (
+CREATE TABLE Loan_Modification (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -66,9 +60,7 @@ CREATE TABLE _Loan_Modification_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Loan_Modification_schema;
 
-Loan_Modification := SELECT * FROM _Loan_Modification_input WHERE modification_id <> '';
-
-CREATE TABLE _Property_Valuation_input (
+CREATE TABLE Property_Valuation (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -81,5 +73,3 @@ CREATE TABLE _Property_Valuation_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Property_Valuation_schema;
-
-Property_Valuation := SELECT * FROM _Property_Valuation_input WHERE valuation_id <> '';

@@ -4,7 +4,7 @@
 
 IMPORT mortgage_originations.*;
 
-CREATE TABLE _Mortgage_Application_input (
+CREATE TABLE Mortgage_Application (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -18,9 +18,7 @@ CREATE TABLE _Mortgage_Application_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Application_schema;
 
-Mortgage_Application := SELECT * FROM _Mortgage_Application_input WHERE application_id <> '';
-
-CREATE TABLE _Mortgage_Loan_input (
+CREATE TABLE Mortgage_Loan (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -34,9 +32,7 @@ CREATE TABLE _Mortgage_Loan_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Loan_schema;
 
-Mortgage_Loan := SELECT * FROM _Mortgage_Loan_input WHERE loan_id <> '';
-
-CREATE TABLE _Property_Collateral_input (
+CREATE TABLE Property_Collateral (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -50,9 +46,7 @@ CREATE TABLE _Property_Collateral_input (
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Property_Collateral_schema;
 
-Property_Collateral := SELECT * FROM _Property_Collateral_input WHERE property_id <> '';
-
-CREATE TABLE _Mortgage_Borrower_input (
+CREATE TABLE Mortgage_Borrower (
   /** Timestamp when record was ingested into the data platform */
   ingested_at TIMESTAMP_LTZ(3) NOT NULL,
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
@@ -65,5 +59,3 @@ CREATE TABLE _Mortgage_Borrower_input (
     'format' = 'json',
     'json.timestamp-format.standard' = 'ISO-8601'
 ) LIKE Mortgage_Borrower_schema;
-
-Mortgage_Borrower := SELECT * FROM _Mortgage_Borrower_input WHERE loan_id <> '';
