@@ -1,0 +1,44 @@
+-- ## Account Analytics - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT account_analytics.*;
+
+CREATE TABLE Account_Activity_Summary (
+  /** Timestamp when summary was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/account_analytics-account_activity_summary.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Activity_Summary_schema;
+
+CREATE TABLE Account_Balance_Trend (
+  /** Timestamp when trend was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/account_analytics-account_balance_trend.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Balance_Trend_schema;
+
+CREATE TABLE Dormancy_Signal (
+  /** Timestamp when signal was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/account_analytics-dormancy_signal.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Dormancy_Signal_schema;

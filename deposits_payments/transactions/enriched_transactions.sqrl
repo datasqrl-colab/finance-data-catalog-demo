@@ -10,37 +10,70 @@
 -- Upstream:         core_transactions.sqrl, card_transactions.sqrl, wire_ach_transactions.sqrl
 
 /** Unified transaction view combining all transaction types with standardized attributes.
-    Grain: one row per transaction_id. */
-CREATE TABLE Unified_Transaction (
+    Grain: one row per transaction_id.
+
+    # Columns:
+    * transaction_id: Unique identifier for the transaction
+    * account_id: Reference to account @npi
+    * customer_id: Reference to customer @pii
+    * transaction_source: Transaction source: CORE, CARD, ACH, WIRE
+    * source_transaction_id: Original source system transaction ID
+    * transaction_type: Standardized transaction type
+    * debit_credit: Transaction category: DEBIT, CREDIT
+    * amount_cents: Transaction amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * transaction_status: Transaction status: PENDING, POSTED, REVERSED, RETURNED
+    * transaction_at: Date and time transaction occurred
+    * posted_date: Date transaction was posted
+    * original_description: Original description @pii
+    * clean_description: Cleaned/standardized description @pii
+    * channel: Transaction channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, POS, CHECK
+    * merchant_id: Merchant or counterparty ID (enriched)
+    * merchant_name: Merchant or counterparty name (enriched) @pii
+    * mcc_code: Merchant category code
+    * category_id: Transaction category ID
+    * category_name: Transaction category name
+    * subcategory_name: Transaction subcategory name
+    * is_recurring: Whether transaction is identified as recurring
+    * recurring_payment_id: Recurring payment ID if applicable
+    * location: Geographic location of transaction @pii
+    * city: City of transaction @pii
+    * state: State/province of transaction
+    * country: Country of transaction
+    * running_balance_cents: Running balance after transaction in cents @npi @confidential
+    * is_disputed: Whether transaction has been disputed
+    * is_suspicious: Whether transaction is potentially fraudulent
+    * fraud_score: Fraud score (0-100) */
+CREATE TABLE Unified_Transaction_schema (
   /** Unique identifier for the transaction */
-  transaction_id STRING,
+  transaction_id STRING NOT NULL,
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Transaction source: CORE, CARD, ACH, WIRE */
-  transaction_source STRING,
+  transaction_source STRING NOT NULL,
   /** Original source system transaction ID */
   source_transaction_id STRING,
   /** Standardized transaction type */
-  transaction_type STRING,
+  transaction_type STRING NOT NULL,
   /** Transaction category: DEBIT, CREDIT */
-  debit_credit STRING,
+  debit_credit STRING NOT NULL,
   /** Transaction amount in cents @npi @confidential */
-  amount_cents BIGINT,
+  amount_cents BIGINT NOT NULL,
   /** Currency code (ISO 4217) */
-  currency_code STRING,
+  currency_code STRING NOT NULL,
   /** Transaction status: PENDING, POSTED, REVERSED, RETURNED */
-  transaction_status STRING,
+  transaction_status STRING NOT NULL,
   /** Date and time transaction occurred */
-  transaction_at TIMESTAMP,
+  transaction_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Date transaction was posted */
   posted_date DATE,
   /** Original description @pii */
   original_description STRING,
   /** Cleaned/standardized description @pii */
   clean_description STRING,
-  /** Transaction channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, POS, CHECK */
+  /** Channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, POS, CHECK */
   channel STRING,
   /** Merchant or counterparty ID (enriched) */
   merchant_id STRING,
@@ -62,9 +95,9 @@ CREATE TABLE Unified_Transaction (
   location STRING,
   /** City of transaction @pii */
   city STRING,
-  /** State/province of transaction */
+  /** State/province of transaction @pii */
   state STRING,
-  /** Country of transaction */
+  /** Country of transaction @pii */
   country STRING,
   /** Running balance after transaction in cents @npi @confidential */
   running_balance_cents BIGINT,
@@ -73,25 +106,40 @@ CREATE TABLE Unified_Transaction (
   /** Whether transaction is potentially fraudulent */
   is_suspicious BOOLEAN,
   /** Fraud score (0-100) */
-  fraud_score INT,
-  /** Timestamp when enrichment was computed */
-  computed_at TIMESTAMP
+  fraud_score INT
 );
 
 /** Merchant enrichment data providing standardized merchant information.
-    Grain: one row per merchant_id. */
-CREATE TABLE Merchant_Enrichment (
+    Grain: one row per merchant_id.
+
+    # Columns:
+    * merchant_id: Unique identifier for the merchant
+    * raw_merchant_name: Raw merchant name as received
+    * clean_merchant_name: Cleaned/standardized merchant name
+    * parent_company: Parent company name
+    * logo_url: Merchant logo URL
+    * website: Merchant website
+    * primary_mcc: Primary MCC code
+    * primary_category: Primary category
+    * primary_subcategory: Primary subcategory
+    * merchant_type: Merchant type: RETAIL, RESTAURANT, SERVICE, UTILITY, SUBSCRIPTION, GOVERNMENT
+    * is_subscription: Whether merchant is a subscription service
+    * is_utility: Whether merchant is a utility provider
+    * is_financial_institution: Whether merchant is a financial institution
+    * enrichment_source: Enrichment provider: PLAID, YODLEE, MX, INTERNAL
+    * confidence_score: Confidence score for enrichment (0-100) */
+CREATE TABLE Merchant_Enrichment_schema (
   /** Unique identifier for the merchant */
-  merchant_id STRING,
+  merchant_id STRING NOT NULL,
   /** Raw merchant name as received */
   raw_merchant_name STRING,
   /** Cleaned/standardized merchant name */
   clean_merchant_name STRING,
   /** Parent company name */
   parent_company STRING,
-  /** Merchant logo URL */
+  /** Logo URL */
   logo_url STRING,
-  /** Merchant website */
+  /** Website */
   website STRING,
   /** Primary MCC code */
   primary_mcc STRING,
@@ -110,20 +158,29 @@ CREATE TABLE Merchant_Enrichment (
   /** Enrichment provider: PLAID, YODLEE, MX, INTERNAL */
   enrichment_source STRING,
   /** Confidence score for enrichment (0-100) */
-  confidence_score INT,
-  /** Date enrichment was last updated */
-  last_updated_at TIMESTAMP,
-  /** Timestamp when enrichment was computed */
-  computed_at TIMESTAMP
+  confidence_score INT
 );
 
 /** Transaction category reference for spending classification.
-    Grain: one row per category_id. */
-CREATE TABLE Transaction_Category (
+    Grain: one row per category_id.
+
+    # Columns:
+    * category_id: Unique identifier for the category
+    * category_name: Category name
+    * parent_category_id: Parent category ID for hierarchy
+    * category_level: Category level in hierarchy (1=top level)
+    * category_path: Full category path
+    * description: Category description
+    * icon: Category icon
+    * color: Display color
+    * is_system: Whether this is a system-defined category
+    * is_active: Whether category is currently active
+    * sort_order: Sort order for display */
+CREATE TABLE Transaction_Category_schema (
   /** Unique identifier for the category */
-  category_id STRING,
+  category_id STRING NOT NULL,
   /** Category name */
-  category_name STRING,
+  category_name STRING NOT NULL,
   /** Parent category ID for hierarchy */
   parent_category_id STRING,
   /** Category level in hierarchy (1=top level) */
@@ -141,20 +198,40 @@ CREATE TABLE Transaction_Category (
   /** Whether category is currently active */
   is_active BOOLEAN,
   /** Sort order for display */
-  sort_order INT,
-  /** Timestamp when category was created */
-  created_at TIMESTAMP,
-  /** Timestamp when category was last updated */
-  updated_at TIMESTAMP
+  sort_order INT
 );
 
 /** Recurring payment detection and tracking.
-    Grain: one row per recurring_payment_id. */
-CREATE TABLE Recurring_Payment (
+    Grain: one row per recurring_payment_id.
+
+    # Columns:
+    * recurring_payment_id: Unique identifier for the recurring payment series
+    * account_id: Reference to account @npi
+    * customer_id: Reference to customer @pii
+    * merchant_id: Merchant ID for this recurring payment
+    * merchant_name: Merchant name @pii
+    * payment_type: Recurring payment type: SUBSCRIPTION, BILL, LOAN_PAYMENT, MEMBERSHIP, INSURANCE
+    * typical_amount_cents: Typical amount in cents @npi @confidential
+    * amount_variance_cents: Amount variance tolerance in cents
+    * frequency: Payment frequency: WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, ANNUAL
+    * typical_day: Typical day of month or week for payment
+    * day_variance: Day variance tolerance
+    * first_occurrence_date: Date of first detected occurrence
+    * last_occurrence_date: Date of most recent occurrence
+    * next_expected_date: Date of next expected occurrence
+    * occurrence_count: Number of occurrences detected
+    * missed_count: Number of missed/late occurrences
+    * status: Recurring payment status: ACTIVE, PAUSED, ENDED, UNCERTAIN
+    * confidence_score: Confidence score for detection (0-100)
+    * category_name: Category of recurring payment
+    * is_essential: Whether payment is essential (utility, insurance, etc.)
+    * annual_cost_cents: Annual cost in cents @npi @confidential
+    * detection_method: Detection method: AMOUNT_FREQUENCY, MERCHANT_MATCH, DESCRIPTION_MATCH */
+CREATE TABLE Recurring_Payment_schema (
   /** Unique identifier for the recurring payment series */
-  recurring_payment_id STRING,
+  recurring_payment_id STRING NOT NULL,
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Reference to customer @pii */
   customer_id STRING,
   /** Merchant ID for this recurring payment */
@@ -162,13 +239,13 @@ CREATE TABLE Recurring_Payment (
   /** Merchant name @pii */
   merchant_name STRING,
   /** Recurring payment type: SUBSCRIPTION, BILL, LOAN_PAYMENT, MEMBERSHIP, INSURANCE */
-  payment_type STRING,
+  payment_type STRING NOT NULL,
   /** Typical amount in cents @npi @confidential */
   typical_amount_cents BIGINT,
   /** Amount variance tolerance in cents */
   amount_variance_cents BIGINT,
   /** Payment frequency: WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, ANNUAL */
-  frequency STRING,
+  frequency STRING NOT NULL,
   /** Typical day of month or week for payment */
   typical_day INT,
   /** Day variance tolerance */
@@ -183,8 +260,8 @@ CREATE TABLE Recurring_Payment (
   occurrence_count INT,
   /** Number of missed/late occurrences */
   missed_count INT,
-  /** Recurring payment status: ACTIVE, PAUSED, ENDED, UNCERTAIN */
-  status STRING,
+  /** Status: ACTIVE, PAUSED, ENDED, UNCERTAIN */
+  status STRING NOT NULL,
   /** Confidence score for detection (0-100) */
   confidence_score INT,
   /** Category of recurring payment */
@@ -194,7 +271,5 @@ CREATE TABLE Recurring_Payment (
   /** Annual cost in cents @npi @confidential */
   annual_cost_cents BIGINT,
   /** Detection method: AMOUNT_FREQUENCY, MERCHANT_MATCH, DESCRIPTION_MATCH */
-  detection_method STRING,
-  /** Timestamp when detection was last computed */
-  computed_at TIMESTAMP
+  detection_method STRING
 );

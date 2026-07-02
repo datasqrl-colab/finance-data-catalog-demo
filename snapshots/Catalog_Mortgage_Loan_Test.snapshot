@@ -1,0 +1,14 @@
+{
+  "data" : {
+    "Catalog_Mortgage_Loan_Test" : [ {
+      "loan_id" : "ML-001",
+      "loan_status" : "ACTIVE"
+    }, {
+      "loan_id" : "ML-002",
+      "loan_status" : "ACTIVE"
+    }, {
+      "loan_id" : "ML-003",
+      "loan_status" : "ACTIVE"
+    } ]
+  }
+}

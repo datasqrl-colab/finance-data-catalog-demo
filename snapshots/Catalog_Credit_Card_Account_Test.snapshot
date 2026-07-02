@@ -1,0 +1,23 @@
+{
+  "data" : {
+    "Catalog_Credit_Card_Account_Test" : [ {
+      "credit_card_account_id" : "CCA-001",
+      "account_status" : "OPEN"
+    }, {
+      "credit_card_account_id" : "CCA-002",
+      "account_status" : "OPEN"
+    }, {
+      "credit_card_account_id" : "CCA-003",
+      "account_status" : "OPEN"
+    }, {
+      "credit_card_account_id" : "CCA-004",
+      "account_status" : "OPEN"
+    }, {
+      "credit_card_account_id" : "CCA-005",
+      "account_status" : "OPEN"
+    }, {
+      "credit_card_account_id" : "CCA-006",
+      "account_status" : "CLOSED"
+    } ]
+  }
+}

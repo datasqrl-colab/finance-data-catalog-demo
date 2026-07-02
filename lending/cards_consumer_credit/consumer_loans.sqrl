@@ -42,7 +42,7 @@
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Personal_Loan_schema (
   loan_id STRING NOT NULL,
-  application_id STRING,
+  application_id STRING NOT NULL,
   primary_borrower_customer_id STRING NOT NULL,
   loan_number STRING NOT NULL,
   loan_status STRING NOT NULL,
@@ -59,6 +59,7 @@ CREATE TABLE Personal_Loan_schema (
   maturity_date DATE NOT NULL,
   next_payment_due_date DATE,
   paid_off_date DATE,
+  /** Origination fee in cents @npi @confidential */
   origination_fee_cents BIGINT,
   credit_score_at_origination INT,
   dti_at_origination DECIMAL(5, 2),
@@ -116,7 +117,7 @@ CREATE TABLE Personal_Loan_schema (
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Auto_Loan_schema (
   loan_id STRING NOT NULL,
-  application_id STRING,
+  application_id STRING NOT NULL,
   primary_borrower_customer_id STRING NOT NULL,
   loan_number STRING NOT NULL,
   loan_status STRING NOT NULL,
@@ -142,7 +143,9 @@ CREATE TABLE Auto_Loan_schema (
   vehicle_condition STRING NOT NULL,
   vehicle_value_at_origination_cents BIGINT,
   current_vehicle_value_cents BIGINT,
+  /** Loan-to-value ratio at origination @confidential */
   ltv_at_origination DECIMAL(5, 2),
+  /** Current LTV @confidential */
   current_ltv DECIMAL(5, 2),
   dealer_name STRING,
   dealer_id STRING,
@@ -188,7 +191,9 @@ CREATE TABLE Loan_Payment_schema (
   payment_amount_cents BIGINT NOT NULL,
   principal_cents BIGINT,
   interest_cents BIGINT,
+  /** Late fee amount in cents @npi @confidential */
   late_fee_cents BIGINT,
+  /** Other fees in cents @npi @confidential */
   other_fees_cents BIGINT,
   payment_type STRING NOT NULL,
   payment_status STRING NOT NULL,
@@ -241,13 +246,16 @@ CREATE TABLE Loan_Application_schema (
   co_applicant_customer_id STRING,
   loan_type STRING NOT NULL,
   loan_purpose STRING,
+  /** Requested loan amount in cents @npi @confidential */
   requested_amount_cents BIGINT NOT NULL,
   requested_term_months INT,
   application_status STRING NOT NULL,
   submitted_at TIMESTAMP_LTZ(3) NOT NULL,
   decision_date DATE,
   decision_type STRING,
+  /** Approved amount in cents @npi @confidential */
   approved_amount_cents BIGINT,
+  /** Approved rate @confidential */
   approved_rate DECIMAL(6, 4),
   approved_term_months INT,
   denial_reasons STRING,
@@ -309,10 +317,12 @@ CREATE TABLE Consumer_Loan_Delinquency_Event_schema (
   repossession_date DATE,
   repossession_agency STRING,
   sale_date DATE,
+  /** Sale amount in cents @npi @confidential */
   sale_amount_cents BIGINT,
   deficiency_balance_cents BIGINT,
   charge_off_date DATE,
   charge_off_amount_cents BIGINT,
+  /** Recovery amount in cents @npi @confidential */
   recovery_amount_cents BIGINT,
   source_system STRING NOT NULL,
   source_updated_at TIMESTAMP_LTZ(3) NOT NULL

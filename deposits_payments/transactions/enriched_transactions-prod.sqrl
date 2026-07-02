@@ -1,0 +1,65 @@
+-- ## Enriched Transactions - Production
+--
+-- Writes enriched transaction data to Apache Iceberg tables
+
+IMPORT enriched_transactions.*;
+
+CREATE TABLE Unified_Transaction (
+  /** Timestamp when enrichment was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (transaction_id) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ICEBERG_CATALOG_NAME}',
+    'catalog-database' = '${ICEBERG_CATALOG_DATABASE}',
+    'catalog-table' = '${ICEBERG_TABLE_PREFIX}unified_transaction',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Unified_Transaction_schema;
+
+CREATE TABLE Merchant_Enrichment (
+  /** Timestamp when enrichment was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (merchant_id) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ICEBERG_CATALOG_NAME}',
+    'catalog-database' = '${ICEBERG_CATALOG_DATABASE}',
+    'catalog-table' = '${ICEBERG_TABLE_PREFIX}merchant_enrichment',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Merchant_Enrichment_schema;
+
+CREATE TABLE Transaction_Category (
+  /** Timestamp when category was created */
+  created_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (category_id) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ICEBERG_CATALOG_NAME}',
+    'catalog-database' = '${ICEBERG_CATALOG_DATABASE}',
+    'catalog-table' = '${ICEBERG_TABLE_PREFIX}transaction_category',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Transaction_Category_schema;
+
+CREATE TABLE Recurring_Payment (
+  /** Timestamp when detection was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (recurring_payment_id) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ICEBERG_CATALOG_NAME}',
+    'catalog-database' = '${ICEBERG_CATALOG_DATABASE}',
+    'catalog-table' = '${ICEBERG_TABLE_PREFIX}recurring_payment',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Recurring_Payment_schema;

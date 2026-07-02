@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Customer_Test" : [ {
+      "customer_id" : "CUST-001",
+      "first_name" : "John",
+      "last_name" : "Smith",
+      "customer_status" : "ACTIVE"
+    } ]
+  }
+}

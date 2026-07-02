@@ -52,3 +52,17 @@ Each `.sqrl` file contains:
 - Column-level sensitivity tags for all PII/NPI/PCI fields
 
 Bronze tables include audit columns: `source_system`, `ingested_at`, `source_updated_at`
+
+## Design Decisions & Constraints
+
+### Template Variable Syntax
+
+IMPORT paths use `{{environment}}` (mustache double-brace syntax) because the DataSQRL template engine resolves `{{variable}}` patterns at compile time. Single-brace `{environment}` would not be resolved by the template engine and would cause import resolution failures. This applies to all ontology files that use template-based environment switching between test and production connector files.
+
+### Mustache Template Conditionals
+
+Connector files use `{{^is_batch}}` / `{{/is_batch}}` (test) and `{{#is_batch}}` / `{{/is_batch}}` (production) with mustache double-brace syntax. The `is_batch` variable is set at compile time — when true (batch mode) the production connector adds `scan.bounded.mode`; when false (streaming mode) the test connector adds `source.monitor-interval`. Single-brace syntax (`{#is_batch}` / `{/is_batch}`) is not supported by the mustache template engine.
+
+### Watermark Strategy for File-Based Sources
+
+File-based test connectors define `ingested_at TIMESTAMP_LTZ(3)` as a data column with a watermark. This is the standard Flink SQL pattern for event-time processing. While a computed ingestion-time column (`ingestion_time AS PROCTIME()`) is recommended in some contexts, Flink SQL does not support defining watermarks on processing-time attributes, making the data-column approach the only viable pattern for file-based sources that require event-time semantics.

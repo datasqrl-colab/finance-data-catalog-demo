@@ -12,7 +12,7 @@ CREATE TABLE Kyc_Verification (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'kyc_aml.kyc_verification',
+    'topic' = '${TOPIC_PREFIX}.kyc_verification',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -29,7 +29,7 @@ CREATE TABLE Sanctions_Screening (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'kyc_aml.sanctions_screening',
+    'topic' = '${TOPIC_PREFIX}.sanctions_screening',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -46,7 +46,7 @@ CREATE TABLE Pep_Screening (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'kyc_aml.pep_screening',
+    'topic' = '${TOPIC_PREFIX}.pep_screening',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -63,7 +63,7 @@ CREATE TABLE Customer_Risk_Rating (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'kyc_aml.customer_risk_rating',
+    'topic' = '${TOPIC_PREFIX}.customer_risk_rating',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',

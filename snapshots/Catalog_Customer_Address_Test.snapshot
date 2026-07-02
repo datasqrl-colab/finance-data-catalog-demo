@@ -1,0 +1,15 @@
+{
+  "data" : {
+    "Catalog_Customer_Address_Test" : [ {
+      "customer_id" : "CUST-001",
+      "address_type" : "MAILING",
+      "city" : "Springfield",
+      "is_current" : true
+    }, {
+      "customer_id" : "CUST-001",
+      "address_type" : "PRIMARY",
+      "city" : "Springfield",
+      "is_current" : true
+    } ]
+  }
+}

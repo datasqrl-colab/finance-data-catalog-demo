@@ -20,7 +20,7 @@
     * primary_phone: Primary phone number @pii @encrypt
     * primary_address: Primary mailing address formatted @pii @encrypt
     * primary_city: City of primary address @pii
-    * primary_state: State of primary address
+    * primary_state: State of primary address @pii
     * primary_postal_code: Postal code of primary address @pii
     * age_years: Customer age in years
     * age_band: Age band: 18-24, 25-34, 35-44, 45-54, 55-64, 65+
@@ -94,7 +94,7 @@ CREATE TABLE Customer_Segment_schema (
     * household_income_band: Estimated household income band @npi @confidential
     * household_address: Household address @pii @encrypt
     * household_city: Household city @pii
-    * household_state: Household state
+    * household_state: Household state @pii
     * household_postal_code: Household postal code @pii
     * household_balance_cents: Total household relationship balance in cents @npi @confidential
     * household_product_count: Total household products count

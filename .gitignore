@@ -1,7 +1,23 @@
 build/
 sqrl_warehouse/
 
+.env
+__pycache__/
+venv/
+.venv/
+**/venv/
+
 # IDE
 .idea/
 *.iml
+.vscode/
 
+# Claude
+CLAUDE.local.md
+.claude
+
+# Code Agent
+codeagent_logs*
+
+# MacOS
+.DS_Store

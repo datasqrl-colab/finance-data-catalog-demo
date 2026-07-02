@@ -10,26 +10,53 @@
 -- Regulatory scope: GLBA, GDPR, CCPA, Regulation E, BSA
 
 /** Primary transaction ledger recording all account monetary movements.
-    Grain: one row per transaction_id. */
-CREATE TABLE Transaction (
+    Grain: one row per transaction_id.
+
+    # Columns:
+    * transaction_id: Unique identifier for the transaction
+    * account_id: Reference to account @npi
+    * transaction_type_code: Transaction type code reference
+    * transaction_category: Transaction category: DEBIT, CREDIT
+    * amount_cents: Transaction amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * transaction_status: Transaction status: PENDING, POSTED, REVERSED, RETURNED
+    * posted_date: Date transaction was posted to account
+    * transaction_at: Date and time transaction occurred
+    * effective_date: Effective date for interest calculation
+    * description: Transaction description @pii
+    * memo: Memo or reference text @pii
+    * running_balance_cents: Running balance after transaction in cents @npi @confidential
+    * channel: Channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, CHECK, POS, INTERNAL
+    * external_reference: Reference number for external transactions
+    * trace_number: Trace number for ACH transactions
+    * check_number: Check number if applicable
+    * branch_id: Branch ID where transaction occurred
+    * terminal_id: Terminal or device ID
+    * teller_id: Employee ID if branch transaction @pii
+    * counterparty_account_id: Counterparty account reference @npi
+    * counterparty_name: Counterparty name @pii
+    * is_reconciled: Whether transaction has been reconciled
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE AccountTransaction_schema (
   /** Unique identifier for the transaction */
-  transaction_id STRING,
+  transaction_id STRING NOT NULL,
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Transaction type code reference */
-  transaction_type_code STRING,
+  transaction_type_code STRING NOT NULL,
   /** Transaction category: DEBIT, CREDIT */
-  transaction_category STRING,
+  transaction_category STRING NOT NULL,
   /** Transaction amount in cents @npi @confidential */
-  amount_cents BIGINT,
+  amount_cents BIGINT NOT NULL,
   /** Currency code (ISO 4217) */
-  currency_code STRING,
+  currency_code STRING NOT NULL,
   /** Transaction status: PENDING, POSTED, REVERSED, RETURNED */
-  transaction_status STRING,
+  transaction_status STRING NOT NULL,
   /** Date transaction was posted to account */
   posted_date DATE,
   /** Date and time transaction occurred */
-  transaction_at TIMESTAMP,
+  transaction_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Effective date for interest calculation */
   effective_date DATE,
   /** Transaction description @pii */
@@ -59,24 +86,37 @@ CREATE TABLE Transaction (
   /** Whether transaction has been reconciled */
   is_reconciled BOOLEAN,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Transaction type reference data defining transaction classifications.
-    Grain: one row per transaction_type_code. */
-CREATE TABLE Transaction_Type (
+    Grain: one row per transaction_type_code.
+
+    # Columns:
+    * transaction_type_code: Unique transaction type code
+    * transaction_type_name: Transaction type name
+    * description: Transaction type description
+    * category: Category: DEBIT, CREDIT
+    * subcategory: Subcategory for reporting
+    * is_customer_initiated: Whether this type is customer-initiated
+    * affects_available_balance: Whether this type affects available balance
+    * is_fee: Whether this type is fee-related
+    * is_interest: Whether this type is interest-related
+    * gl_account_code: GL account code for posting
+    * is_active: Whether type is currently active
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Transaction_Type_schema (
   /** Unique transaction type code */
-  transaction_type_code STRING,
+  transaction_type_code STRING NOT NULL,
   /** Transaction type name */
-  transaction_type_name STRING,
+  transaction_type_name STRING NOT NULL,
   /** Transaction type description */
   description STRING,
   /** Category: DEBIT, CREDIT */
-  category STRING,
+  category STRING NOT NULL,
   /** Subcategory for reporting */
   subcategory STRING,
   /** Whether this type is customer-initiated */
@@ -92,44 +132,56 @@ CREATE TABLE Transaction_Type (
   /** Whether type is currently active */
   is_active BOOLEAN,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Transaction reversals and corrections linking to original transactions.
-    Grain: one row per reversal_id. */
-CREATE TABLE Transaction_Reversal (
+    Grain: one row per reversal_id.
+
+    # Columns:
+    * reversal_id: Unique identifier for the reversal
+    * original_transaction_id: Reference to original transaction being reversed
+    * reversing_transaction_id: Reference to the reversing transaction
+    * reversal_type: Reversal type: FULL, PARTIAL, CORRECTION
+    * reversal_amount_cents: Amount reversed in cents @npi @confidential
+    * reason_code: Reason code for reversal
+    * reason_description: Reason description @confidential
+    * reversed_at: Date and time reversal was initiated
+    * posted_date: Date reversal was posted
+    * reversed_by: Employee or system initiating reversal
+    * approved_by: Supervisor approval if required @pii
+    * channel: Channel through which reversal was made
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Transaction_Reversal_schema (
   /** Unique identifier for the reversal */
-  reversal_id STRING,
+  reversal_id STRING NOT NULL,
   /** Reference to original transaction being reversed */
-  original_transaction_id STRING,
+  original_transaction_id STRING NOT NULL,
   /** Reference to the reversing transaction */
   reversing_transaction_id STRING,
   /** Reversal type: FULL, PARTIAL, CORRECTION */
-  reversal_type STRING,
+  reversal_type STRING NOT NULL,
   /** Amount reversed in cents @npi @confidential */
-  reversal_amount_cents BIGINT,
+  reversal_amount_cents BIGINT NOT NULL,
   /** Reason code for reversal */
   reason_code STRING,
   /** Reason description @confidential */
   reason_description STRING,
   /** Date and time reversal was initiated */
-  reversed_at TIMESTAMP,
+  reversed_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Date reversal was posted */
   posted_date DATE,
-  /** Employee or system initiating reversal */
+  /** Employee or system initiating reversal @pii */
   reversed_by STRING,
   /** Supervisor approval if required @pii */
   approved_by STRING,
   /** Channel through which reversal was made */
   channel STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

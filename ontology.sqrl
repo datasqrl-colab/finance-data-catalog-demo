@@ -1,5 +1,54 @@
 IMPORT customer.customer_ontology.*;
+IMPORT deposits_payments.deposits_payments_ontology.*;
 IMPORT lending.lending-ontology.*;
+
+-- =====================================================
+-- Customer to Deposit Account Relationships
+-- =====================================================
+
+/** Deposit accounts where customer is a holder (primary, joint, beneficiary, etc.) */
+Customer.deposit_accounts := SELECT DISTINCT a.* FROM Account a
+    JOIN Account_Holder h ON a.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id;
+
+/** Open checking and savings accounts for this customer */
+Customer.open_deposit_accounts := SELECT DISTINCT a.* FROM Account a
+    JOIN Account_Holder h ON a.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id AND a.account_status = 'OPEN';
+
+-- =====================================================
+-- Customer to Transaction Relationships
+-- =====================================================
+
+/** Core transactions across all of customer's deposit accounts */
+Customer.deposit_transactions := SELECT DISTINCT t.* FROM AccountTransaction t
+    JOIN Account_Holder h ON t.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id
+    ORDER BY t.transaction_at DESC;
+
+/** Card authorizations across all of customer's accounts */
+Customer.card_authorizations := SELECT DISTINCT a.* FROM Card_Authorization a
+    JOIN Account_Holder h ON a.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id
+    ORDER BY a.authorized_at DESC;
+
+/** Chargebacks filed by this customer */
+Customer.card_chargebacks := SELECT DISTINCT c.* FROM Card_Chargeback c
+    JOIN Account_Holder h ON c.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id
+    ORDER BY c.initiated_at DESC;
+
+/** ACH transactions across all of customer's accounts */
+Customer.ach_transactions := SELECT DISTINCT a.* FROM Ach_Transaction a
+    JOIN Account_Holder h ON a.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id
+    ORDER BY a.processed_at DESC;
+
+/** Wire transfers linked to this customer */
+Customer.wire_transfers := SELECT DISTINCT w.* FROM Wire_Transfer w
+    JOIN Account_Holder h ON w.account_id = h.account_id
+    WHERE h.customer_id = this.customer_id
+    ORDER BY w.initiated_at DESC;
 
 -- =====================================================
 -- Customer to Credit Card Relationships
@@ -74,3 +123,64 @@ Customer.mortgage_delinquency_events := SELECT * FROM Delinquency_Event d WHERE 
 /** Mortgage loan modifications for this customer */
 Customer.mortgage_modifications := SELECT * FROM Loan_Modification m WHERE this.customer_id = m.customer_id
                                                                  ORDER BY request_date DESC;
+
+-- =====================================================
+-- Catalog Verification: Snapshot Tests
+-- =====================================================
+
+/*+test */
+Catalog_Customer_Test := SELECT customer_id, first_name, last_name, customer_status
+                         FROM Customer WHERE customer_id = 'CUST-001'
+                         ORDER BY customer_id;
+
+/*+test */
+Catalog_Customer_Address_Test := SELECT customer_id, address_type, city, is_current
+                                 FROM Customer_Address WHERE customer_id = 'CUST-001'
+                                 ORDER BY address_type;
+
+/*+test */
+Catalog_Deposit_Account_Test := SELECT account_id, account_type, account_status
+                                FROM Account WHERE account_id = 'ACC001'
+                                ORDER BY account_id;
+
+/*+test */
+Catalog_Account_Holder_Test := SELECT account_id, customer_id, holder_type, is_active
+                               FROM Account_Holder WHERE account_id = 'ACC001'
+                               ORDER BY customer_id;
+
+/*+test */
+Catalog_Transaction_Test := SELECT transaction_id, account_id, amount_cents, transaction_status
+                            FROM AccountTransaction WHERE account_id = 'ACC001'
+                            ORDER BY transaction_id;
+
+/*+test */
+Catalog_Credit_Card_Account_Test := SELECT credit_card_account_id, account_status
+                                    FROM Credit_Card_Account
+                                    ORDER BY credit_card_account_id;
+
+/*+test */
+Catalog_Mortgage_Loan_Test := SELECT loan_id, loan_status
+                              FROM Mortgage_Loan
+                              ORDER BY loan_id;
+
+-- =====================================================
+-- Cross-LOB Data Quality Assertions
+-- =====================================================
+
+/** Every Account_Holder must reference a customer that exists in Customer table */
+/*+test(no_rows) */
+AccountHolderReferencesValidCustomer_Test := SELECT h.* FROM Account_Holder h
+    LEFT JOIN Customer c ON h.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Card_Chargeback must reference a customer that exists in Customer table */
+/*+test(no_rows) */
+CardChargebackReferencesValidCustomer_Test := SELECT c.* FROM Card_Chargeback c
+    LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
+    WHERE cust.customer_id IS NULL;
+
+/** Every Wire_Transfer must reference a customer that exists in Customer table */
+/*+test(no_rows) */
+WireTransferReferencesValidCustomer_Test := SELECT w.* FROM Wire_Transfer w
+    LEFT JOIN Customer c ON w.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;

@@ -141,3 +141,36 @@ Property_Collateral.valuations := SELECT * FROM Property_Valuation v WHERE this.
 /** Most recent valuation for this property */
 Property_Collateral.current_valuation := SELECT * FROM Property_Valuation v WHERE this.property_id = v.property_id
                                                                         ORDER BY valuation_date DESC LIMIT 1;
+
+-- =====================================================
+-- Data Quality Assertions
+-- =====================================================
+
+/** Every Personal_Loan must reference a valid Loan_Application */
+/*+test(no_rows) */
+PersonalLoanReferencesValidApplication_Test := SELECT l.* FROM Personal_Loan l
+    LEFT JOIN Loan_Application a ON l.application_id = a.application_id
+    WHERE a.application_id IS NULL AND l.application_id IS NOT NULL;
+
+/** Every Auto_Loan must reference a valid Loan_Application */
+/*+test(no_rows) */
+AutoLoanReferencesValidApplication_Test := SELECT l.* FROM Auto_Loan l
+    LEFT JOIN Loan_Application a ON l.application_id = a.application_id
+    WHERE a.application_id IS NULL AND l.application_id IS NOT NULL;
+
+/** Every Credit_Card must reference a valid Credit_Card_Account */
+/*+test(no_rows) */
+CreditCardReferencesValidAccount_Test := SELECT c.* FROM Credit_Card c
+    LEFT JOIN Credit_Card_Account a ON c.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every Mortgage_Loan must reference a valid Mortgage_Application */
+/*+test(no_rows) */
+MortgageLoanReferencesValidApplication_Test := SELECT l.* FROM Mortgage_Loan l
+    LEFT JOIN Mortgage_Application a ON l.application_id = a.application_id
+    WHERE a.application_id IS NULL AND l.application_id IS NOT NULL;
+
+/** Personal_Loan loan_status must be a valid value */
+/*+test(no_rows) */
+PersonalLoanValidStatus_Test := SELECT * FROM Personal_Loan
+    WHERE loan_status NOT IN ('ACTIVE', 'PAID_OFF', 'CHARGED_OFF', 'SETTLED');

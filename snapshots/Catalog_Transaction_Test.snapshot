@@ -1,0 +1,20 @@
+{
+  "data" : {
+    "Catalog_Transaction_Test" : [ {
+      "transaction_id" : "DP-TXN-00001",
+      "account_id" : "ACC001",
+      "amount_cents" : 4500,
+      "transaction_status" : "POSTED"
+    }, {
+      "transaction_id" : "DP-TXN-00002",
+      "account_id" : "ACC001",
+      "amount_cents" : 8900,
+      "transaction_status" : "POSTED"
+    }, {
+      "transaction_id" : "DP-TXN-00003",
+      "account_id" : "ACC001",
+      "amount_cents" : 500000,
+      "transaction_status" : "POSTED"
+    } ]
+  }
+}
