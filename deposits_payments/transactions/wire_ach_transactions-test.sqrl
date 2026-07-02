@@ -1,0 +1,47 @@
+-- ## Wire and ACH Transactions - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT wire_ach_transactions.*;
+
+CREATE TABLE Ach_Transaction (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/wire_ach_transactions-ach_transaction.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Ach_Transaction_schema;
+
+CREATE TABLE Wire_Transfer (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/wire_ach_transactions-wire_transfer.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Wire_Transfer_schema;
+
+CREATE TABLE Payment_Return (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/wire_ach_transactions-payment_return.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Payment_Return_schema;

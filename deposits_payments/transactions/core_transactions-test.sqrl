@@ -1,0 +1,47 @@
+-- ## Core Transactions - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT core_transactions.*;
+
+CREATE TABLE Transaction (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/core_transactions-transaction.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE CoreTransaction_schema;
+
+CREATE TABLE Transaction_Type (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/core_transactions-transaction_type.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE CoreTransactionType_schema;
+
+CREATE TABLE Transaction_Reversal (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/core_transactions-transaction_reversal.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE CoreTransactionReversal_schema;

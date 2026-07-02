@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Unified_Transaction_Test" : [ {
+      "transaction_id" : "TXN-001",
+      "transaction_source" : "ACH",
+      "debit_credit" : "CREDIT"
+    } ]
+  }
+}

@@ -31,7 +31,7 @@
     * maturity_date: Maturity date
     * next_payment_due_date: Next payment due date
     * paid_off_date: Date loan was paid off
-    * origination_fee_cents: Origination fee in cents
+    * origination_fee_cents: Origination fee in cents @npi @confidential
     * credit_score_at_origination: Credit score at origination @npi @confidential
     * dti_at_origination: DTI ratio at origination @npi @confidential
     * autopay_enrolled: Autopay enrolled
@@ -167,8 +167,8 @@ CREATE TABLE Auto_Loan_schema (
     * payment_amount_cents: Payment amount in cents @npi @confidential
     * principal_cents: Principal portion in cents @npi @confidential
     * interest_cents: Interest portion in cents @npi @confidential
-    * late_fee_cents: Late fee amount in cents
-    * other_fees_cents: Other fees in cents
+    * late_fee_cents: Late fee amount in cents @npi @confidential
+    * other_fees_cents: Other fees in cents @npi @confidential
     * payment_type: Payment type: REGULAR, EXTRA_PRINCIPAL, PAYOFF, PARTIAL
     * payment_status: Payment status: APPLIED, PENDING, RETURNED, REVERSED
     * due_date: Date payment was due
@@ -285,11 +285,11 @@ CREATE TABLE Loan_Application_schema (
     * repossession_date: Repossession date (for auto)
     * repossession_agency: Repossession agency
     * sale_date: Sale date (for repo)
-    * sale_amount_cents: Sale amount in cents
+    * sale_amount_cents: Sale amount in cents @npi @confidential
     * deficiency_balance_cents: Deficiency balance in cents @npi @confidential
     * charge_off_date: Charge-off date
     * charge_off_amount_cents: Charge-off amount in cents @npi @confidential
-    * recovery_amount_cents: Recovery amount in cents
+    * recovery_amount_cents: Recovery amount in cents @npi @confidential
     * source_system: Source system identifier
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Consumer_Loan_Delinquency_Event_schema (

@@ -33,7 +33,7 @@
     * penalty_apr_active: Whether penalty APR is currently applied
     * intro_apr: Introductory APR (if active)
     * intro_apr_end_date: Introductory APR expiration date
-    * annual_fee_cents: Annual fee in cents
+    * annual_fee_cents: Annual fee in cents @npi @confidential
     * opened_date: Date account was opened
     * closed_date: Date account was closed (if applicable)
     * closure_reason: Closure reason
@@ -42,7 +42,7 @@
     * autopay_enrolled: Whether account is enrolled in autopay
     * autopay_type: Autopay type: MINIMUM, STATEMENT_BALANCE, FULL_BALANCE, FIXED_AMOUNT
     * rewards_program: Rewards program enrolled
-    * rewards_balance: Current rewards balance (points/miles/cashback cents)
+    * rewards_balance: Current rewards balance (points/miles/cashback cents) @npi @confidential
     * source_system: Source system identifier
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Credit_Card_Account_schema (
@@ -100,7 +100,7 @@ CREATE TABLE Credit_Card_Account_schema (
     * is_virtual: Whether card is virtual only
     * has_chip: Whether card has chip
     * pin_status: PIN status: SET, NOT_SET, LOCKED
-    * spending_limit_cents: Individual card spending limit in cents (if set)
+    * spending_limit_cents: Individual card spending limit in cents (if set) @npi @confidential
     * source_system: Source system identifier
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Credit_Card_schema (
@@ -141,7 +141,7 @@ CREATE TABLE Credit_Card_schema (
     * purchases_cents: Purchases in cents @npi @confidential
     * cash_advances_cents: Cash advances in cents @npi @confidential
     * balance_transfers_cents: Balance transfers in cents @npi @confidential
-    * fees_cents: Fees charged in cents
+    * fees_cents: Fees charged in cents @npi @confidential
     * interest_cents: Interest charged in cents @npi @confidential
     * new_balance_cents: New statement balance in cents @npi @confidential
     * minimum_payment_cents: Minimum payment due in cents @npi @confidential
@@ -151,8 +151,8 @@ CREATE TABLE Credit_Card_schema (
     * transaction_count: Number of transactions this cycle
     * days_in_cycle: Days in billing cycle
     * avg_daily_balance_cents: Average daily balance in cents @npi @confidential
-    * rewards_earned: Points/rewards earned this cycle
-    * rewards_redeemed: Points/rewards redeemed this cycle
+    * rewards_earned: Points/rewards earned this cycle @npi @confidential
+    * rewards_redeemed: Points/rewards redeemed this cycle @npi @confidential
     * source_system: Source system identifier
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Credit_Card_Statement_schema (
@@ -195,7 +195,7 @@ CREATE TABLE Credit_Card_Statement_schema (
     * payment_status: Payment status: PENDING, POSTED, RETURNED, REVERSED
     * payment_method: Payment method: ACH, CHECK, DEBIT_CARD, TRANSFER
     * source_account: Source account for payment @npi
-    * source_routing: Source routing number
+    * source_routing: Source routing number @npi
     * received_date: Date payment was received
     * posted_date: Date payment was posted
     * due_date: Due date for this payment cycle
@@ -237,7 +237,7 @@ CREATE TABLE Credit_Card_Payment_schema (
     * change_type: Change type: INCREASE, DECREASE, INITIAL
     * previous_limit_cents: Previous credit limit in cents @npi @confidential
     * new_limit_cents: New credit limit in cents @npi @confidential
-    * change_amount_cents: Change amount in cents
+    * change_amount_cents: Change amount in cents @npi @confidential
     * change_reason: Reason for change: CUSTOMER_REQUEST, PROACTIVE, RISK_REVIEW, NEW_ACCOUNT
     * initiated_by: Initiated by: CUSTOMER, BANK, SYSTEM
     * effective_date: Date change was effective
@@ -283,7 +283,7 @@ CREATE TABLE Credit_Limit_History_schema (
     * collection_agency: Collection agency assigned (if applicable)
     * charge_off_date: Charge-off date (if applicable)
     * charge_off_amount_cents: Charge-off amount in cents @npi @confidential
-    * recovery_amount_cents: Recovery amount in cents
+    * recovery_amount_cents: Recovery amount in cents @npi @confidential
     * net_charge_off_cents: Net charge-off in cents @confidential
     * source_system: Source system identifier
     * source_updated_at: Timestamp when record was last updated in source system */

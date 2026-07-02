@@ -10,9 +10,9 @@
 
 /** ACH transaction records for direct deposits, bill payments, and transfers.
     Grain: one row per ach_transaction_id. */
-CREATE TABLE Ach_Transaction (
+CREATE TABLE Ach_Transaction_schema (
   /** Unique identifier for the ACH transaction */
-  ach_transaction_id STRING,
+  ach_transaction_id STRING NOT NULL,
   /** Reference to posted transaction */
   transaction_id STRING,
   /** Reference to account @npi */
@@ -56,7 +56,7 @@ CREATE TABLE Ach_Transaction (
   /** Settlement date */
   settlement_date DATE,
   /** Date and time transaction was processed */
-  processed_at TIMESTAMP,
+  processed_at TIMESTAMP_LTZ(3),
   /** Whether transaction is same-day ACH */
   is_same_day BOOLEAN,
   /** Batch reference number */
@@ -64,18 +64,16 @@ CREATE TABLE Ach_Transaction (
   /** File ID from ACH file */
   file_id STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Wire transfer records for domestic and international transfers.
     Grain: one row per wire_transfer_id. */
-CREATE TABLE Wire_Transfer (
+CREATE TABLE Wire_Transfer_schema (
   /** Unique identifier for the wire transfer */
-  wire_transfer_id STRING,
+  wire_transfer_id STRING NOT NULL,
   /** Reference to posted transaction */
   transaction_id STRING,
   /** Reference to account @npi */
@@ -133,11 +131,11 @@ CREATE TABLE Wire_Transfer (
   /** OFAC screening result: CLEAR, HOLD, BLOCKED */
   ofac_status STRING,
   /** Date and time wire was initiated */
-  initiated_at TIMESTAMP,
+  initiated_at TIMESTAMP_LTZ(3),
   /** Date and time wire was sent */
-  sent_at TIMESTAMP,
+  sent_at TIMESTAMP_LTZ(3),
   /** Date and time wire was completed */
-  completed_at TIMESTAMP,
+  completed_at TIMESTAMP_LTZ(3),
   /** Employee or system initiating wire @pii */
   initiated_by STRING,
   /** Approval status: PENDING, APPROVED, REJECTED */
@@ -145,20 +143,18 @@ CREATE TABLE Wire_Transfer (
   /** Employee approving wire @pii */
   approved_by STRING,
   /** Date and time of approval */
-  approved_at TIMESTAMP,
+  approved_at TIMESTAMP_LTZ(3),
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Payment return records for ACH returns and wire rejects.
     Grain: one row per return_id. */
-CREATE TABLE Payment_Return (
+CREATE TABLE Payment_Return_schema (
   /** Unique identifier for the return */
-  return_id STRING,
+  return_id STRING NOT NULL,
   /** Reference to original ACH transaction */
   ach_transaction_id STRING,
   /** Reference to original wire transfer */
@@ -186,7 +182,7 @@ CREATE TABLE Payment_Return (
   /** Return effective date */
   return_effective_date DATE,
   /** Date and time return was processed */
-  processed_at TIMESTAMP,
+  processed_at TIMESTAMP_LTZ(3),
   /** Trace number of original transaction */
   original_trace_number STRING,
   /** Trace number of return */
@@ -196,9 +192,7 @@ CREATE TABLE Payment_Return (
   /** Whether return was dishonored */
   is_dishonored BOOLEAN,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

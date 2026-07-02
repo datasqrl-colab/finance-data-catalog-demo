@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Transaction_Test" : [ {
+      "transaction_id" : "TXN-001",
+      "transaction_category" : "CREDIT",
+      "amount_cents" : 50000
+    } ]
+  }
+}

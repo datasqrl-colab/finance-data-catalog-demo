@@ -229,7 +229,7 @@ CREATE TABLE Property_Collateral_schema (
     * employer_name: Employer name at origination @pii
     * years_employed: Years at current employer
     * first_time_homebuyer: First-time homebuyer flag (HMDA)
-    * citizenship_status: Citizenship status: US_CITIZEN, PERMANENT_RESIDENT, NON_RESIDENT
+    * citizenship_status: Citizenship status: US_CITIZEN, PERMANENT_RESIDENT, NON_RESIDENT @pii
     * source_system: Source system identifier
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Mortgage_Borrower_schema (

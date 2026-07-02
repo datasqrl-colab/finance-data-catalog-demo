@@ -11,9 +11,9 @@
 
 /** Primary deposit account record containing account attributes and status.
     Grain: one row per account_id. */
-CREATE TABLE Account (
+CREATE TABLE Account_schema (
   /** Unique identifier for the account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Account number displayed to customer @npi @mask */
   account_number STRING,
   /** Account type: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA */
@@ -51,20 +51,18 @@ CREATE TABLE Account (
   /** Linked account for overdraft protection @npi */
   overdraft_linked_account_id STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Account ownership and holder information linking customers to accounts.
     Grain: one row per account_id, customer_id combination. */
-CREATE TABLE Account_Holder (
+CREATE TABLE Account_Holder_schema (
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Holder type: PRIMARY, JOINT, BENEFICIARY, CUSTODIAN, TRUSTEE, POA */
   holder_type STRING,
   /** Ownership percentage (for joint accounts) */
@@ -80,18 +78,16 @@ CREATE TABLE Account_Holder (
   /** Tax reporting responsibility percentage */
   tax_reporting_percentage DECIMAL(5, 2),
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Account status change history for audit and compliance tracking.
     Grain: one row per account_id, status_changed_at combination. */
-CREATE TABLE Account_Status_History (
+CREATE TABLE Account_Status_History_schema (
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Previous account status */
   previous_status STRING,
   /** New account status */
@@ -99,7 +95,7 @@ CREATE TABLE Account_Status_History (
   /** Reason for status change */
   change_reason STRING,
   /** Date and time status was changed */
-  status_changed_at TIMESTAMP,
+  status_changed_at TIMESTAMP_LTZ(3) NOT NULL,
   /** Employee or system that initiated the change */
   changed_by STRING,
   /** Channel through which change was made: BRANCH, ONLINE, PHONE, SYSTEM */
@@ -107,18 +103,16 @@ CREATE TABLE Account_Status_History (
   /** Additional notes about the status change @confidential */
   notes STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Deposit product configuration and terms reference data.
     Grain: one row per product_code, effective_from combination. */
-CREATE TABLE Account_Product (
+CREATE TABLE Account_Product_schema (
   /** Unique product code */
-  product_code STRING,
+  product_code STRING NOT NULL,
   /** Product name */
   product_name STRING,
   /** Product category: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA */
@@ -146,13 +140,11 @@ CREATE TABLE Account_Product (
   /** FDIC insurance eligible */
   fdic_insured BOOLEAN,
   /** Date product became effective */
-  effective_from DATE,
+  effective_from DATE NOT NULL,
   /** Date product was discontinued */
   effective_to DATE,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

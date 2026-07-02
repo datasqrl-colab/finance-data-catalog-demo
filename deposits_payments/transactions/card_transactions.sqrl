@@ -11,9 +11,9 @@
 
 /** Real-time card authorization requests and responses.
     Grain: one row per authorization_id. */
-CREATE TABLE Card_Authorization (
+CREATE TABLE Card_Authorization_schema (
   /** Unique identifier for the authorization */
-  authorization_id STRING,
+  authorization_id STRING NOT NULL,
   /** Reference to card used @pci @tokenize */
   card_id STRING,
   /** Reference to account @npi */
@@ -33,9 +33,9 @@ CREATE TABLE Card_Authorization (
   /** Decline reason code if declined */
   decline_reason_code STRING,
   /** Date and time of authorization */
-  authorized_at TIMESTAMP,
+  authorized_at TIMESTAMP_LTZ(3),
   /** Authorization expiration timestamp */
-  expires_at TIMESTAMP,
+  expires_at TIMESTAMP_LTZ(3),
   /** Merchant name @pii */
   merchant_name STRING,
   /** Merchant ID */
@@ -71,18 +71,16 @@ CREATE TABLE Card_Authorization (
   /** 3D Secure result if applicable */
   three_ds_result STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Card transaction settlements from payment networks.
     Grain: one row per settlement_id. */
-CREATE TABLE Card_Settlement (
+CREATE TABLE Card_Settlement_schema (
   /** Unique identifier for the settlement */
-  settlement_id STRING,
+  settlement_id STRING NOT NULL,
   /** Reference to original authorization */
   authorization_id STRING,
   /** Reference to posted transaction */
@@ -102,7 +100,7 @@ CREATE TABLE Card_Settlement (
   /** Settlement status: SETTLED, PENDING, REJECTED */
   settlement_status STRING,
   /** Date and time of settlement */
-  settled_at TIMESTAMP,
+  settled_at TIMESTAMP_LTZ(3),
   /** Settlement date from network */
   network_settlement_date DATE,
   /** Merchant name @pii */
@@ -120,18 +118,16 @@ CREATE TABLE Card_Settlement (
   /** Network assessment fee in cents @confidential */
   assessment_fee_cents BIGINT,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Card dispute and chargeback records.
     Grain: one row per chargeback_id. */
-CREATE TABLE Card_Chargeback (
+CREATE TABLE Card_Chargeback_schema (
   /** Unique identifier for the chargeback */
-  chargeback_id STRING,
+  chargeback_id STRING NOT NULL,
   /** Reference to original transaction */
   transaction_id STRING,
   /** Reference to settlement */
@@ -155,11 +151,11 @@ CREATE TABLE Card_Chargeback (
   /** Category: FRAUD, CONSUMER_DISPUTE, PROCESSING_ERROR, AUTHORIZATION */
   chargeback_category STRING,
   /** Date chargeback was initiated */
-  initiated_at TIMESTAMP,
+  initiated_at TIMESTAMP_LTZ(3),
   /** Response deadline */
   response_due_date DATE,
   /** Date chargeback was resolved */
-  resolved_at TIMESTAMP,
+  resolved_at TIMESTAMP_LTZ(3),
   /** Resolution outcome: MERCHANT_WIN, CUSTOMER_WIN, SPLIT */
   resolution_outcome STRING,
   /** Amount recovered from merchant in cents */
@@ -177,18 +173,16 @@ CREATE TABLE Card_Chargeback (
   /** Date provisional credit was issued */
   provisional_credit_date DATE,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Merchant Category Code reference data for transaction classification.
     Grain: one row per mcc_code. */
-CREATE TABLE Mcc_Reference (
+CREATE TABLE Mcc_Reference_schema (
   /** Merchant Category Code */
-  mcc_code STRING,
+  mcc_code STRING NOT NULL,
   /** MCC description */
   mcc_description STRING,
   /** Category grouping */
@@ -204,9 +198,7 @@ CREATE TABLE Mcc_Reference (
   /** Default tax category */
   tax_category STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

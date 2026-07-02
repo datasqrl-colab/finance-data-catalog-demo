@@ -5,9 +5,9 @@
 IMPORT mortgage_originations.*;
 
 CREATE TABLE Mortgage_Application (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_application.jsonl',
@@ -19,9 +19,9 @@ CREATE TABLE Mortgage_Application (
 ) LIKE Mortgage_Application_schema;
 
 CREATE TABLE Mortgage_Loan (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_loan.jsonl',
@@ -33,9 +33,9 @@ CREATE TABLE Mortgage_Loan (
 ) LIKE Mortgage_Loan_schema;
 
 CREATE TABLE Property_Collateral (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-property_collateral.jsonl',
@@ -47,9 +47,9 @@ CREATE TABLE Property_Collateral (
 ) LIKE Property_Collateral_schema;
 
 CREATE TABLE Mortgage_Borrower (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/mortgage_originations-mortgage_borrower.jsonl',

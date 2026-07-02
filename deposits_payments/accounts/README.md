@@ -29,3 +29,8 @@ The Accounts team owns deposit account data including account lifecycle manageme
 - **Regulatory Scope**: GLBA, GDPR, CCPA, Regulation E, Regulation DD
 - **Data Steward**: Deposit Operations
 - **Refresh Frequency**: Daily for bronze, daily for silver
+
+## Environments
+
+- **-test**: Local filesystem data for testing. Connector files: [deposit_accounts-test.sqrl](deposit_accounts-test.sqrl), [account_balances-test.sqrl](account_balances-test.sqrl), [account_analytics-test.sqrl](account_analytics-test.sqrl)
+- **-prod**: Production data — Kafka for bronze tables (Account, Account_Holder, Account_Status_History, Account_Product, Account_Balance_Daily, Interest_Accrual, Account_Hold), Apache Iceberg for silver tables (Account_Activity_Summary, Account_Balance_Trend, Dormancy_Signal). Connector files: [deposit_accounts-prod.sqrl](deposit_accounts-prod.sqrl), [account_balances-prod.sqrl](account_balances-prod.sqrl), [account_analytics-prod.sqrl](account_analytics-prod.sqrl)

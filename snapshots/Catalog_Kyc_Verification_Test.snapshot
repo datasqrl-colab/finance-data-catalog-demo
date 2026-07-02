@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Kyc_Verification_Test" : [ {
+      "verification_id" : "KYC-001",
+      "customer_id" : "CUST-001",
+      "verification_type" : "INITIAL",
+      "verification_result" : "PASS"
+    } ]
+  }
+}

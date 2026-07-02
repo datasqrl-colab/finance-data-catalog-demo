@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Wire_Transfer_Test" : [ {
+      "wire_transfer_id" : "WIRE-001",
+      "wire_type" : "DOMESTIC",
+      "amount_cents" : 25000000
+    } ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Mortgage_Loan_Test" : [ {
+      "loan_id" : "ML-001",
+      "loan_status" : "ACTIVE",
+      "original_principal_cents" : 32000000
+    } ]
+  }
+}

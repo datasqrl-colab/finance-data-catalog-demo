@@ -12,7 +12,7 @@ CREATE TABLE Customer (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'customer_master.customer',
+    'topic' = '${TOPIC_CUSTOMER}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -29,7 +29,7 @@ CREATE TABLE Customer_Address (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'customer_master.customer_address',
+    'topic' = '${TOPIC_CUSTOMER_ADDRESS}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -46,7 +46,7 @@ CREATE TABLE Customer_Contact (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'customer_master.customer_contact',
+    'topic' = '${TOPIC_CUSTOMER_CONTACT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -63,7 +63,7 @@ CREATE TABLE Customer_Employment (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'customer_master.customer_employment',
+    'topic' = '${TOPIC_CUSTOMER_EMPLOYMENT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -80,7 +80,7 @@ CREATE TABLE Customer_Relationship (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'customer_master.customer_relationship',
+    'topic' = '${TOPIC_CUSTOMER_RELATIONSHIP}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',

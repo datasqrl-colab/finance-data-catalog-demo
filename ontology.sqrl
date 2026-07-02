@@ -1,5 +1,6 @@
 IMPORT customer.customer_ontology.*;
 IMPORT lending.lending-ontology.*;
+IMPORT deposits_payments.deposits_payments-ontology.*;
 
 -- =====================================================
 -- Customer to Credit Card Relationships
@@ -74,3 +75,71 @@ Customer.mortgage_delinquency_events := SELECT * FROM Delinquency_Event d WHERE 
 /** Mortgage loan modifications for this customer */
 Customer.mortgage_modifications := SELECT * FROM Loan_Modification m WHERE this.customer_id = m.customer_id
                                                                  ORDER BY request_date DESC;
+
+-- =====================================================
+-- Test Queries — verify import chain and test data
+-- =====================================================
+
+/*+test */
+Catalog_Account_Test := SELECT account_id, account_type, account_status
+                        FROM Account WHERE account_id = 'ACC-001'
+                        ORDER BY account_id;
+
+/*+test */
+Catalog_Transaction_Test := SELECT transaction_id, transaction_category, amount_cents
+                            FROM Transaction WHERE transaction_id = 'TXN-001'
+                            ORDER BY transaction_id;
+
+/*+test */
+Catalog_Card_Authorization_Test := SELECT authorization_id, authorization_status, merchant_name
+                                   FROM Card_Authorization WHERE authorization_id = 'AUTH-001'
+                                   ORDER BY authorization_id;
+
+/*+test */
+Catalog_Ach_Transaction_Test := SELECT ach_transaction_id, direction, amount_cents
+                                FROM Ach_Transaction WHERE ach_transaction_id = 'ACH-001'
+                                ORDER BY ach_transaction_id;
+
+/*+test */
+Catalog_Wire_Transfer_Test := SELECT wire_transfer_id, wire_type, amount_cents
+                              FROM Wire_Transfer WHERE wire_transfer_id = 'WIRE-001'
+                              ORDER BY wire_transfer_id;
+
+/*+test */
+Catalog_Unified_Transaction_Test := SELECT transaction_id, transaction_source, debit_credit
+                                    FROM Unified_Transaction WHERE transaction_id = 'TXN-001'
+                                    ORDER BY transaction_id;
+
+/*+test */
+Catalog_Account_Product_Test := SELECT product_code, product_name, product_category
+                                FROM Account_Product WHERE product_code = 'PROD-CHK-001'
+                                ORDER BY product_code;
+
+-- Customer Domain Test Queries
+
+/*+test */
+Catalog_Customer_Test := SELECT customer_id, customer_type, customer_status
+                         FROM Customer WHERE customer_id = 'CUST-001'
+                         ORDER BY customer_id;
+
+/*+test */
+Catalog_Kyc_Verification_Test := SELECT verification_id, customer_id, verification_type, verification_result
+                                  FROM Kyc_Verification WHERE verification_id = 'KYC-001'
+                                  ORDER BY verification_id;
+
+-- Lending Domain Test Queries
+
+/*+test */
+Catalog_Credit_Card_Account_Test := SELECT credit_card_account_id, account_status, credit_limit_cents
+                                     FROM Credit_Card_Account WHERE credit_card_account_id = 'CCA-001'
+                                     ORDER BY credit_card_account_id;
+
+/*+test */
+Catalog_Personal_Loan_Test := SELECT loan_id, loan_status, original_amount_cents
+                               FROM Personal_Loan WHERE loan_id = 'PL-001'
+                               ORDER BY loan_id;
+
+/*+test */
+Catalog_Mortgage_Loan_Test := SELECT loan_id, loan_status, original_principal_cents
+                               FROM Mortgage_Loan WHERE loan_id = 'ML-001'
+                               ORDER BY loan_id;

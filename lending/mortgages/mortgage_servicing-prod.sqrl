@@ -12,7 +12,7 @@ CREATE TABLE Mortgage_Payment (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.mortgage_payment',
+    'topic' = '${TOPIC_MORTGAGE_PAYMENT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -29,7 +29,7 @@ CREATE TABLE Escrow_Account (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.escrow_account',
+    'topic' = '${TOPIC_ESCROW_ACCOUNT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -46,7 +46,7 @@ CREATE TABLE Delinquency_Event (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.delinquency_event',
+    'topic' = '${TOPIC_DELINQUENCY_EVENT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -63,7 +63,7 @@ CREATE TABLE Loan_Modification (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.loan_modification',
+    'topic' = '${TOPIC_LOAN_MODIFICATION}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -80,7 +80,7 @@ CREATE TABLE Property_Valuation (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.property_valuation',
+    'topic' = '${TOPIC_PROPERTY_VALUATION}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',

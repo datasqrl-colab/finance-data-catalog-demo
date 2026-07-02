@@ -79,17 +79,17 @@ CREATE TABLE Loan_Performance_Monthly_schema (
     # Columns:
     * loan_id: Reference to loan
     * signal_date: Date of signal calculation
-    * prepayment_probability: Overall prepayment probability (0-1)
-    * prepayment_risk_tier: Prepayment risk tier: LOW, MEDIUM, HIGH, VERY_HIGH
-    * rate_incentive_bps: Rate incentive (market rate - loan rate) in basis points
-    * market_rate: Current market rate for similar loans
-    * loan_rate: Loan current rate
-    * burnout_factor: Burnout factor (0-1, higher = more burnout)
+    * prepayment_probability: Overall prepayment probability (0-1) @confidential
+    * prepayment_risk_tier: Prepayment risk tier: LOW, MEDIUM, HIGH, VERY_HIGH @confidential
+    * rate_incentive_bps: Rate incentive (market rate - loan rate) in basis points @confidential
+    * market_rate: Current market rate for similar loans @confidential
+    * loan_rate: Loan current rate @confidential
+    * burnout_factor: Burnout factor (0-1, higher = more burnout) @confidential
     * seasoning_months: Seasoning in months
-    * current_ltv: Current LTV
-    * hpa_since_origination: Home price appreciation since origination
+    * current_ltv: Current LTV @confidential
+    * hpa_since_origination: Home price appreciation since origination @confidential
     * local_unemployment_rate: Local unemployment rate
-    * credit_score_change: Credit score change since origination
+    * credit_score_change: Credit score change since origination @npi @confidential
     * months_since_refi: Months since last refinance
     * is_assumable: Whether loan is assumable
     * has_prepay_penalty: Whether loan has prepayment penalty

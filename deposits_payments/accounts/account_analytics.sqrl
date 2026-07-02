@@ -12,11 +12,11 @@
 
 /** Monthly account activity summary with transaction metrics.
     Grain: one row per account_id, summary_month combination. */
-CREATE TABLE Account_Activity_Summary (
+CREATE TABLE Account_Activity_Summary_schema (
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Month of activity summary (first day of month) */
-  summary_month DATE,
+  summary_month DATE NOT NULL,
   /** Total number of transactions */
   total_transaction_count INT,
   /** Number of debit transactions */
@@ -58,18 +58,16 @@ CREATE TABLE Account_Activity_Summary (
   /** Interest earned in cents @npi @confidential */
   interest_earned_cents BIGINT,
   /** Last activity date in month */
-  last_activity_date DATE,
-  /** Timestamp when summary was computed */
-  computed_at TIMESTAMP
+  last_activity_date DATE
 );
 
 /** Account balance trend analysis with moving averages and volatility.
     Grain: one row per account_id, trend_date combination. */
-CREATE TABLE Account_Balance_Trend (
+CREATE TABLE Account_Balance_Trend_schema (
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Date of trend calculation */
-  trend_date DATE,
+  trend_date DATE NOT NULL,
   /** End of day balance in cents @npi @confidential */
   eod_balance_cents BIGINT,
   /** 7-day moving average balance in cents @npi @confidential */
@@ -95,18 +93,16 @@ CREATE TABLE Account_Balance_Trend (
   /** Trend direction: INCREASING, STABLE, DECREASING */
   trend_direction STRING,
   /** Trend strength (0-100) */
-  trend_strength INT,
-  /** Timestamp when trend was computed */
-  computed_at TIMESTAMP
+  trend_strength INT
 );
 
 /** Dormancy risk signals for regulatory compliance and customer engagement.
     Grain: one row per account_id, assessment_date combination. */
-CREATE TABLE Dormancy_Signal (
+CREATE TABLE Dormancy_Signal_schema (
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Date of dormancy assessment */
-  assessment_date DATE,
+  assessment_date DATE NOT NULL,
   /** Days since last customer-initiated transaction */
   days_since_activity INT,
   /** Date of last customer-initiated transaction */
@@ -138,7 +134,5 @@ CREATE TABLE Dormancy_Signal (
   /** Whether statement was returned as undeliverable */
   statement_returned BOOLEAN,
   /** Recommended action: NONE, OUTREACH, CERTIFIED_LETTER, ESCHEAT_PREP */
-  recommended_action STRING,
-  /** Timestamp when signal was computed */
-  computed_at TIMESTAMP
+  recommended_action STRING
 );

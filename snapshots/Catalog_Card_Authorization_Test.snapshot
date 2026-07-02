@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Card_Authorization_Test" : [ {
+      "authorization_id" : "AUTH-001",
+      "authorization_status" : "APPROVED",
+      "merchant_name" : "AMAZON.COM"
+    } ]
+  }
+}

@@ -141,3 +141,46 @@ Property_Collateral.valuations := SELECT * FROM Property_Valuation v WHERE this.
 /** Most recent valuation for this property */
 Property_Collateral.current_valuation := SELECT * FROM Property_Valuation v WHERE this.property_id = v.property_id
                                                                         ORDER BY valuation_date DESC LIMIT 1;
+
+-- =====================================================
+-- Data Quality & Assertions
+-- =====================================================
+
+/** Credit card account status must be a valid enumeration value */
+/*+test(no_rows) */
+CreditCardAccountValidStatus_Test := SELECT * FROM Credit_Card_Account
+    WHERE account_status NOT IN ('OPEN', 'CLOSED', 'SUSPENDED', 'CHARGED_OFF');
+
+/** Card status must be a valid enumeration value */
+/*+test(no_rows) */
+CardValidStatus_Test := SELECT * FROM Credit_Card
+    WHERE card_status NOT IN ('ACTIVE', 'INACTIVE', 'LOST', 'STOLEN', 'EXPIRED', 'REPLACED', 'CLOSED');
+
+/** Every card must reference a valid credit card account */
+/*+test(no_rows) */
+CardReferencesValidAccount_Test := SELECT c.* FROM Credit_Card c
+    LEFT JOIN Credit_Card_Account a ON c.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Loan status must be a valid enumeration value */
+/*+test(no_rows) */
+LoanValidStatus_Test := SELECT * FROM Personal_Loan
+    WHERE loan_status NOT IN ('ACTIVE', 'PAID_OFF', 'CHARGED_OFF', 'SETTLED');
+
+/** Every loan payment must reference a valid loan */
+/*+test(no_rows) */
+LoanPaymentReferencesValidLoan_Test := SELECT p.* FROM Loan_Payment p
+    LEFT JOIN Personal_Loan pl ON p.loan_id = pl.loan_id AND p.loan_type = 'PERSONAL'
+    LEFT JOIN Auto_Loan al ON p.loan_id = al.loan_id AND p.loan_type = 'AUTO'
+    WHERE pl.loan_id IS NULL AND al.loan_id IS NULL;
+
+/** Mortgage loan status must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageLoanValidStatus_Test := SELECT * FROM Mortgage_Loan
+    WHERE loan_status NOT IN ('ACTIVE', 'CURRENT', 'DQ_30', 'DQ_60', 'DQ_90', 'FORECLOSURE', 'REO', 'PAID_OFF', 'MODIFIED', 'CHARGED_OFF');
+
+/** Every mortgage payment must reference a valid mortgage loan */
+/*+test(no_rows) */
+MortgagePaymentReferencesValidLoan_Test := SELECT p.* FROM Mortgage_Payment p
+    LEFT JOIN Mortgage_Loan l ON p.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;

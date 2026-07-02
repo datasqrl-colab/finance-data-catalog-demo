@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Ach_Transaction_Test" : [ {
+      "ach_transaction_id" : "ACH-001",
+      "direction" : "INBOUND",
+      "amount_cents" : 50000
+    } ]
+  }
+}

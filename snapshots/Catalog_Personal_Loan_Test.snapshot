@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Personal_Loan_Test" : [ {
+      "loan_id" : "PL-001",
+      "loan_status" : "ACTIVE",
+      "original_amount_cents" : 2500000
+    } ]
+  }
+}

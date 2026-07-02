@@ -5,9 +5,9 @@
 IMPORT consumer_loans.*;
 
 CREATE TABLE Personal_Loan (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-personal_loan.jsonl',
@@ -19,9 +19,9 @@ CREATE TABLE Personal_Loan (
 ) LIKE Personal_Loan_schema;
 
 CREATE TABLE Auto_Loan (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-auto_loan.jsonl',
@@ -33,9 +33,9 @@ CREATE TABLE Auto_Loan (
 ) LIKE Auto_Loan_schema;
 
 CREATE TABLE Loan_Payment (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-loan_payment.jsonl',
@@ -47,9 +47,9 @@ CREATE TABLE Loan_Payment (
 ) LIKE Loan_Payment_schema;
 
 CREATE TABLE Loan_Application (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-loan_application.jsonl',
@@ -61,9 +61,9 @@ CREATE TABLE Loan_Application (
 ) LIKE Loan_Application_schema;
 
 CREATE TABLE Consumer_Loan_Delinquency_Event (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/consumer_loans-consumer_loan_delinquency_event.jsonl',

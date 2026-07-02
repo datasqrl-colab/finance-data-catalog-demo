@@ -29,15 +29,15 @@
     * mortgage_count: Number of mortgages
     * total_exposure_cents: Total credit exposure in cents @npi @confidential
     * total_available_cents: Total available credit in cents @npi @confidential
-    * overall_utilization: Overall credit utilization (0-100)
-    * revolving_utilization: Revolving utilization (0-100)
-    * installment_ratio: Installment balance to original ratio
+    * overall_utilization: Overall credit utilization (0-100) @confidential
+    * revolving_utilization: Revolving utilization (0-100) @confidential
+    * installment_ratio: Installment balance to original ratio @confidential
     * current_credit_score: Most recent credit score @npi @confidential
-    * credit_score_change_90d: Credit score change from 90 days ago
-    * max_delinquency_bucket: Highest delinquency bucket across all products
-    * delinquent_product_count: Number of products currently delinquent
+    * credit_score_change_90d: Credit score change from 90 days ago @confidential
+    * max_delinquency_bucket: Highest delinquency bucket across all products @confidential
+    * delinquent_product_count: Number of products currently delinquent @confidential
     * total_past_due_cents: Total past due amount in cents @npi @confidential
-    * risk_tier: Credit risk tier: PRIME, NEAR_PRIME, SUBPRIME, DEEP_SUBPRIME
+    * risk_tier: Credit risk tier: PRIME, NEAR_PRIME, SUBPRIME, DEEP_SUBPRIME @confidential
     * risk_score: Risk score (internal model, 0-100) @confidential */
 CREATE TABLE Customer_Credit_Exposure_schema (
   customer_id STRING NOT NULL,
@@ -76,22 +76,22 @@ CREATE TABLE Customer_Credit_Exposure_schema (
     * total_payments_cents: Total payments made in cents @npi @confidential
     * total_minimum_due_cents: Total minimum payments due in cents @npi @confidential
     * total_statement_balance_cents: Total statement balances in cents @npi @confidential
-    * payment_ratio: Payment ratio (payments / minimum due)
-    * full_payment_ratio: Full payment ratio (payments / statement balance)
-    * payment_behavior: Payment behavior: FULL_PAYER, REVOLVER, MINIMUM_PAYER, TRANSACTOR, DELINQUENT
-    * on_time_payment_count: Number of on-time payments
-    * late_payment_count: Number of late payments
-    * missed_payment_count: Number of missed payments
-    * avg_days_to_payment: Average days to payment (from due date, negative = early)
-    * returned_payment_count: Number of returned payments
-    * on_time_rate_3m: Rolling 3-month on-time payment rate
-    * on_time_rate_6m: Rolling 6-month on-time payment rate
-    * on_time_rate_12m: Rolling 12-month on-time payment rate
-    * months_since_late: Months since last late payment
-    * months_since_missed: Months since last missed payment
-    * autopay_coverage: Autopay coverage (% of products enrolled)
-    * primary_payment_method: Primary payment method: ACH, CHECK, DEBIT_CARD, ONLINE
-    * payment_consistency_score: Payment consistency score (0-100) */
+    * payment_ratio: Payment ratio (payments / minimum due) @confidential
+    * full_payment_ratio: Full payment ratio (payments / statement balance) @confidential
+    * payment_behavior: Payment behavior: FULL_PAYER, REVOLVER, MINIMUM_PAYER, TRANSACTOR, DELINQUENT @confidential
+    * on_time_payment_count: Number of on-time payments @confidential
+    * late_payment_count: Number of late payments @confidential
+    * missed_payment_count: Number of missed payments @confidential
+    * avg_days_to_payment: Average days to payment (from due date, negative = early) @confidential
+    * returned_payment_count: Number of returned payments @confidential
+    * on_time_rate_3m: Rolling 3-month on-time payment rate @confidential
+    * on_time_rate_6m: Rolling 6-month on-time payment rate @confidential
+    * on_time_rate_12m: Rolling 12-month on-time payment rate @confidential
+    * months_since_late: Months since last late payment @confidential
+    * months_since_missed: Months since last missed payment @confidential
+    * autopay_coverage: Autopay coverage (% of products enrolled) @confidential
+    * primary_payment_method: Primary payment method: ACH, CHECK, DEBIT_CARD, ONLINE @confidential
+    * payment_consistency_score: Payment consistency score (0-100) @confidential */
 CREATE TABLE Payment_Behavior_schema (
   customer_id STRING NOT NULL,
   analysis_month DATE NOT NULL,
@@ -130,13 +130,13 @@ CREATE TABLE Payment_Behavior_schema (
     * from_balance_cents: Balance at start of period in cents @npi @confidential
     * to_balance_cents: Balance at end of period in cents @npi @confidential
     * payment_received_cents: Payment received during period in cents @npi @confidential
-    * from_days_past_due: Days past due at start
-    * to_days_past_due: Days past due at end
-    * was_contacted: Whether customer contacted during period
-    * arrangement_made: Whether payment arrangement made
-    * promise_to_pay: Whether promise to pay obtained
+    * from_days_past_due: Days past due at start @confidential
+    * to_days_past_due: Days past due at end @confidential
+    * was_contacted: Whether customer contacted during period @confidential
+    * arrangement_made: Whether payment arrangement made @confidential
+    * promise_to_pay: Whether promise to pay obtained @confidential
     * credit_score: Credit score at transition @npi @confidential
-    * months_on_books: Months on books */
+    * months_on_books: Months on books @confidential */
 CREATE TABLE Delinquency_Rollforward_schema (
   loan_id STRING NOT NULL,
   loan_type STRING NOT NULL,
@@ -166,20 +166,20 @@ CREATE TABLE Delinquency_Rollforward_schema (
     * utilization_date: Date of utilization calculation
     * current_balance_cents: Current balance in cents @npi @confidential
     * credit_limit_cents: Credit limit in cents @npi @confidential
-    * utilization_rate: Utilization rate (0-100)
-    * utilization_band: Utilization band: LOW (0-10), MODERATE (10-30), ELEVATED (30-50), HIGH (50-75), VERY_HIGH (75-90), MAXED (90+)
-    * avg_utilization_7d: 7-day average utilization
-    * avg_utilization_30d: 30-day average utilization
-    * avg_utilization_90d: 90-day average utilization
-    * utilization_change_30d: Utilization change from 30 days ago
-    * utilization_change_90d: Utilization change from 90 days ago
-    * peak_utilization_30d: Peak utilization in trailing 30 days
-    * days_over_90_pct: Days at over 90% utilization in trailing 30 days
+    * utilization_rate: Utilization rate (0-100) @confidential
+    * utilization_band: Utilization band: LOW (0-10), MODERATE (10-30), ELEVATED (30-50), HIGH (50-75), VERY_HIGH (75-90), MAXED (90+) @confidential
+    * avg_utilization_7d: 7-day average utilization @confidential
+    * avg_utilization_30d: 30-day average utilization @confidential
+    * avg_utilization_90d: 90-day average utilization @confidential
+    * utilization_change_30d: Utilization change from 30 days ago @confidential
+    * utilization_change_90d: Utilization change from 90 days ago @confidential
+    * peak_utilization_30d: Peak utilization in trailing 30 days @confidential
+    * days_over_90_pct: Days at over 90% utilization in trailing 30 days @confidential
     * available_credit_cents: Available credit in cents @npi @confidential
-    * distance_to_limit_cents: Distance to limit in cents
-    * cash_advance_utilization: Cash advance utilization
-    * trend_direction: Utilization trend: INCREASING, STABLE, DECREASING
-    * high_utilization_flag: Utilization risk flag */
+    * distance_to_limit_cents: Distance to limit in cents @confidential
+    * cash_advance_utilization: Cash advance utilization @confidential
+    * trend_direction: Utilization trend: INCREASING, STABLE, DECREASING @confidential
+    * high_utilization_flag: Utilization risk flag @confidential */
 CREATE TABLE Credit_Utilization_schema (
   credit_card_account_id STRING NOT NULL,
   customer_id STRING NOT NULL,

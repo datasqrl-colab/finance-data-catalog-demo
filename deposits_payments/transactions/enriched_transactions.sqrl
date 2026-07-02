@@ -11,13 +11,13 @@
 
 /** Unified transaction view combining all transaction types with standardized attributes.
     Grain: one row per transaction_id. */
-CREATE TABLE Unified_Transaction (
+CREATE TABLE Unified_Transaction_schema (
   /** Unique identifier for the transaction */
-  transaction_id STRING,
+  transaction_id STRING NOT NULL,
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Transaction source: CORE, CARD, ACH, WIRE */
   transaction_source STRING,
   /** Original source system transaction ID */
@@ -33,7 +33,7 @@ CREATE TABLE Unified_Transaction (
   /** Transaction status: PENDING, POSTED, REVERSED, RETURNED */
   transaction_status STRING,
   /** Date and time transaction occurred */
-  transaction_at TIMESTAMP,
+  transaction_at TIMESTAMP_LTZ(3),
   /** Date transaction was posted */
   posted_date DATE,
   /** Original description @pii */
@@ -73,16 +73,14 @@ CREATE TABLE Unified_Transaction (
   /** Whether transaction is potentially fraudulent */
   is_suspicious BOOLEAN,
   /** Fraud score (0-100) */
-  fraud_score INT,
-  /** Timestamp when enrichment was computed */
-  computed_at TIMESTAMP
+  fraud_score INT
 );
 
 /** Merchant enrichment data providing standardized merchant information.
     Grain: one row per merchant_id. */
-CREATE TABLE Merchant_Enrichment (
+CREATE TABLE Merchant_Enrichment_schema (
   /** Unique identifier for the merchant */
-  merchant_id STRING,
+  merchant_id STRING NOT NULL,
   /** Raw merchant name as received */
   raw_merchant_name STRING,
   /** Cleaned/standardized merchant name */
@@ -112,16 +110,14 @@ CREATE TABLE Merchant_Enrichment (
   /** Confidence score for enrichment (0-100) */
   confidence_score INT,
   /** Date enrichment was last updated */
-  last_updated_at TIMESTAMP,
-  /** Timestamp when enrichment was computed */
-  computed_at TIMESTAMP
+  last_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Transaction category reference for spending classification.
     Grain: one row per category_id. */
-CREATE TABLE Transaction_Category (
+CREATE TABLE Transaction_Category_schema (
   /** Unique identifier for the category */
-  category_id STRING,
+  category_id STRING NOT NULL,
   /** Category name */
   category_name STRING,
   /** Parent category ID for hierarchy */
@@ -143,20 +139,20 @@ CREATE TABLE Transaction_Category (
   /** Sort order for display */
   sort_order INT,
   /** Timestamp when category was created */
-  created_at TIMESTAMP,
+  created_at TIMESTAMP_LTZ(3),
   /** Timestamp when category was last updated */
-  updated_at TIMESTAMP
+  updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Recurring payment detection and tracking.
     Grain: one row per recurring_payment_id. */
-CREATE TABLE Recurring_Payment (
+CREATE TABLE Recurring_Payment_schema (
   /** Unique identifier for the recurring payment series */
-  recurring_payment_id STRING,
+  recurring_payment_id STRING NOT NULL,
   /** Reference to account @npi */
-  account_id STRING,
+  account_id STRING NOT NULL,
   /** Reference to customer @pii */
-  customer_id STRING,
+  customer_id STRING NOT NULL,
   /** Merchant ID for this recurring payment */
   merchant_id STRING,
   /** Merchant name @pii */
@@ -194,7 +190,5 @@ CREATE TABLE Recurring_Payment (
   /** Annual cost in cents @npi @confidential */
   annual_cost_cents BIGINT,
   /** Detection method: AMOUNT_FREQUENCY, MERCHANT_MATCH, DESCRIPTION_MATCH */
-  detection_method STRING,
-  /** Timestamp when detection was last computed */
-  computed_at TIMESTAMP
+  detection_method STRING
 );

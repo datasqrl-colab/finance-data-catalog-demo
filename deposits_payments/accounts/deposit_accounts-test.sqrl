@@ -1,0 +1,61 @@
+-- ## Deposit Accounts - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT deposit_accounts.*;
+
+CREATE TABLE Account (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_schema;
+
+CREATE TABLE Account_Holder (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account_holder.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Holder_schema;
+
+CREATE TABLE Account_Status_History (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account_status_history.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Status_History_schema;
+
+CREATE TABLE Account_Product (
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account_product.jsonl',
+{{^is_batch}}
+    'source.monitor-interval' = '10 min',
+{{/is_batch}}
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Product_schema;

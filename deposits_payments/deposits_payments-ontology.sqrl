@@ -1,0 +1,247 @@
+IMPORT accounts.deposit_accounts-{{environment}}.*;
+IMPORT accounts.account_balances-{{environment}}.*;
+IMPORT accounts.account_analytics-{{environment}}.*;
+IMPORT transactions.core_transactions-{{environment}}.*;
+IMPORT transactions.card_transactions-{{environment}}.*;
+IMPORT transactions.wire_ach_transactions-{{environment}}.*;
+IMPORT transactions.enriched_transactions-{{environment}}.*;
+
+-- =====================================================
+-- Account Relationships
+-- =====================================================
+
+/** All account holders for this account */
+Account.holders := SELECT * FROM Account_Holder h WHERE this.account_id = h.account_id AND h.is_active;
+
+/** Complete account holder history for this account */
+Account.holder_history := SELECT * FROM Account_Holder h WHERE this.account_id = h.account_id
+                                                  ORDER BY h.added_date DESC;
+
+/** Account status change history */
+Account.status_history := SELECT * FROM Account_Status_History s WHERE this.account_id = s.account_id
+                                                            ORDER BY s.status_changed_at DESC;
+
+/** Most recent status change for this account */
+Account.latest_status_change := SELECT * FROM Account_Status_History s WHERE this.account_id = s.account_id
+                                                                   ORDER BY s.status_changed_at DESC LIMIT 1;
+
+/** Daily balance records for this account */
+Account.balance_daily := SELECT * FROM Account_Balance_Daily b WHERE this.account_id = b.account_id
+                                                           ORDER BY b.balance_date DESC;
+
+/** Most recent daily balance for this account */
+Account.current_balance := SELECT * FROM Account_Balance_Daily b WHERE this.account_id = b.account_id
+                                                              ORDER BY b.balance_date DESC LIMIT 1;
+
+/** Interest accrual records for this account */
+Account.interest_accruals := SELECT * FROM Interest_Accrual i WHERE this.account_id = i.account_id
+                                                           ORDER BY i.accrual_date DESC;
+
+/** Active holds on this account */
+Account.active_holds := SELECT * FROM Account_Hold h WHERE this.account_id = h.account_id AND h.hold_status = 'ACTIVE';
+
+/** All holds on this account */
+Account.holds := SELECT * FROM Account_Hold h WHERE this.account_id = h.account_id
+                                          ORDER BY h.placed_at DESC;
+
+/** Activity summary records for this account */
+Account.activity_summaries := SELECT * FROM Account_Activity_Summary a WHERE this.account_id = a.account_id
+                                                                   ORDER BY a.summary_month DESC;
+
+/** Balance trend data for this account */
+Account.balance_trends := SELECT * FROM Account_Balance_Trend t WHERE this.account_id = t.account_id
+                                                             ORDER BY t.trend_date DESC;
+
+/** Dormancy signal assessments for this account */
+Account.dormancy_signals := SELECT * FROM Dormancy_Signal d WHERE this.account_id = d.account_id
+                                                         ORDER BY d.assessment_date DESC;
+
+/** Most recent dormancy assessment for this account */
+Account.latest_dormancy_signal := SELECT * FROM Dormancy_Signal d WHERE this.account_id = d.account_id
+                                                               ORDER BY d.assessment_date DESC LIMIT 1;
+
+/** Product configuration for this account */
+Account.product := SELECT * FROM Account_Product p WHERE this.product_code = p.product_code
+                                               AND p.is_active ORDER BY p.effective_from DESC LIMIT 1;
+
+-- =====================================================
+-- Account Holder Relationships
+-- =====================================================
+
+/** All accounts held by this holder */
+Account_Holder.accounts := SELECT * FROM Account a WHERE this.account_id = a.account_id;
+
+-- =====================================================
+-- Transaction Relationships
+-- =====================================================
+
+/** All transactions for this account */
+Account.transactions := SELECT * FROM Transaction t WHERE this.account_id = t.account_id
+                                                 ORDER BY t.transaction_at DESC;
+
+/** Posted transactions for this account */
+Account.posted_transactions := SELECT * FROM Transaction t WHERE this.account_id = t.account_id
+                                                       AND t.transaction_status = 'POSTED'
+                                                       ORDER BY t.transaction_at DESC;
+
+/** Reversals of this transaction */
+Transaction.reversals := SELECT * FROM Transaction_Reversal r WHERE this.transaction_id = r.original_transaction_id;
+
+/** The reversing transaction for a reversal */
+Transaction_Reversal.reversing_transaction := SELECT * FROM Transaction t WHERE this.reversing_transaction_id = t.transaction_id;
+
+/** Transaction type reference for this transaction */
+Transaction.transaction_type_ref := SELECT * FROM Transaction_Type tt WHERE this.transaction_type_code = tt.transaction_type_code;
+
+/** Card settlement for this transaction */
+Transaction.card_settlement := SELECT * FROM Card_Settlement s WHERE this.transaction_id = s.transaction_id;
+
+/** Card authorization linked to this settlement */
+Card_Settlement.authorization := SELECT * FROM Card_Authorization a WHERE this.authorization_id = a.authorization_id;
+
+/** Chargebacks for this transaction */
+Transaction.chargebacks := SELECT * FROM Card_Chargeback c WHERE this.transaction_id = c.transaction_id;
+
+/** ACH transaction detail for this transaction */
+Transaction.ach_detail := SELECT * FROM Ach_Transaction a WHERE this.transaction_id = a.transaction_id;
+
+/** Wire transfer detail for this transaction */
+Transaction.wire_detail := SELECT * FROM Wire_Transfer w WHERE this.transaction_id = w.transaction_id;
+
+/** Returns for this transaction */
+Transaction.returns := SELECT * FROM Payment_Return r WHERE this.transaction_id = r.original_transaction_id;
+
+/** MCC reference for this card authorization */
+Card_Authorization.mcc_reference := SELECT * FROM Mcc_Reference m WHERE this.mcc_code = m.mcc_code;
+
+-- =====================================================
+-- Unified Transaction Relationships
+-- =====================================================
+
+/** Merchant enrichment for this unified transaction */
+Unified_Transaction.merchant_enrichment := SELECT * FROM Merchant_Enrichment m WHERE this.merchant_id = m.merchant_id;
+
+/** Transaction category reference for this unified transaction */
+Unified_Transaction.category := SELECT * FROM Transaction_Category c WHERE this.category_id = c.category_id;
+
+/** Recurring payment series for this unified transaction */
+Unified_Transaction.recurring_payment := SELECT * FROM Recurring_Payment r WHERE this.recurring_payment_id = r.recurring_payment_id;
+
+/** All recurring payments for this account */
+Account.recurring_payments := SELECT * FROM Recurring_Payment r WHERE this.account_id = r.account_id;
+
+-- =====================================================
+-- Data Quality & Assertions
+-- =====================================================
+
+/** Account type must be a valid enumeration value */
+/*+test(no_rows) */
+AccountHasValidType_Test := SELECT * FROM Account
+    WHERE account_type NOT IN ('CHECKING', 'SAVINGS', 'MONEY_MARKET', 'CD', 'IRA');
+
+/** Account status must be a valid enumeration value */
+/*+test(no_rows) */
+AccountHasValidStatus_Test := SELECT * FROM Account
+    WHERE account_status NOT IN ('OPEN', 'CLOSED', 'DORMANT', 'FROZEN', 'ESCHEAT');
+
+/** Holder type must be a valid enumeration value */
+/*+test(no_rows) */
+HolderHasValidType_Test := SELECT * FROM Account_Holder
+    WHERE holder_type NOT IN ('PRIMARY', 'JOINT', 'BENEFICIARY', 'CUSTODIAN', 'TRUSTEE', 'POA');
+
+/** Hold type must be a valid enumeration value */
+/*+test(no_rows) */
+HoldHasValidType_Test := SELECT * FROM Account_Hold
+    WHERE hold_type NOT IN ('DEPOSIT', 'LEGAL', 'ADMINISTRATIVE', 'DISPUTE', 'AUTHORIZATION');
+
+/** Hold status must be a valid enumeration value */
+/*+test(no_rows) */
+HoldHasValidStatus_Test := SELECT * FROM Account_Hold
+    WHERE hold_status NOT IN ('ACTIVE', 'RELEASED', 'EXPIRED');
+
+/** Transaction amounts must be non-negative */
+/*+test(no_rows) */
+TransactionHasNonNegativeAmount_Test := SELECT * FROM Transaction WHERE amount_cents < 0;
+
+/** Transaction category must be valid */
+/*+test(no_rows) */
+TransactionHasValidCategory_Test := SELECT * FROM Transaction
+    WHERE transaction_category NOT IN ('DEBIT', 'CREDIT');
+
+/** Transaction status must be a valid enumeration value */
+/*+test(no_rows) */
+TransactionHasValidStatus_Test := SELECT * FROM Transaction
+    WHERE transaction_status NOT IN ('PENDING', 'POSTED', 'REVERSED', 'RETURNED');
+
+/** Authorization status must be a valid enumeration value */
+/*+test(no_rows) */
+AuthorizationHasValidStatus_Test := SELECT * FROM Card_Authorization
+    WHERE authorization_status NOT IN ('APPROVED', 'DECLINED', 'PENDING', 'EXPIRED', 'REVERSED');
+
+/** Card chargeback status must be a valid enumeration value */
+/*+test(no_rows) */
+ChargebackHasValidStatus_Test := SELECT * FROM Card_Chargeback
+    WHERE chargeback_status NOT IN ('INITIATED', 'PENDING', 'WON', 'LOST', 'EXPIRED');
+
+/** ACH direction must be valid */
+/*+test(no_rows) */
+AchHasValidDirection_Test := SELECT * FROM Ach_Transaction
+    WHERE direction NOT IN ('INBOUND', 'OUTBOUND');
+
+/** Wire direction must be valid */
+/*+test(no_rows) */
+WireHasValidDirection_Test := SELECT * FROM Wire_Transfer
+    WHERE direction NOT IN ('INBOUND', 'OUTBOUND');
+
+/** Wire status must be a valid enumeration value */
+/*+test(no_rows) */
+WireHasValidStatus_Test := SELECT * FROM Wire_Transfer
+    WHERE wire_status NOT IN ('INITIATED', 'PENDING', 'SENT', 'RECEIVED', 'COMPLETED', 'RETURNED', 'CANCELLED');
+
+/** Return type must be a valid enumeration value */
+/*+test(no_rows) */
+ReturnHasValidType_Test := SELECT * FROM Payment_Return
+    WHERE return_type NOT IN ('ACH_RETURN', 'ACH_NOC', 'WIRE_RETURN', 'WIRE_REJECT');
+
+/** Dormancy status must be a valid enumeration value */
+/*+test(no_rows) */
+DormancyHasValidStatus_Test := SELECT * FROM Dormancy_Signal
+    WHERE dormancy_status NOT IN ('ACTIVE', 'AT_RISK', 'PRE_DORMANT', 'DORMANT', 'ESCHEAT_ELIGIBLE');
+
+/** Recurring payment frequency must be valid */
+/*+test(no_rows) */
+RecurringPaymentValidFrequency_Test := SELECT * FROM Recurring_Payment
+    WHERE frequency NOT IN ('WEEKLY', 'BIWEEKLY', 'MONTHLY', 'QUARTERLY', 'ANNUAL');
+
+/** Recurring payment status must be valid */
+/*+test(no_rows) */
+RecurringPaymentValidStatus_Test := SELECT * FROM Recurring_Payment
+    WHERE status NOT IN ('ACTIVE', 'PAUSED', 'ENDED', 'UNCERTAIN');
+
+/** Every account holder must reference a valid account */
+/*+test(no_rows) */
+HolderReferencesValidAccount_Test := SELECT h.* FROM Account_Holder h
+    LEFT JOIN Account a ON h.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every transaction must reference a valid account */
+/*+test(no_rows) */
+TransactionReferencesValidAccount_Test := SELECT t.* FROM Transaction t
+    LEFT JOIN Account a ON t.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every hold must reference a valid account */
+/*+test(no_rows) */
+HoldReferencesValidAccount_Test := SELECT h.* FROM Account_Hold h
+    LEFT JOIN Account a ON h.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Transaction reversal cannot reference itself */
+/*+test(no_rows) */
+ReversalNotSelfReferential_Test := SELECT * FROM Transaction_Reversal
+    WHERE reversal_id = original_transaction_id;
+
+/** Account cannot be its own overdraft protection */
+/*+test(no_rows) */
+AccountNotSelfOverdraft_Test := SELECT * FROM Account
+    WHERE account_id = overdraft_linked_account_id;

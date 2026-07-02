@@ -12,7 +12,7 @@ CREATE TABLE Personal_Loan (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'consumer_loans.personal_loan',
+    'topic' = '${TOPIC_PERSONAL_LOAN}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -29,7 +29,7 @@ CREATE TABLE Auto_Loan (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'consumer_loans.auto_loan',
+    'topic' = '${TOPIC_AUTO_LOAN}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -46,7 +46,7 @@ CREATE TABLE Loan_Payment (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'consumer_loans.loan_payment',
+    'topic' = '${TOPIC_LOAN_PAYMENT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -63,7 +63,7 @@ CREATE TABLE Loan_Application (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'consumer_loans.loan_application',
+    'topic' = '${TOPIC_LOAN_APPLICATION}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -80,7 +80,7 @@ CREATE TABLE Consumer_Loan_Delinquency_Event (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'consumer_loans.consumer_loan_delinquency_event',
+    'topic' = '${TOPIC_CONSUMER_LOAN_DELINQUENCY_EVENT}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',

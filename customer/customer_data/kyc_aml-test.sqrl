@@ -5,9 +5,9 @@
 IMPORT kyc_aml.*;
 
 CREATE TABLE Kyc_Verification (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/kyc_aml-kyc_verification.jsonl',
@@ -19,9 +19,9 @@ CREATE TABLE Kyc_Verification (
 ) LIKE Kyc_Verification_schema;
 
 CREATE TABLE Sanctions_Screening (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/kyc_aml-sanctions_screening.jsonl',
@@ -33,9 +33,9 @@ CREATE TABLE Sanctions_Screening (
 ) LIKE Sanctions_Screening_schema;
 
 CREATE TABLE Pep_Screening (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/kyc_aml-pep_screening.jsonl',
@@ -47,9 +47,9 @@ CREATE TABLE Pep_Screening (
 ) LIKE Pep_Screening_schema;
 
 CREATE TABLE Customer_Risk_Rating (
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP_LTZ(3) NOT NULL,
-  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '10' SECOND
+  /** Ingestion timestamp computed at read time */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
 ) WITH (
     'connector' = 'filesystem',
     'path' = '${DATA_PATH}/kyc_aml-customer_risk_rating.jsonl',

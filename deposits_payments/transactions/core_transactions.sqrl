@@ -11,9 +11,9 @@
 
 /** Primary transaction ledger recording all account monetary movements.
     Grain: one row per transaction_id. */
-CREATE TABLE Transaction (
+CREATE TABLE CoreTransaction_schema (
   /** Unique identifier for the transaction */
-  transaction_id STRING,
+  transaction_id STRING NOT NULL,
   /** Reference to account @npi */
   account_id STRING,
   /** Transaction type code reference */
@@ -29,7 +29,7 @@ CREATE TABLE Transaction (
   /** Date transaction was posted to account */
   posted_date DATE,
   /** Date and time transaction occurred */
-  transaction_at TIMESTAMP,
+  transaction_at TIMESTAMP_LTZ(3),
   /** Effective date for interest calculation */
   effective_date DATE,
   /** Transaction description @pii */
@@ -59,18 +59,16 @@ CREATE TABLE Transaction (
   /** Whether transaction has been reconciled */
   is_reconciled BOOLEAN,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Transaction type reference data defining transaction classifications.
     Grain: one row per transaction_type_code. */
-CREATE TABLE Transaction_Type (
+CREATE TABLE CoreTransactionType_schema (
   /** Unique transaction type code */
-  transaction_type_code STRING,
+  transaction_type_code STRING NOT NULL,
   /** Transaction type name */
   transaction_type_name STRING,
   /** Transaction type description */
@@ -92,18 +90,16 @@ CREATE TABLE Transaction_Type (
   /** Whether type is currently active */
   is_active BOOLEAN,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Transaction reversals and corrections linking to original transactions.
     Grain: one row per reversal_id. */
-CREATE TABLE Transaction_Reversal (
+CREATE TABLE CoreTransactionReversal_schema (
   /** Unique identifier for the reversal */
-  reversal_id STRING,
+  reversal_id STRING NOT NULL,
   /** Reference to original transaction being reversed */
   original_transaction_id STRING,
   /** Reference to the reversing transaction */
@@ -117,7 +113,7 @@ CREATE TABLE Transaction_Reversal (
   /** Reason description @confidential */
   reason_description STRING,
   /** Date and time reversal was initiated */
-  reversed_at TIMESTAMP,
+  reversed_at TIMESTAMP_LTZ(3),
   /** Date reversal was posted */
   posted_date DATE,
   /** Employee or system initiating reversal */
@@ -127,9 +123,7 @@ CREATE TABLE Transaction_Reversal (
   /** Channel through which reversal was made */
   channel STRING,
   /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
+  source_system STRING NOT NULL,
   /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
