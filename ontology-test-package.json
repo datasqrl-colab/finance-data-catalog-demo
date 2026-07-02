@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "enabled-engines": ["flink", "postgres", "vertx"],
+  "enabled-engines": ["flink", "iceberg", "duckdb", "vertx"],
   "script": {
     "main": "ontology.sqrl",
     "config": {
