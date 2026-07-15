@@ -1,0 +1,47 @@
+-- ## Wire and ACH Transactions - Production
+--
+-- Ingests source data from Kafka
+
+IMPORT wire_ach_transactions.*;
+
+CREATE TABLE Ach_Transaction (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${WIRE_ACH_ACH_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Ach_Transaction_schema;
+
+CREATE TABLE Wire_Transfer (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${WIRE_ACH_TRANSFER_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Wire_Transfer_schema;
+
+CREATE TABLE Payment_Return (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${WIRE_ACH_RETURN_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Payment_Return_schema;

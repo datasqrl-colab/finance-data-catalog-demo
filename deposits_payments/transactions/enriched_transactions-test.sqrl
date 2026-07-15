@@ -1,0 +1,49 @@
+-- ## Enriched Transactions - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT enriched_transactions.*;
+
+CREATE TABLE Unified_Transaction (
+  /** Timestamp when enrichment was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/enriched_transactions-unified_transaction.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Unified_Transaction_schema;
+
+CREATE TABLE Merchant_Enrichment (
+  /** Timestamp when enrichment was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/enriched_transactions-merchant_enrichment.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Merchant_Enrichment_schema;
+
+CREATE TABLE Transaction_Category (
+  /** Timestamp when category was created */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/enriched_transactions-transaction_category.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Transaction_Category_schema;
+
+CREATE TABLE Recurring_Payment (
+  /** Timestamp when detection was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/enriched_transactions-recurring_payment.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Recurring_Payment_schema;

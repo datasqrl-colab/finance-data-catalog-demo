@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Deposit_Account_Test" : [ {
+      "account_id" : "ACC-001",
+      "account_type" : "CHECKING",
+      "account_status" : "OPEN"
+    } ]
+  }
+}

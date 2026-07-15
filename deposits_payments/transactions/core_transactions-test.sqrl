@@ -1,0 +1,41 @@
+-- ## Core Transactions - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT core_transactions.*;
+
+CREATE TABLE Transaction (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/core_transactions-transaction.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Transaction_schema;
+
+CREATE TABLE Transaction_Type (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/core_transactions-transaction_type.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Transaction_Type_schema;
+
+CREATE TABLE Transaction_Reversal (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/core_transactions-transaction_reversal.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Transaction_Reversal_schema;

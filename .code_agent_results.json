@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "mode": "implementation",
+  "scenario": "catalog",
+  "domains": [
+    "finance"
+  ],
+  "refinements": 3,
+  "issue_score": 307,
+  "issue_count": 23,
+  "request_uuid": "3e8dc855-f98a-4df8-bc55-883347fc4553"
+}

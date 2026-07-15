@@ -1,0 +1,15 @@
+{
+  "data" : {
+    "Catalog_Account_Holder_Test" : [ {
+      "account_id" : "ACC-001",
+      "customer_id" : "CUST-001",
+      "holder_type" : "PRIMARY",
+      "is_active" : true
+    }, {
+      "account_id" : "ACC-001",
+      "customer_id" : "CUST-002",
+      "holder_type" : "JOINT",
+      "is_active" : true
+    } ]
+  }
+}

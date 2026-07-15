@@ -1,0 +1,61 @@
+-- ## Card Transactions - Production
+--
+-- Ingests source data from Kafka
+
+IMPORT card_transactions.*;
+
+CREATE TABLE Card_Authorization (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${CARD_TRANSACTIONS_AUTHORIZATION_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Card_Authorization_schema;
+
+CREATE TABLE Card_Settlement (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${CARD_TRANSACTIONS_SETTLEMENT_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Card_Settlement_schema;
+
+CREATE TABLE Card_Chargeback (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${CARD_TRANSACTIONS_CHARGEBACK_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Card_Chargeback_schema;
+
+CREATE TABLE Mcc_Reference (
+  /** Timestamp when record was ingested into the data platform */
+  ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'properties.bootstrap.servers' = '${DEPOSITS_PAYMENTS_KAFKA_BROKERS}',
+    'properties.group.id' = '${DEPLOYMENT_ID}',
+    'topic' = '${CARD_TRANSACTIONS_MCC_TOPIC}',
+    'scan.startup.mode' = 'earliest-offset',
+    'value.format' = 'json',
+    'value.json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Mcc_Reference_schema;

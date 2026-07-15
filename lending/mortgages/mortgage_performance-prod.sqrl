@@ -11,9 +11,9 @@ CREATE TABLE Loan_Performance_Monthly (
 ) WITH (
     'connector' = 'iceberg',
     'catalog-type' = 'hadoop',
-    'catalog-name' = 'lending',
-    'catalog-database' = 'mortgages',
-    'catalog-table' = 'loan_performance_monthly',
+    'catalog-name' = '${MORTGAGE_PERFORMANCE_CATALOG_NAME}',
+    'catalog-database' = '${MORTGAGE_PERFORMANCE_CATALOG_DATABASE}',
+    'catalog-table' = '${LOAN_PERFORMANCE_MONTHLY_TABLE}',
     'warehouse' = '${LENDING_ICEBERG_WAREHOUSE}',
     'format-version' = '2',
     'write.upsert.enabled' = 'true'
@@ -26,9 +26,9 @@ CREATE TABLE Prepayment_Signal (
 ) WITH (
     'connector' = 'iceberg',
     'catalog-type' = 'hadoop',
-    'catalog-name' = 'lending',
-    'catalog-database' = 'mortgages',
-    'catalog-table' = 'prepayment_signal',
+    'catalog-name' = '${MORTGAGE_PERFORMANCE_CATALOG_NAME}',
+    'catalog-database' = '${MORTGAGE_PERFORMANCE_CATALOG_DATABASE}',
+    'catalog-table' = '${PREPAYMENT_SIGNAL_TABLE}',
     'warehouse' = '${LENDING_ICEBERG_WAREHOUSE}',
     'format-version' = '2',
     'write.upsert.enabled' = 'true'
@@ -41,9 +41,9 @@ CREATE TABLE Vintage_Performance (
 ) WITH (
     'connector' = 'iceberg',
     'catalog-type' = 'hadoop',
-    'catalog-name' = 'lending',
-    'catalog-database' = 'mortgages',
-    'catalog-table' = 'vintage_performance',
+    'catalog-name' = '${MORTGAGE_PERFORMANCE_CATALOG_NAME}',
+    'catalog-database' = '${MORTGAGE_PERFORMANCE_CATALOG_DATABASE}',
+    'catalog-table' = '${VINTAGE_PERFORMANCE_TABLE}',
     'warehouse' = '${LENDING_ICEBERG_WAREHOUSE}',
     'format-version' = '2',
     'write.upsert.enabled' = 'true'

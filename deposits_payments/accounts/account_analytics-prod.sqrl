@@ -1,0 +1,50 @@
+-- ## Account Analytics - Production
+--
+-- Writes enriched data to Apache Iceberg tables
+
+IMPORT account_analytics.*;
+
+CREATE TABLE Account_Activity_Summary (
+  /** Timestamp when summary was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (account_id, summary_month) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ACCOUNT_ANALYTICS_CATALOG_NAME}',
+    'catalog-database' = '${ACCOUNT_ANALYTICS_CATALOG_DATABASE}',
+    'catalog-table' = '${ACCOUNT_ACTIVITY_SUMMARY_TABLE}',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Account_Activity_Summary_schema;
+
+CREATE TABLE Account_Balance_Trend (
+  /** Timestamp when trend was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (account_id, trend_date) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ACCOUNT_ANALYTICS_CATALOG_NAME}',
+    'catalog-database' = '${ACCOUNT_ANALYTICS_CATALOG_DATABASE}',
+    'catalog-table' = '${ACCOUNT_BALANCE_TREND_TABLE}',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Account_Balance_Trend_schema;
+
+CREATE TABLE Dormancy_Signal (
+  /** Timestamp when signal was computed */
+  computed_at TIMESTAMP_LTZ(3) NOT NULL,
+  PRIMARY KEY (account_id, assessment_date) NOT ENFORCED
+) WITH (
+    'connector' = 'iceberg',
+    'catalog-type' = 'hadoop',
+    'catalog-name' = '${ACCOUNT_ANALYTICS_CATALOG_NAME}',
+    'catalog-database' = '${ACCOUNT_ANALYTICS_CATALOG_DATABASE}',
+    'catalog-table' = '${DORMANCY_SIGNAL_TABLE}',
+    'warehouse' = '${DEPOSITS_PAYMENTS_ICEBERG_WAREHOUSE}',
+    'format-version' = '2',
+    'write.upsert.enabled' = 'true'
+) LIKE Dormancy_Signal_schema;

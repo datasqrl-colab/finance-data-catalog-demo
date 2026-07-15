@@ -90,3 +90,45 @@ AddressReferencesValidCustomer_Test := SELECT a.* FROM Customer_Address a
 /*+test(no_rows) */
 RelationshipNotSelfReferential_Test := SELECT * FROM Customer_Relationship
     WHERE primary_customer_id = related_customer_id;
+
+/** Every contact must reference an existing Customer */
+/*+test(no_rows) */
+ContactReferencesValidCustomer_Test := SELECT ct.* FROM Customer_Contact ct
+    LEFT JOIN Customer c ON ct.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every employment record must reference an existing Customer */
+/*+test(no_rows) */
+EmploymentReferencesValidCustomer_Test := SELECT e.* FROM Customer_Employment e
+    LEFT JOIN Customer c ON e.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every relationship must reference an existing primary customer */
+/*+test(no_rows) */
+RelationshipReferencesValidCustomer_Test := SELECT r.* FROM Customer_Relationship r
+    LEFT JOIN Customer c ON r.primary_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every KYC verification must reference an existing Customer */
+/*+test(no_rows) */
+KycVerificationReferencesValidCustomer_Test := SELECT k.* FROM Kyc_Verification k
+    LEFT JOIN Customer c ON k.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every sanctions screening must reference an existing Customer */
+/*+test(no_rows) */
+SanctionsScreeningReferencesValidCustomer_Test := SELECT s.* FROM Sanctions_Screening s
+    LEFT JOIN Customer c ON s.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every PEP screening must reference an existing Customer */
+/*+test(no_rows) */
+PepScreeningReferencesValidCustomer_Test := SELECT p.* FROM Pep_Screening p
+    LEFT JOIN Customer c ON p.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every risk rating must reference an existing Customer */
+/*+test(no_rows) */
+RiskRatingReferencesValidCustomer_Test := SELECT r.* FROM Customer_Risk_Rating r
+    LEFT JOIN Customer c ON r.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;

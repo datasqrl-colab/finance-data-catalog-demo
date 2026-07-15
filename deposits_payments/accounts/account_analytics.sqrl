@@ -11,134 +11,134 @@
 -- Upstream:         deposit_accounts.sqrl, account_balances.sqrl, ../transactions/core_transactions.sqrl
 
 /** Monthly account activity summary with transaction metrics.
-    Grain: one row per account_id, summary_month combination. */
-CREATE TABLE Account_Activity_Summary (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Month of activity summary (first day of month) */
-  summary_month DATE,
-  /** Total number of transactions */
-  total_transaction_count INT,
-  /** Number of debit transactions */
-  debit_transaction_count INT,
-  /** Number of credit transactions */
-  credit_transaction_count INT,
-  /** Total debit amount in cents @npi @confidential */
-  total_debit_cents BIGINT,
-  /** Total credit amount in cents @npi @confidential */
-  total_credit_cents BIGINT,
-  /** Net change in balance in cents @npi @confidential */
-  net_change_cents BIGINT,
-  /** Average transaction size in cents */
+    Grain: one row per account_id, summary_month combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * summary_month: Month of activity summary (first day of month)
+    * total_transaction_count: Total number of transactions
+    * debit_transaction_count: Number of debit transactions
+    * credit_transaction_count: Number of credit transactions
+    * total_debit_cents: Total debit amount in cents @npi @confidential
+    * total_credit_cents: Total credit amount in cents @npi @confidential
+    * net_change_cents: Net change in balance in cents @npi @confidential
+    * avg_transaction_size_cents: Average transaction size in cents @npi @confidential
+    * atm_transaction_count: Number of ATM transactions
+    * pos_transaction_count: Number of POS/debit card transactions
+    * ach_transaction_count: Number of ACH transactions
+    * wire_transaction_count: Number of wire transfers
+    * mobile_deposit_count: Number of mobile deposit transactions
+    * branch_transaction_count: Number of branch transactions
+    * online_transaction_count: Number of online banking transactions
+    * fee_count: Number of fee transactions charged
+    * total_fees_cents: Total fees charged in cents @npi @confidential
+    * overdraft_count: Number of overdraft events
+    * overdraft_days: Days with overdraft balance
+    * nsf_count: Number of NSF/returned items
+    * interest_earned_cents: Interest earned in cents @npi @confidential
+    * last_activity_date: Last activity date in month @pii */
+CREATE TABLE Account_Activity_Summary_schema (
+  account_id STRING NOT NULL,
+  summary_month DATE NOT NULL,
+  total_transaction_count INT NOT NULL,
+  debit_transaction_count INT NOT NULL,
+  credit_transaction_count INT NOT NULL,
+  total_debit_cents BIGINT NOT NULL,
+  total_credit_cents BIGINT NOT NULL,
+  net_change_cents BIGINT NOT NULL,
   avg_transaction_size_cents BIGINT,
-  /** Number of ATM transactions */
-  atm_transaction_count INT,
-  /** Number of POS/debit card transactions */
-  pos_transaction_count INT,
-  /** Number of ACH transactions */
-  ach_transaction_count INT,
-  /** Number of wire transfers */
-  wire_transaction_count INT,
-  /** Number of mobile deposit transactions */
-  mobile_deposit_count INT,
-  /** Number of branch transactions */
-  branch_transaction_count INT,
-  /** Number of online banking transactions */
-  online_transaction_count INT,
-  /** Number of fee transactions charged */
-  fee_count INT,
-  /** Total fees charged in cents */
-  total_fees_cents BIGINT,
-  /** Number of overdraft events */
-  overdraft_count INT,
-  /** Days with overdraft balance */
-  overdraft_days INT,
-  /** Number of NSF/returned items */
-  nsf_count INT,
-  /** Interest earned in cents @npi @confidential */
-  interest_earned_cents BIGINT,
-  /** Last activity date in month */
-  last_activity_date DATE,
-  /** Timestamp when summary was computed */
-  computed_at TIMESTAMP
+  atm_transaction_count INT NOT NULL,
+  pos_transaction_count INT NOT NULL,
+  ach_transaction_count INT NOT NULL,
+  wire_transaction_count INT NOT NULL,
+  mobile_deposit_count INT NOT NULL,
+  branch_transaction_count INT NOT NULL,
+  online_transaction_count INT NOT NULL,
+  fee_count INT NOT NULL,
+  total_fees_cents BIGINT NOT NULL,
+  overdraft_count INT NOT NULL,
+  overdraft_days INT NOT NULL,
+  nsf_count INT NOT NULL,
+  interest_earned_cents BIGINT NOT NULL,
+  last_activity_date DATE NOT NULL
 );
 
 /** Account balance trend analysis with moving averages and volatility.
-    Grain: one row per account_id, trend_date combination. */
-CREATE TABLE Account_Balance_Trend (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Date of trend calculation */
-  trend_date DATE,
-  /** End of day balance in cents @npi @confidential */
-  eod_balance_cents BIGINT,
-  /** 7-day moving average balance in cents @npi @confidential */
+    Grain: one row per account_id, trend_date combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * trend_date: Date of trend calculation
+    * eod_balance_cents: End of day balance in cents @npi @confidential
+    * ma_7d_balance_cents: 7-day moving average balance in cents @npi @confidential
+    * ma_30d_balance_cents: 30-day moving average balance in cents @npi @confidential
+    * ma_90d_balance_cents: 90-day moving average balance in cents @npi @confidential
+    * daily_change_cents: Balance change from prior day in cents @npi @confidential
+    * weekly_change_cents: Balance change from 7 days ago in cents @npi @confidential
+    * monthly_change_cents: Balance change from 30 days ago in cents @npi @confidential
+    * volatility_30d: 30-day balance volatility (standard deviation)
+    * min_balance_30d_cents: Minimum balance in trailing 30 days in cents @npi @confidential
+    * max_balance_30d_cents: Maximum balance in trailing 30 days in cents @npi @confidential
+    * balance_percentile: Balance percentile vs account history (0-100)
+    * trend_direction: Trend direction: INCREASING, STABLE, DECREASING
+    * trend_strength: Trend strength (0-100) */
+CREATE TABLE Account_Balance_Trend_schema (
+  account_id STRING NOT NULL,
+  trend_date DATE NOT NULL,
+  eod_balance_cents BIGINT NOT NULL,
   ma_7d_balance_cents BIGINT,
-  /** 30-day moving average balance in cents @npi @confidential */
   ma_30d_balance_cents BIGINT,
-  /** 90-day moving average balance in cents @npi @confidential */
   ma_90d_balance_cents BIGINT,
-  /** Balance change from prior day in cents */
   daily_change_cents BIGINT,
-  /** Balance change from 7 days ago in cents */
   weekly_change_cents BIGINT,
-  /** Balance change from 30 days ago in cents */
   monthly_change_cents BIGINT,
-  /** 30-day balance volatility (standard deviation) */
   volatility_30d DOUBLE,
-  /** Minimum balance in trailing 30 days in cents @npi @confidential */
   min_balance_30d_cents BIGINT,
-  /** Maximum balance in trailing 30 days in cents @npi @confidential */
   max_balance_30d_cents BIGINT,
-  /** Balance percentile vs account history (0-100) */
   balance_percentile INT,
-  /** Trend direction: INCREASING, STABLE, DECREASING */
-  trend_direction STRING,
-  /** Trend strength (0-100) */
-  trend_strength INT,
-  /** Timestamp when trend was computed */
-  computed_at TIMESTAMP
+  trend_direction STRING NOT NULL,
+  trend_strength INT NOT NULL
 );
 
 /** Dormancy risk signals for regulatory compliance and customer engagement.
-    Grain: one row per account_id, assessment_date combination. */
-CREATE TABLE Dormancy_Signal (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Date of dormancy assessment */
-  assessment_date DATE,
-  /** Days since last customer-initiated transaction */
-  days_since_activity INT,
-  /** Date of last customer-initiated transaction */
+    Grain: one row per account_id, assessment_date combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * assessment_date: Date of dormancy assessment
+    * days_since_activity: Days since last customer-initiated transaction
+    * last_activity_date: Date of last customer-initiated transaction @pii
+    * last_activity_type: Type of last activity
+    * days_since_login: Days since last login to digital banking
+    * dormancy_status: Dormancy status: ACTIVE, AT_RISK, PRE_DORMANT, DORMANT, ESCHEAT_ELIGIBLE
+    * dormancy_risk_score: Dormancy risk score (0-100, higher = more likely dormant)
+    * current_balance_cents: Current account balance in cents @npi @confidential
+    * has_valid_contact: Whether account has valid contact information
+    * last_contact_date: Date of last successful customer contact @pii
+    * reactivation_attempt_count: Number of reactivation attempts made
+    * last_reactivation_attempt_date: Date of last reactivation attempt
+    * projected_escheat_date: Projected escheatment date based on state law
+    * escheat_state: State governing escheatment
+    * escheat_period_months: Dormancy period required by state (months)
+    * statement_returned: Whether statement was returned as undeliverable
+    * recommended_action: Recommended action: NONE, OUTREACH, CERTIFIED_LETTER, ESCHEAT_PREP */
+CREATE TABLE Dormancy_Signal_schema (
+  account_id STRING NOT NULL,
+  assessment_date DATE NOT NULL,
+  days_since_activity INT NOT NULL,
   last_activity_date DATE,
-  /** Type of last activity */
   last_activity_type STRING,
-  /** Days since last login to digital banking */
   days_since_login INT,
-  /** Dormancy status: ACTIVE, AT_RISK, PRE_DORMANT, DORMANT, ESCHEAT_ELIGIBLE */
-  dormancy_status STRING,
-  /** Dormancy risk score (0-100, higher = more likely dormant) */
-  dormancy_risk_score INT,
-  /** Current account balance in cents @npi @confidential */
-  current_balance_cents BIGINT,
-  /** Whether account has valid contact information */
-  has_valid_contact BOOLEAN,
-  /** Date of last successful customer contact */
+  dormancy_status STRING NOT NULL,
+  dormancy_risk_score INT NOT NULL,
+  current_balance_cents BIGINT NOT NULL,
+  has_valid_contact BOOLEAN NOT NULL,
   last_contact_date DATE,
-  /** Number of reactivation attempts made */
-  reactivation_attempt_count INT,
-  /** Date of last reactivation attempt */
+  reactivation_attempt_count INT NOT NULL,
   last_reactivation_attempt_date DATE,
-  /** Projected escheatment date based on state law */
   projected_escheat_date DATE,
-  /** State governing escheatment */
   escheat_state STRING,
-  /** Dormancy period required by state (months) */
   escheat_period_months INT,
-  /** Whether statement was returned as undeliverable */
-  statement_returned BOOLEAN,
-  /** Recommended action: NONE, OUTREACH, CERTIFIED_LETTER, ESCHEAT_PREP */
-  recommended_action STRING,
-  /** Timestamp when signal was computed */
-  computed_at TIMESTAMP
+  statement_returned BOOLEAN NOT NULL,
+  recommended_action STRING NOT NULL
 );

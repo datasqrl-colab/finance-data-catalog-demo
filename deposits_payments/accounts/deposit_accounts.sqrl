@@ -10,149 +10,149 @@
 -- Regulatory scope: GLBA, GDPR, CCPA, Regulation E, Regulation DD
 
 /** Primary deposit account record containing account attributes and status.
-    Grain: one row per account_id. */
-CREATE TABLE Account (
-  /** Unique identifier for the account @npi */
-  account_id STRING,
-  /** Account number displayed to customer @npi @mask */
-  account_number STRING,
-  /** Account type: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA */
-  account_type STRING,
-  /** Product code reference */
-  product_code STRING,
-  /** Account title or name @pii */
-  account_title STRING,
-  /** Account status: OPEN, CLOSED, DORMANT, FROZEN, ESCHEAT */
-  account_status STRING,
-  /** Date account was opened */
-  opened_date DATE,
-  /** Date account was closed (if applicable) */
+    Grain: one row per account_id.
+
+    # Columns:
+    * account_id: Unique identifier for the account @npi
+    * account_number: Account number displayed to customer @npi @mask
+    * account_type: Account type: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA
+    * product_code: Product code reference
+    * account_title: Account title or name @pii
+    * account_status: Account status: OPEN, CLOSED, DORMANT, FROZEN, ESCHEAT
+    * opened_date: Date account was opened
+    * closed_date: Date account was closed (if applicable)
+    * closure_reason: Reason for account closure
+    * opening_branch_id: Branch ID where account was opened
+    * servicing_branch_id: Branch ID for account servicing
+    * currency_code: Account currency code (ISO 4217)
+    * interest_rate: Current interest rate (annual percentage)
+    * compounding_frequency: Interest compounding frequency: DAILY, MONTHLY, QUARTERLY, ANNUALLY
+    * interest_payment_frequency: Interest payment frequency: MONTHLY, QUARTERLY, ANNUALLY, AT_MATURITY
+    * maturity_date: Maturity date for CDs
+    * original_term_months: Original term in months for CDs
+    * overdraft_protection_enabled: Whether overdraft protection is enabled
+    * overdraft_linked_account_id: Linked account for overdraft protection @npi
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Account_schema (
+  account_id STRING NOT NULL,
+  account_number STRING NOT NULL,
+  account_type STRING NOT NULL,
+  product_code STRING NOT NULL,
+  account_title STRING NOT NULL,
+  account_status STRING NOT NULL,
+  opened_date DATE NOT NULL,
   closed_date DATE,
-  /** Reason for account closure */
   closure_reason STRING,
-  /** Branch ID where account was opened */
   opening_branch_id STRING,
-  /** Branch ID for account servicing */
   servicing_branch_id STRING,
-  /** Account currency code (ISO 4217) */
-  currency_code STRING,
-  /** Current interest rate (annual percentage) */
+  currency_code STRING NOT NULL,
   interest_rate DECIMAL(10, 6),
-  /** Interest compounding frequency: DAILY, MONTHLY, QUARTERLY, ANNUALLY */
   compounding_frequency STRING,
-  /** Interest payment frequency: MONTHLY, QUARTERLY, ANNUALLY, AT_MATURITY */
   interest_payment_frequency STRING,
-  /** Maturity date for CDs */
   maturity_date DATE,
-  /** Original term in months for CDs */
   original_term_months INT,
-  /** Whether overdraft protection is enabled */
-  overdraft_protection_enabled BOOLEAN,
-  /** Linked account for overdraft protection @npi */
+  overdraft_protection_enabled BOOLEAN NOT NULL,
   overdraft_linked_account_id STRING,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Account ownership and holder information linking customers to accounts.
-    Grain: one row per account_id, customer_id combination. */
-CREATE TABLE Account_Holder (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Reference to customer @pii */
-  customer_id STRING,
-  /** Holder type: PRIMARY, JOINT, BENEFICIARY, CUSTODIAN, TRUSTEE, POA */
-  holder_type STRING,
-  /** Ownership percentage (for joint accounts) */
+    Grain: one row per account_id, customer_id combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * customer_id: Reference to customer @pii
+    * holder_type: Holder type: PRIMARY, JOINT, BENEFICIARY, CUSTODIAN, TRUSTEE, POA
+    * ownership_percentage: Ownership percentage (for joint accounts)
+    * has_signing_authority: Whether holder has signing authority
+    * added_date: Date holder was added to account
+    * removed_date: Date holder was removed from account
+    * is_active: Whether this holder is currently active on the account
+    * tax_reporting_percentage: Tax reporting responsibility percentage
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Account_Holder_schema (
+  account_id STRING NOT NULL,
+  customer_id STRING NOT NULL,
+  holder_type STRING NOT NULL,
   ownership_percentage DECIMAL(5, 2),
-  /** Whether holder has signing authority */
-  has_signing_authority BOOLEAN,
-  /** Date holder was added to account */
-  added_date DATE,
-  /** Date holder was removed from account */
+  has_signing_authority BOOLEAN NOT NULL,
+  added_date DATE NOT NULL,
   removed_date DATE,
-  /** Whether this holder is currently active on the account */
-  is_active BOOLEAN,
-  /** Tax reporting responsibility percentage */
+  is_active BOOLEAN NOT NULL,
   tax_reporting_percentage DECIMAL(5, 2),
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Account status change history for audit and compliance tracking.
-    Grain: one row per account_id, status_changed_at combination. */
-CREATE TABLE Account_Status_History (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Previous account status */
-  previous_status STRING,
-  /** New account status */
-  new_status STRING,
-  /** Reason for status change */
+    Grain: one row per account_id, status_changed_at combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * previous_status: Previous account status
+    * new_status: New account status
+    * change_reason: Reason for status change
+    * status_changed_at: Date and time status was changed
+    * changed_by: Employee or system that initiated the change
+    * change_channel: Channel through which change was made: BRANCH, ONLINE, PHONE, SYSTEM
+    * notes: Additional notes about the status change @confidential
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Account_Status_History_schema (
+  account_id STRING NOT NULL,
+  previous_status STRING NOT NULL,
+  new_status STRING NOT NULL,
   change_reason STRING,
-  /** Date and time status was changed */
-  status_changed_at TIMESTAMP,
-  /** Employee or system that initiated the change */
-  changed_by STRING,
-  /** Channel through which change was made: BRANCH, ONLINE, PHONE, SYSTEM */
-  change_channel STRING,
-  /** Additional notes about the status change @confidential */
+  status_changed_at TIMESTAMP_LTZ(3) NOT NULL,
+  changed_by STRING NOT NULL,
+  change_channel STRING NOT NULL,
   notes STRING,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Deposit product configuration and terms reference data.
-    Grain: one row per product_code, effective_from combination. */
-CREATE TABLE Account_Product (
-  /** Unique product code */
-  product_code STRING,
-  /** Product name */
-  product_name STRING,
-  /** Product category: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA */
-  product_category STRING,
-  /** Whether product is currently available for new accounts */
-  is_active BOOLEAN,
-  /** Minimum opening deposit in cents */
+    Grain: one row per product_code, effective_from combination.
+
+    # Columns:
+    * product_code: Unique product code
+    * product_name: Product name
+    * product_category: Product category: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA
+    * is_active: Whether product is currently available for new accounts
+    * minimum_opening_deposit_cents: Minimum opening deposit in cents
+    * minimum_balance_cents: Minimum balance to avoid fees in cents
+    * monthly_fee_cents: Monthly maintenance fee in cents
+    * fee_waiver_eligible: Whether fee can be waived
+    * fee_waiver_conditions: Conditions for fee waiver
+    * base_interest_rate: Base interest rate (APY)
+    * rate_tiers: Interest rate tier structure (JSON) @confidential
+    * max_monthly_transactions: Maximum transactions per month (Reg D for savings)
+    * interest_bearing: Whether account earns interest
+    * fdic_insured: FDIC insurance eligible
+    * effective_from: Date product became effective
+    * effective_to: Date product was discontinued
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Account_Product_schema (
+  product_code STRING NOT NULL,
+  product_name STRING NOT NULL,
+  product_category STRING NOT NULL,
+  is_active BOOLEAN NOT NULL,
   minimum_opening_deposit_cents BIGINT,
-  /** Minimum balance to avoid fees in cents */
   minimum_balance_cents BIGINT,
-  /** Monthly maintenance fee in cents */
   monthly_fee_cents BIGINT,
-  /** Whether fee can be waived */
-  fee_waiver_eligible BOOLEAN,
-  /** Conditions for fee waiver */
+  fee_waiver_eligible BOOLEAN NOT NULL,
   fee_waiver_conditions STRING,
-  /** Base interest rate (APY) */
   base_interest_rate DECIMAL(10, 6),
-  /** Interest rate tier structure (JSON) @confidential */
   rate_tiers STRING,
-  /** Maximum transactions per month (Reg D for savings) */
   max_monthly_transactions INT,
-  /** Whether account earns interest */
-  interest_bearing BOOLEAN,
-  /** FDIC insurance eligible */
-  fdic_insured BOOLEAN,
-  /** Date product became effective */
-  effective_from DATE,
-  /** Date product was discontinued */
+  interest_bearing BOOLEAN NOT NULL,
+  fdic_insured BOOLEAN NOT NULL,
+  effective_from DATE NOT NULL,
   effective_to DATE,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

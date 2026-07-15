@@ -1,33 +1,38 @@
-# Transactions Team
+# Transactions — Deposits & Payments
 
-The Transactions team owns transaction data across all payment channels including core ledger transactions, card payments, ACH, and wire transfers, along with enriched transaction analytics.
+**Team**: Payments & Transaction Services
+**Domain**: Retail Banking — Transactions
 
-## Team Responsibilities
+## Responsibilities
 
-- Core transaction ledger and posting
-- Card authorization and settlement processing
+- Core transaction processing and ledger management
+- Card authorization, settlement, and chargeback lifecycle
 - ACH and wire transfer processing
-- Transaction enrichment and categorization
-- Recurring payment detection
+- Transaction enrichment, categorization, and recurring payment detection
 
 ## Datasets
 
 | Dataset | Layer | Description |
 |---------|-------|-------------|
-| [core_transactions.sqrl](core_transactions.sqrl) | Bronze | Primary transaction ledger, transaction types, and reversals |
-| [card_transactions.sqrl](card_transactions.sqrl) | Bronze | Card authorizations, settlements, chargebacks, and MCC reference |
-| [wire_ach_transactions.sqrl](wire_ach_transactions.sqrl) | Bronze | ACH transactions, wire transfers, and payment returns |
-| [enriched_transactions.sqrl](enriched_transactions.sqrl) | Silver | Unified transactions, merchant enrichment, categories, and recurring payments |
+| `core_transactions` | Bronze | Transaction ledger, type reference data, and reversal records |
+| `card_transactions` | Bronze | Card authorizations, settlements, chargebacks, and MCC reference data |
+| `wire_ach_transactions` | Bronze | ACH transactions, wire transfers, and payment returns |
+| `enriched_transactions` | Silver | Unified transaction view, merchant enrichment, categorization, and recurring payments |
 
 ## Key Entities
 
-- **Transaction**: Primary ledger record for all account movements
-- **Unified_Transaction**: Consolidated view across all transaction types
-- **Recurring_Payment**: Detected recurring payment patterns
+- **Transaction** — Primary transaction ledger recording all account monetary movements
+- **Card_Authorization** — Real-time card authorization requests and responses
+- **Unified_Transaction** — Enriched transaction view combining all payment types with merchant and category data
 
 ## Data Governance
 
 - **Classification**: Restricted
 - **Regulatory Scope**: GLBA, GDPR, CCPA, Regulation E, BSA, OFAC, PCI-DSS
-- **Data Steward**: Payment Operations
-- **Refresh Frequency**: Real-time for bronze, hourly for silver
+- **Data Steward**: Payments & Transaction Services Team
+- **Refresh Frequency**: Near real-time (bronze), Daily (silver)
+
+## Environment Connectors
+
+- `-test`: Local filesystem (JSONL test data)
+- `-prod`: Kafka (bronze tables), Iceberg (silver tables)

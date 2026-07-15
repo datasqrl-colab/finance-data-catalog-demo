@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Mcc_Reference_Test" : [ {
+      "mcc_code" : "5411",
+      "mcc_description" : "Grocery Stores and Supermarkets",
+      "category" : "FOOD_AND_DINING"
+    } ]
+  }
+}

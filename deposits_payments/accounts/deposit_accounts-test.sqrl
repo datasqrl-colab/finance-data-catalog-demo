@@ -1,0 +1,53 @@
+-- ## Deposit Accounts - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT deposit_accounts.*;
+
+CREATE TABLE Account (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_schema;
+
+CREATE TABLE Account_Holder (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account_holder.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Holder_schema;
+
+CREATE TABLE Account_Status_History (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account_status_history.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Status_History_schema;
+
+CREATE TABLE Account_Product (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/deposit_accounts-account_product.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Product_schema;

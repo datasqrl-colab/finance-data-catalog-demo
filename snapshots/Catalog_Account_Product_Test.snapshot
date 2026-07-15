@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Account_Product_Test" : [ {
+      "product_code" : "CHK_STANDARD",
+      "product_name" : "Standard Checking",
+      "product_category" : "CHECKING"
+    } ]
+  }
+}

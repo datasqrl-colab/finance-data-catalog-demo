@@ -10,203 +10,203 @@
 -- Regulatory scope: GLBA, GDPR, CCPA, Regulation E, PCI-DSS
 
 /** Real-time card authorization requests and responses.
-    Grain: one row per authorization_id. */
-CREATE TABLE Card_Authorization (
-  /** Unique identifier for the authorization */
-  authorization_id STRING,
-  /** Reference to card used @pci @tokenize */
-  card_id STRING,
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Authorization amount in cents @npi @confidential */
-  authorization_amount_cents BIGINT,
-  /** Currency code (ISO 4217) */
-  currency_code STRING,
-  /** Merchant amount if different currency in cents */
+    Grain: one row per authorization_id.
+
+    # Columns:
+    * authorization_id: Unique identifier for the authorization
+    * card_id: Reference to card used @pci @tokenize
+    * account_id: Reference to account @npi
+    * authorization_amount_cents: Authorization amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * merchant_amount_cents: Merchant amount if different currency in cents
+    * merchant_currency_code: Merchant currency code
+    * exchange_rate: Exchange rate applied
+    * authorization_status: Authorization status: APPROVED, DECLINED, PENDING, EXPIRED, REVERSED
+    * decline_reason_code: Decline reason code if declined
+    * authorized_at: Date and time of authorization
+    * expires_at: Authorization expiration timestamp
+    * merchant_name: Merchant name @pii
+    * merchant_id: Merchant ID
+    * mcc_code: Merchant Category Code
+    * merchant_city: Merchant city @pii
+    * merchant_state: Merchant state or province
+    * merchant_country: Merchant country code
+    * transaction_type: Transaction type: PURCHASE, CASH_ADVANCE, REFUND, BALANCE_INQUIRY
+    * entry_mode: Entry mode: CHIP, SWIPE, CONTACTLESS, MANUAL, ECOMMERCE, RECURRING
+    * pin_used: Whether PIN was used
+    * card_present: Whether card was present
+    * network: Network: VISA, MASTERCARD, DISCOVER, AMEX
+    * network_reference_id: Network reference ID
+    * rrn: Retrieval reference number
+    * authorization_code: Authorization code from network
+    * cvv_result: CVV verification result
+    * avs_result: AVS verification result
+    * three_ds_result: 3D Secure result if applicable
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Card_Authorization_schema (
+  authorization_id STRING NOT NULL,
+  card_id STRING NOT NULL,
+  account_id STRING NOT NULL,
+  authorization_amount_cents BIGINT NOT NULL,
+  currency_code STRING NOT NULL,
   merchant_amount_cents BIGINT,
-  /** Merchant currency code */
   merchant_currency_code STRING,
-  /** Exchange rate applied */
   exchange_rate DECIMAL(12, 6),
-  /** Authorization status: APPROVED, DECLINED, PENDING, EXPIRED, REVERSED */
-  authorization_status STRING,
-  /** Decline reason code if declined */
+  authorization_status STRING NOT NULL,
   decline_reason_code STRING,
-  /** Date and time of authorization */
-  authorized_at TIMESTAMP,
-  /** Authorization expiration timestamp */
-  expires_at TIMESTAMP,
-  /** Merchant name @pii */
-  merchant_name STRING,
-  /** Merchant ID */
+  authorized_at TIMESTAMP_LTZ(3) NOT NULL,
+  expires_at TIMESTAMP_LTZ(3) NOT NULL,
+  merchant_name STRING NOT NULL,
   merchant_id STRING,
-  /** Merchant Category Code */
   mcc_code STRING,
-  /** Merchant city @pii */
   merchant_city STRING,
-  /** Merchant state or province */
   merchant_state STRING,
-  /** Merchant country code */
   merchant_country STRING,
-  /** Transaction type: PURCHASE, CASH_ADVANCE, REFUND, BALANCE_INQUIRY */
-  transaction_type STRING,
-  /** Entry mode: CHIP, SWIPE, CONTACTLESS, MANUAL, ECOMMERCE, RECURRING */
-  entry_mode STRING,
-  /** Whether PIN was used */
+  transaction_type STRING NOT NULL,
+  entry_mode STRING NOT NULL,
   pin_used BOOLEAN,
-  /** Whether card was present */
   card_present BOOLEAN,
-  /** Network: VISA, MASTERCARD, DISCOVER, AMEX */
-  network STRING,
-  /** Network reference ID */
+  network STRING NOT NULL,
   network_reference_id STRING,
-  /** Retrieval reference number */
   rrn STRING,
-  /** Authorization code from network */
   authorization_code STRING,
-  /** CVV verification result */
   cvv_result STRING,
-  /** AVS verification result */
   avs_result STRING,
-  /** 3D Secure result if applicable */
   three_ds_result STRING,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Card transaction settlements from payment networks.
-    Grain: one row per settlement_id. */
-CREATE TABLE Card_Settlement (
-  /** Unique identifier for the settlement */
-  settlement_id STRING,
-  /** Reference to original authorization */
-  authorization_id STRING,
-  /** Reference to posted transaction */
+    Grain: one row per settlement_id.
+
+    # Columns:
+    * settlement_id: Unique identifier for the settlement
+    * authorization_id: Reference to original authorization
+    * transaction_id: Reference to posted transaction
+    * card_id: Reference to card @pci @tokenize
+    * account_id: Reference to account @npi
+    * settlement_amount_cents: Settlement amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * authorization_amount_cents: Original authorization amount in cents
+    * variance_cents: Difference between settlement and authorization in cents
+    * settlement_status: Settlement status: SETTLED, PENDING, REJECTED
+    * settled_at: Date and time of settlement
+    * network_settlement_date: Settlement date from network
+    * merchant_name: Merchant name @pii
+    * merchant_id: Merchant ID
+    * mcc_code: Merchant Category Code
+    * network: Network: VISA, MASTERCARD, DISCOVER, AMEX
+    * network_reference_id: Network reference ID
+    * interchange_fee_cents: Interchange fee in cents @confidential
+    * assessment_fee_cents: Network assessment fee in cents @confidential
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Card_Settlement_schema (
+  settlement_id STRING NOT NULL,
+  authorization_id STRING NOT NULL,
   transaction_id STRING,
-  /** Reference to card @pci @tokenize */
-  card_id STRING,
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Settlement amount in cents @npi @confidential */
-  settlement_amount_cents BIGINT,
-  /** Currency code (ISO 4217) */
-  currency_code STRING,
-  /** Original authorization amount in cents */
+  card_id STRING NOT NULL,
+  account_id STRING NOT NULL,
+  settlement_amount_cents BIGINT NOT NULL,
+  currency_code STRING NOT NULL,
   authorization_amount_cents BIGINT,
-  /** Difference between settlement and authorization in cents */
   variance_cents BIGINT,
-  /** Settlement status: SETTLED, PENDING, REJECTED */
-  settlement_status STRING,
-  /** Date and time of settlement */
-  settled_at TIMESTAMP,
-  /** Settlement date from network */
+  settlement_status STRING NOT NULL,
+  settled_at TIMESTAMP_LTZ(3),
   network_settlement_date DATE,
-  /** Merchant name @pii */
-  merchant_name STRING,
-  /** Merchant ID */
+  merchant_name STRING NOT NULL,
   merchant_id STRING,
-  /** Merchant Category Code */
   mcc_code STRING,
-  /** Network: VISA, MASTERCARD, DISCOVER, AMEX */
-  network STRING,
-  /** Network reference ID */
+  network STRING NOT NULL,
   network_reference_id STRING,
-  /** Interchange fee in cents @confidential */
   interchange_fee_cents BIGINT,
-  /** Network assessment fee in cents @confidential */
   assessment_fee_cents BIGINT,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Card dispute and chargeback records.
-    Grain: one row per chargeback_id. */
-CREATE TABLE Card_Chargeback (
-  /** Unique identifier for the chargeback */
-  chargeback_id STRING,
-  /** Reference to original transaction */
-  transaction_id STRING,
-  /** Reference to settlement */
+    Grain: one row per chargeback_id.
+
+    # Columns:
+    * chargeback_id: Unique identifier for the chargeback
+    * transaction_id: Reference to original transaction
+    * settlement_id: Reference to settlement
+    * card_id: Reference to card @pci @tokenize
+    * account_id: Reference to account @npi
+    * customer_id: Reference to customer @pii
+    * chargeback_amount_cents: Chargeback amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * chargeback_status: Chargeback status: INITIATED, PENDING, WON, LOST, EXPIRED
+    * reason_code: Reason code per network rules
+    * reason_description: Reason description @confidential
+    * chargeback_category: Category: FRAUD, CONSUMER_DISPUTE, PROCESSING_ERROR, AUTHORIZATION
+    * initiated_at: Date chargeback was initiated
+    * response_due_date: Response deadline
+    * resolved_at: Date chargeback was resolved
+    * resolution_outcome: Resolution outcome: MERCHANT_WIN, CUSTOMER_WIN, SPLIT
+    * recovery_amount_cents: Amount recovered from merchant in cents
+    * merchant_name: Merchant name @pii
+    * merchant_id: Merchant ID
+    * network: Network handling the dispute
+    * network_case_number: Network case number
+    * provisional_credit_issued: Whether provisional credit was issued
+    * provisional_credit_date: Date provisional credit was issued
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Card_Chargeback_schema (
+  chargeback_id STRING NOT NULL,
+  transaction_id STRING NOT NULL,
   settlement_id STRING,
-  /** Reference to card @pci @tokenize */
-  card_id STRING,
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Reference to customer @pii */
+  card_id STRING NOT NULL,
+  account_id STRING NOT NULL,
   customer_id STRING,
-  /** Chargeback amount in cents @npi @confidential */
-  chargeback_amount_cents BIGINT,
-  /** Currency code (ISO 4217) */
-  currency_code STRING,
-  /** Chargeback status: INITIATED, PENDING, WON, LOST, EXPIRED */
-  chargeback_status STRING,
-  /** Reason code per network rules */
-  reason_code STRING,
-  /** Reason description @confidential */
+  chargeback_amount_cents BIGINT NOT NULL,
+  currency_code STRING NOT NULL,
+  chargeback_status STRING NOT NULL,
+  reason_code STRING NOT NULL,
   reason_description STRING,
-  /** Category: FRAUD, CONSUMER_DISPUTE, PROCESSING_ERROR, AUTHORIZATION */
-  chargeback_category STRING,
-  /** Date chargeback was initiated */
-  initiated_at TIMESTAMP,
-  /** Response deadline */
+  chargeback_category STRING NOT NULL,
+  initiated_at TIMESTAMP_LTZ(3) NOT NULL,
   response_due_date DATE,
-  /** Date chargeback was resolved */
-  resolved_at TIMESTAMP,
-  /** Resolution outcome: MERCHANT_WIN, CUSTOMER_WIN, SPLIT */
+  resolved_at TIMESTAMP_LTZ(3),
   resolution_outcome STRING,
-  /** Amount recovered from merchant in cents */
   recovery_amount_cents BIGINT,
-  /** Merchant name @pii */
   merchant_name STRING,
-  /** Merchant ID */
   merchant_id STRING,
-  /** Network handling the dispute */
-  network STRING,
-  /** Network case number */
+  network STRING NOT NULL,
   network_case_number STRING,
-  /** Whether provisional credit was issued */
-  provisional_credit_issued BOOLEAN,
-  /** Date provisional credit was issued */
+  provisional_credit_issued BOOLEAN NOT NULL,
   provisional_credit_date DATE,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Merchant Category Code reference data for transaction classification.
-    Grain: one row per mcc_code. */
-CREATE TABLE Mcc_Reference (
-  /** Merchant Category Code */
-  mcc_code STRING,
-  /** MCC description */
-  mcc_description STRING,
-  /** Category grouping */
+    Grain: one row per mcc_code.
+
+    # Columns:
+    * mcc_code: Merchant Category Code
+    * mcc_description: MCC description
+    * category: Category grouping
+    * subcategory: Subcategory
+    * is_high_risk: Whether MCC is considered high-risk
+    * is_cash_equivalent: Whether MCC may indicate cash-like transaction
+    * is_restricted: Whether MCC is restricted for certain card programs
+    * tax_category: Default tax category
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Mcc_Reference_schema (
+  mcc_code STRING NOT NULL,
+  mcc_description STRING NOT NULL,
   category STRING,
-  /** Subcategory */
   subcategory STRING,
-  /** Whether MCC is considered high-risk */
-  is_high_risk BOOLEAN,
-  /** Whether MCC may indicate cash-like transaction */
-  is_cash_equivalent BOOLEAN,
-  /** Whether MCC is restricted for certain card programs */
-  is_restricted BOOLEAN,
-  /** Default tax category */
+  is_high_risk BOOLEAN NOT NULL,
+  is_cash_equivalent BOOLEAN NOT NULL,
+  is_restricted BOOLEAN NOT NULL,
   tax_category STRING,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

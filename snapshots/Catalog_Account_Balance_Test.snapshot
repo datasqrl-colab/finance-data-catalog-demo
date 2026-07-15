@@ -1,0 +1,13 @@
+{
+  "data" : {
+    "Catalog_Account_Balance_Test" : [ {
+      "account_id" : "ACC-001",
+      "balance_date" : "2024-01-15",
+      "ledger_balance_cents" : 4525000
+    }, {
+      "account_id" : "ACC-001",
+      "balance_date" : "2024-01-16",
+      "ledger_balance_cents" : 4650000
+    } ]
+  }
+}

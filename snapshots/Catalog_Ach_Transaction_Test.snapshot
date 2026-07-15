@@ -1,0 +1,17 @@
+{
+  "data" : {
+    "Catalog_Ach_Transaction_Test" : [ {
+      "ach_transaction_id" : "ACH-001",
+      "account_id" : "ACC-001",
+      "direction" : "INBOUND",
+      "amount_cents" : 200000,
+      "processed_at" : "2024-01-15T16:00:00.000Z"
+    }, {
+      "ach_transaction_id" : "ACH-002",
+      "account_id" : "ACC-001",
+      "direction" : "OUTBOUND",
+      "amount_cents" : 75000,
+      "processed_at" : "2024-01-16T18:00:00.000Z"
+    } ]
+  }
+}

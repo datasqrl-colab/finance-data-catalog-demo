@@ -1,0 +1,17 @@
+{
+  "data" : {
+    "Catalog_Card_Authorization_Test" : [ {
+      "authorization_id" : "AUTH-001",
+      "account_id" : "ACC-001",
+      "authorization_status" : "APPROVED",
+      "merchant_name" : "STARBUCKS #12345",
+      "authorized_at" : "2024-01-15T17:30:00.000Z"
+    }, {
+      "authorization_id" : "AUTH-002",
+      "account_id" : "ACC-001",
+      "authorization_status" : "APPROVED",
+      "merchant_name" : "AMAZON.COM",
+      "authorized_at" : "2024-01-15T22:30:00.000Z"
+    } ]
+  }
+}

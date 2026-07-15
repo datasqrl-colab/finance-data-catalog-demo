@@ -10,114 +10,114 @@
 -- Regulatory scope: GLBA, GDPR, CCPA, Regulation DD
 
 /** Daily end-of-day balance snapshot for each account.
-    Grain: one row per account_id, balance_date combination. */
-CREATE TABLE Account_Balance_Daily (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Date of the balance snapshot */
-  balance_date DATE,
-  /** Ledger balance at end of day in cents @npi @confidential */
-  ledger_balance_cents BIGINT,
-  /** Available balance at end of day in cents @npi @confidential */
-  available_balance_cents BIGINT,
-  /** Collected balance at end of day in cents @npi @confidential */
-  collected_balance_cents BIGINT,
-  /** Total holds amount in cents */
-  hold_amount_cents BIGINT,
-  /** Pending credits amount in cents */
+    Grain: one row per account_id, balance_date combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * balance_date: Date of the balance snapshot
+    * ledger_balance_cents: Ledger balance at end of day in cents @npi @confidential
+    * available_balance_cents: Available balance at end of day in cents @npi @confidential
+    * collected_balance_cents: Collected balance at end of day in cents @npi @confidential
+    * hold_amount_cents: Total holds amount in cents @npi @confidential
+    * pending_credits_cents: Pending credits amount in cents @npi @confidential
+    * pending_debits_cents: Pending debits amount in cents @npi @confidential
+    * overdraft_amount_cents: Overdraft amount if negative in cents @npi @confidential
+    * interest_bearing_balance_cents: Interest-bearing balance in cents @npi @confidential
+    * day_count: Day count for average balance calculation
+    * mtd_average_balance_cents: Month-to-date average ledger balance in cents @npi @confidential
+    * ytd_average_balance_cents: Year-to-date average ledger balance in cents @npi @confidential
+    * transaction_count: Number of transactions posted on this day
+    * debit_amount_cents: Total debits posted on this day in cents @confidential
+    * credit_amount_cents: Total credits posted on this day in cents @confidential
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Account_Balance_Daily_schema (
+  account_id STRING NOT NULL,
+  balance_date DATE NOT NULL,
+  ledger_balance_cents BIGINT NOT NULL,
+  available_balance_cents BIGINT NOT NULL,
+  collected_balance_cents BIGINT NOT NULL,
+  hold_amount_cents BIGINT NOT NULL,
   pending_credits_cents BIGINT,
-  /** Pending debits amount in cents */
   pending_debits_cents BIGINT,
-  /** Overdraft amount if negative in cents */
   overdraft_amount_cents BIGINT,
-  /** Interest-bearing balance in cents @npi @confidential */
   interest_bearing_balance_cents BIGINT,
-  /** Day count for average balance calculation */
-  day_count INT,
-  /** Month-to-date average ledger balance in cents @npi @confidential */
+  day_count INT NOT NULL,
   mtd_average_balance_cents BIGINT,
-  /** Year-to-date average ledger balance in cents @npi @confidential */
   ytd_average_balance_cents BIGINT,
-  /** Number of transactions posted on this day */
-  transaction_count INT,
-  /** Total debits posted on this day in cents */
-  debit_amount_cents BIGINT,
-  /** Total credits posted on this day in cents */
-  credit_amount_cents BIGINT,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  transaction_count INT NOT NULL,
+  debit_amount_cents BIGINT NOT NULL,
+  credit_amount_cents BIGINT NOT NULL,
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Interest accrual records tracking daily interest earned or charged.
-    Grain: one row per account_id, accrual_date combination. */
-CREATE TABLE Interest_Accrual (
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Date of interest accrual */
-  accrual_date DATE,
-  /** Balance used for interest calculation in cents @npi @confidential */
-  calculation_balance_cents BIGINT,
-  /** Interest rate applied (daily rate) */
-  interest_rate DECIMAL(12, 10),
-  /** Annual percentage yield */
+    Grain: one row per account_id, accrual_date combination.
+
+    # Columns:
+    * account_id: Reference to account @npi
+    * accrual_date: Date of interest accrual
+    * calculation_balance_cents: Balance used for interest calculation in cents @npi @confidential
+    * interest_rate: Interest rate applied (daily rate) @confidential
+    * apy: Annual percentage yield @confidential
+    * accrued_interest_cents: Interest accrued for this day in cents @npi @confidential
+    * mtd_accrued_interest_cents: Month-to-date accrued interest in cents @npi @confidential
+    * ytd_accrued_interest_cents: Year-to-date accrued interest in cents @npi @confidential
+    * ytd_interest_paid_cents: Year-to-date interest paid in cents @npi @confidential
+    * rate_tier: Rate tier applied based on balance
+    * interest_type: Interest type: CREDIT (earned), DEBIT (charged for overdraft)
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Interest_Accrual_schema (
+  account_id STRING NOT NULL,
+  accrual_date DATE NOT NULL,
+  calculation_balance_cents BIGINT NOT NULL,
+  interest_rate DECIMAL(12, 10) NOT NULL,
   apy DECIMAL(10, 6),
-  /** Interest accrued for this day in cents @npi @confidential */
-  accrued_interest_cents BIGINT,
-  /** Month-to-date accrued interest in cents @npi @confidential */
+  accrued_interest_cents BIGINT NOT NULL,
   mtd_accrued_interest_cents BIGINT,
-  /** Year-to-date accrued interest in cents @npi @confidential */
   ytd_accrued_interest_cents BIGINT,
-  /** Year-to-date interest paid in cents @npi @confidential */
   ytd_interest_paid_cents BIGINT,
-  /** Rate tier applied based on balance */
   rate_tier STRING,
-  /** Interest type: CREDIT (earned), DEBIT (charged for overdraft) */
-  interest_type STRING,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  interest_type STRING NOT NULL,
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );
 
 /** Account holds placed on funds reducing available balance.
-    Grain: one row per hold_id. */
-CREATE TABLE Account_Hold (
-  /** Unique identifier for the hold */
-  hold_id STRING,
-  /** Reference to account @npi */
-  account_id STRING,
-  /** Hold type: DEPOSIT, LEGAL, ADMINISTRATIVE, DISPUTE, AUTHORIZATION */
-  hold_type STRING,
-  /** Hold amount in cents @npi @confidential */
-  hold_amount_cents BIGINT,
-  /** Hold status: ACTIVE, RELEASED, EXPIRED */
-  hold_status STRING,
-  /** Reason for the hold @confidential */
-  hold_reason STRING,
-  /** Date and time hold was placed */
-  placed_at TIMESTAMP,
-  /** Scheduled release date and time */
-  scheduled_release_at TIMESTAMP,
-  /** Actual release date and time */
-  released_at TIMESTAMP,
-  /** Reference to related transaction if applicable */
+    Grain: one row per hold_id.
+
+    # Columns:
+    * hold_id: Unique identifier for the hold
+    * account_id: Reference to account @npi
+    * hold_type: Hold type: DEPOSIT, LEGAL, ADMINISTRATIVE, DISPUTE, AUTHORIZATION
+    * hold_amount_cents: Hold amount in cents @npi @confidential
+    * hold_status: Hold status: ACTIVE, RELEASED, EXPIRED
+    * hold_reason: Reason for the hold @confidential
+    * placed_at: Date and time hold was placed
+    * scheduled_release_at: Scheduled release date and time
+    * released_at: Actual release date and time
+    * related_transaction_id: Reference to related transaction if applicable
+    * legal_reference: Reference to legal order or case number @confidential
+    * placed_by: Employee or system that placed the hold
+    * released_by: Employee or system that released the hold
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Account_Hold_schema (
+  hold_id STRING NOT NULL,
+  account_id STRING NOT NULL,
+  hold_type STRING NOT NULL,
+  hold_amount_cents BIGINT NOT NULL,
+  hold_status STRING NOT NULL,
+  hold_reason STRING NOT NULL,
+  placed_at TIMESTAMP_LTZ(3) NOT NULL,
+  scheduled_release_at TIMESTAMP_LTZ(3),
+  released_at TIMESTAMP_LTZ(3),
   related_transaction_id STRING,
-  /** Reference to legal order or case number @confidential */
   legal_reference STRING,
-  /** Employee or system that placed the hold */
-  placed_by STRING,
-  /** Employee or system that released the hold */
+  placed_by STRING NOT NULL,
   released_by STRING,
-  /** Source system identifier */
-  source_system STRING,
-  /** Timestamp when record was ingested into the data platform */
-  ingested_at TIMESTAMP,
-  /** Timestamp when record was last updated in source system */
-  source_updated_at TIMESTAMP
+  source_system STRING NOT NULL,
+  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
 );

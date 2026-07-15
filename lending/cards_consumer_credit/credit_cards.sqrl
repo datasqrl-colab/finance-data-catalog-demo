@@ -195,7 +195,7 @@ CREATE TABLE Credit_Card_Statement_schema (
     * payment_status: Payment status: PENDING, POSTED, RETURNED, REVERSED
     * payment_method: Payment method: ACH, CHECK, DEBIT_CARD, TRANSFER
     * source_account: Source account for payment @npi
-    * source_routing: Source routing number
+    * source_routing: Source routing number @npi
     * received_date: Date payment was received
     * posted_date: Date payment was posted
     * due_date: Due date for this payment cycle

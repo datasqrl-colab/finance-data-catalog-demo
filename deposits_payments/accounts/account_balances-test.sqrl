@@ -1,0 +1,41 @@
+-- ## Account Balances - Test Data
+--
+-- Use local filesystem data for testing
+
+IMPORT account_balances.*;
+
+CREATE TABLE Account_Balance_Daily (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/account_balances-account_balance_daily.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Balance_Daily_schema;
+
+CREATE TABLE Interest_Accrual (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/account_balances-interest_accrual.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Interest_Accrual_schema;
+
+CREATE TABLE Account_Hold (
+  /** Timestamp when record was ingested into the data platform */
+  ingestion_time AS now(),
+  WATERMARK FOR ingestion_time AS ingestion_time - INTERVAL '10' SECOND
+) WITH (
+    'connector' = 'filesystem',
+    'path' = '${DATA_PATH}/account_balances-account_hold.jsonl',
+    'source.monitor-interval' = '10 min',
+    'format' = 'json',
+    'json.timestamp-format.standard' = 'ISO-8601'
+) LIKE Account_Hold_schema;

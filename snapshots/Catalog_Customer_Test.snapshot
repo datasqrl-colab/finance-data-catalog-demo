@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Customer_Test" : [ {
+      "customer_id" : "CUST-001",
+      "customer_type" : "INDIVIDUAL",
+      "customer_status" : "ACTIVE"
+    } ]
+  }
+}

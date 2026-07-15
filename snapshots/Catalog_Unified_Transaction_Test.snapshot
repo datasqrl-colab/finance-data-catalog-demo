@@ -1,0 +1,17 @@
+{
+  "data" : {
+    "Catalog_Unified_Transaction_Test" : [ {
+      "transaction_id" : "TXN-002",
+      "account_id" : "ACC-001",
+      "transaction_source" : "CORE",
+      "amount_cents" : 200000,
+      "transaction_at" : "2024-01-15T16:00:00.000Z"
+    }, {
+      "transaction_id" : "TXN-001",
+      "account_id" : "ACC-001",
+      "transaction_source" : "CORE",
+      "amount_cents" : 4500,
+      "transaction_at" : "2024-01-15T17:30:00.000Z"
+    } ]
+  }
+}

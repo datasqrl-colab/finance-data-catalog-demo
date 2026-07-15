@@ -141,3 +141,128 @@ Property_Collateral.valuations := SELECT * FROM Property_Valuation v WHERE this.
 /** Most recent valuation for this property */
 Property_Collateral.current_valuation := SELECT * FROM Property_Valuation v WHERE this.property_id = v.property_id
                                                                         ORDER BY valuation_date DESC LIMIT 1;
+
+-- =====================================================
+-- Data Quality & Assertions
+-- =====================================================
+
+/** Every credit card must reference an existing credit card account */
+/*+test(no_rows) */
+CreditCardReferencesValidAccount_Test := SELECT c.* FROM Credit_Card c
+    LEFT JOIN Credit_Card_Account a ON c.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every statement must reference an existing credit card account */
+/*+test(no_rows) */
+StatementReferencesValidAccount_Test := SELECT s.* FROM Credit_Card_Statement s
+    LEFT JOIN Credit_Card_Account a ON s.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every card payment must reference an existing credit card account */
+/*+test(no_rows) */
+CardPaymentReferencesValidAccount_Test := SELECT p.* FROM Credit_Card_Payment p
+    LEFT JOIN Credit_Card_Account a ON p.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every credit limit change must reference an existing credit card account */
+/*+test(no_rows) */
+CreditLimitHistoryReferencesValidAccount_Test := SELECT h.* FROM Credit_Limit_History h
+    LEFT JOIN Credit_Card_Account a ON h.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every card delinquency event must reference an existing credit card account */
+/*+test(no_rows) */
+CardDqEventReferencesValidAccount_Test := SELECT d.* FROM Card_Delinquency_Event d
+    LEFT JOIN Credit_Card_Account a ON d.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every consumer loan delinquency event must reference a valid loan */
+/*+test(no_rows) */
+ConsumerLoanDqReferencesValidLoan_Test := SELECT d.* FROM Consumer_Loan_Delinquency_Event d
+    LEFT JOIN Personal_Loan pl ON d.loan_id = pl.loan_id AND d.loan_type = 'PERSONAL'
+    LEFT JOIN Auto_Loan al ON d.loan_id = al.loan_id AND d.loan_type = 'AUTO'
+    WHERE pl.loan_id IS NULL AND al.loan_id IS NULL;
+
+/** Every mortgage payment must reference an existing mortgage loan */
+/*+test(no_rows) */
+MortgagePaymentReferencesValidLoan_Test := SELECT p.* FROM Mortgage_Payment p
+    LEFT JOIN Mortgage_Loan l ON p.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every escrow account must reference an existing mortgage loan */
+/*+test(no_rows) */
+EscrowReferencesValidLoan_Test := SELECT e.* FROM Escrow_Account e
+    LEFT JOIN Mortgage_Loan l ON e.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every delinquency event must reference an existing mortgage loan */
+/*+test(no_rows) */
+DqEventReferencesValidLoan_Test := SELECT d.* FROM Delinquency_Event d
+    LEFT JOIN Mortgage_Loan l ON d.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every loan modification must reference an existing mortgage loan */
+/*+test(no_rows) */
+ModificationReferencesValidLoan_Test := SELECT m.* FROM Loan_Modification m
+    LEFT JOIN Mortgage_Loan l ON m.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every property valuation must reference an existing property collateral */
+/*+test(no_rows) */
+PropertyValuationReferencesValidProperty_Test := SELECT v.* FROM Property_Valuation v
+    LEFT JOIN Property_Collateral p ON v.property_id = p.property_id
+    WHERE p.property_id IS NULL;
+
+/** Every credit card payment with a statement_id must reference an existing credit card statement */
+/*+test(no_rows) */
+CardPaymentReferencesValidStatement_Test := SELECT p.* FROM Credit_Card_Payment p
+    LEFT JOIN Credit_Card_Statement s ON p.statement_id = s.statement_id
+    WHERE p.statement_id IS NOT NULL AND s.statement_id IS NULL;
+
+/** Every personal loan payment must reference an existing personal loan */
+/*+test(no_rows) */
+PersonalLoanPaymentReferencesValidLoan_Test := SELECT p.* FROM Loan_Payment p
+    LEFT JOIN Personal_Loan l ON p.loan_id = l.loan_id
+    WHERE p.loan_type = 'PERSONAL' AND l.loan_id IS NULL;
+
+/** Every auto loan payment must reference an existing auto loan */
+/*+test(no_rows) */
+AutoLoanPaymentReferencesValidLoan_Test := SELECT p.* FROM Loan_Payment p
+    LEFT JOIN Auto_Loan l ON p.loan_id = l.loan_id
+    WHERE p.loan_type = 'AUTO' AND l.loan_id IS NULL;
+
+/** Every personal loan with an application_id must reference an existing loan application */
+/*+test(no_rows) */
+PersonalLoanReferencesValidApplication_Test := SELECT l.* FROM Personal_Loan l
+    LEFT JOIN Loan_Application a ON l.application_id = a.application_id
+    WHERE l.application_id IS NOT NULL AND a.application_id IS NULL;
+
+/** Every auto loan with an application_id must reference an existing loan application */
+/*+test(no_rows) */
+AutoLoanReferencesValidApplication_Test := SELECT l.* FROM Auto_Loan l
+    LEFT JOIN Loan_Application a ON l.application_id = a.application_id
+    WHERE l.application_id IS NOT NULL AND a.application_id IS NULL;
+
+/** Every mortgage loan with an application_id must reference an existing mortgage application */
+/*+test(no_rows) */
+MortgageLoanReferencesValidApplication_Test := SELECT l.* FROM Mortgage_Loan l
+    LEFT JOIN Mortgage_Application a ON l.application_id = a.application_id
+    WHERE l.application_id IS NOT NULL AND a.application_id IS NULL;
+
+/** Every property collateral must reference an existing mortgage loan */
+/*+test(no_rows) */
+PropertyCollateralReferencesValidLoan_Test := SELECT p.* FROM Property_Collateral p
+    LEFT JOIN Mortgage_Loan l ON p.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every mortgage borrower must reference an existing mortgage loan */
+/*+test(no_rows) */
+MortgageBorrowerReferencesValidLoan_Test := SELECT b.* FROM Mortgage_Borrower b
+    LEFT JOIN Mortgage_Loan l ON b.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every property valuation must reference an existing mortgage loan */
+/*+test(no_rows) */
+PropertyValuationReferencesValidLoan_Test := SELECT v.* FROM Property_Valuation v
+    LEFT JOIN Mortgage_Loan l ON v.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;

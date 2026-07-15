@@ -1,0 +1,9 @@
+{
+  "data" : {
+    "Catalog_Credit_Card_Account_Test" : [ {
+      "credit_card_account_id" : "CCA-001",
+      "primary_customer_id" : "CUST-001",
+      "account_status" : "OPEN"
+    } ]
+  }
+}

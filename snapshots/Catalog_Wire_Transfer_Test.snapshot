@@ -1,0 +1,11 @@
+{
+  "data" : {
+    "Catalog_Wire_Transfer_Test" : [ {
+      "wire_transfer_id" : "WIRE-003",
+      "account_id" : "ACC-001",
+      "wire_status" : "COMPLETED",
+      "amount_cents" : 1000000,
+      "initiated_at" : "2024-01-11T17:00:00.000Z"
+    } ]
+  }
+}

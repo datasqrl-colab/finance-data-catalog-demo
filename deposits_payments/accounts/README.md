@@ -1,31 +1,37 @@
-# Accounts Team
+# Accounts — Deposits & Payments
 
-The Accounts team owns deposit account data including account lifecycle management, balance tracking, and account-level analytics for the bank's deposit product portfolio.
+**Team**: Deposit Products & Account Services
+**Domain**: Retail Banking — Deposits
 
-## Team Responsibilities
+## Responsibilities
 
-- Deposit account master data (checking, savings, money market, CDs)
-- Account ownership and holder management
-- Daily balance snapshots and interest accruals
-- Account dormancy monitoring and escheatment compliance
+- Deposit account lifecycle management (checking, savings, money market, CDs, IRAs)
+- Daily balance snapshots and interest accrual
+- Account activity analytics and dormancy monitoring
+- Account hold management
 
 ## Datasets
 
 | Dataset | Layer | Description |
 |---------|-------|-------------|
-| [deposit_accounts.sqrl](deposit_accounts.sqrl) | Bronze | Account records, holders, status history, and product configuration |
-| [account_balances.sqrl](account_balances.sqrl) | Bronze | Daily balance snapshots, interest accruals, and account holds |
-| [account_analytics.sqrl](account_analytics.sqrl) | Silver | Activity summaries, balance trends, and dormancy signals |
+| `deposit_accounts` | Bronze | Core account records, holders, status history, and product configuration |
+| `account_balances` | Bronze | Daily balance snapshots, interest accrual tracking, and account holds |
+| `account_analytics` | Silver | Activity summaries, balance trends, and dormancy risk signals |
 
 ## Key Entities
 
-- **Account**: Primary deposit account record
-- **Account_Balance_Daily**: Point-in-time balance snapshots
-- **Dormancy_Signal**: Regulatory compliance for dormant account monitoring
+- **Account** — Primary deposit account record with status, type, and product reference
+- **Account_Holder** — Links customers to accounts with ownership type and signing authority
+- **Account_Balance_Daily** — End-of-day balance snapshot with ledger, available, and collected balances
 
 ## Data Governance
 
 - **Classification**: Restricted
 - **Regulatory Scope**: GLBA, GDPR, CCPA, Regulation E, Regulation DD
-- **Data Steward**: Deposit Operations
-- **Refresh Frequency**: Daily for bronze, daily for silver
+- **Data Steward**: Deposit Products Team
+- **Refresh Frequency**: Daily (bronze), Monthly (silver)
+
+## Environment Connectors
+
+- `-test`: Local filesystem (JSONL test data)
+- `-prod`: Kafka (bronze tables), Iceberg (silver tables)

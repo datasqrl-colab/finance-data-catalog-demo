@@ -12,7 +12,7 @@ CREATE TABLE Mortgage_Payment (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.mortgage_payment',
+    'topic' = '${MORTGAGE_SERVICING_MORTGAGE_PAYMENT_TOPIC}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -29,7 +29,7 @@ CREATE TABLE Escrow_Account (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.escrow_account',
+    'topic' = '${MORTGAGE_SERVICING_ESCROW_ACCOUNT_TOPIC}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -46,7 +46,7 @@ CREATE TABLE Delinquency_Event (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.delinquency_event',
+    'topic' = '${MORTGAGE_SERVICING_DELINQUENCY_EVENT_TOPIC}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -63,7 +63,7 @@ CREATE TABLE Loan_Modification (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.loan_modification',
+    'topic' = '${MORTGAGE_SERVICING_LOAN_MODIFICATION_TOPIC}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
@@ -80,7 +80,7 @@ CREATE TABLE Property_Valuation (
     'connector' = 'kafka',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
-    'topic' = 'mortgage_servicing.property_valuation',
+    'topic' = '${MORTGAGE_SERVICING_PROPERTY_VALUATION_TOPIC}',
     'scan.startup.mode' = 'earliest-offset',
 {{#is_batch}}
     'scan.bounded.mode' = 'latest-offset',
