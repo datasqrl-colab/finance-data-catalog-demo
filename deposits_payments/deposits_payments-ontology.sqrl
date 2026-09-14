@@ -1,0 +1,705 @@
+IMPORT accounts.deposit_accounts-{{environment}}.*;
+IMPORT accounts.account_balances-{{environment}}.*;
+IMPORT accounts.account_analytics-{{environment}}.*;
+IMPORT transactions.core_transactions-{{environment}}.*;
+IMPORT transactions.card_transactions-{{environment}}.*;
+IMPORT transactions.wire_ach_transactions-{{environment}}.*;
+IMPORT transactions.enriched_transactions-{{environment}}.*;
+
+-- =====================================================
+-- Account Relationships
+-- =====================================================
+
+/** Holders on this account */
+Account.holders := SELECT * FROM Account_Holder h WHERE this.account_id = h.account_id;
+
+/** Currently active holders on this account */
+Account.active_holders := SELECT * FROM Account_Holder h WHERE this.account_id = h.account_id AND h.is_active;
+
+/** Primary holder on this account */
+Account.primary_holder := SELECT * FROM Account_Holder h WHERE this.account_id = h.account_id AND h.holder_type = 'PRIMARY';
+
+/** Status change history for this account, most recent first */
+Account.status_history := SELECT * FROM Account_Status_History s WHERE this.account_id = s.account_id ORDER BY status_changed_at DESC;
+
+/** Product configuration for this account */
+Account.product := SELECT * FROM Account_Product p WHERE this.product_code = p.product_code;
+
+/** Daily balances for this account, most recent first */
+Account.daily_balances := SELECT * FROM Account_Balance_Daily b WHERE this.account_id = b.account_id ORDER BY balance_date DESC;
+
+/** Most recent daily balance for this account */
+Account.current_balance := SELECT * FROM Account_Balance_Daily b WHERE this.account_id = b.account_id ORDER BY balance_date DESC LIMIT 1;
+
+/** Interest accrual records for this account */
+Account.interest_accruals := SELECT * FROM Interest_Accrual i WHERE this.account_id = i.account_id ORDER BY accrual_date DESC;
+
+/** Holds placed on this account */
+Account.holds := SELECT * FROM Account_Hold h WHERE this.account_id = h.account_id;
+
+/** Currently active holds on this account */
+Account.active_holds := SELECT * FROM Account_Hold h WHERE this.account_id = h.account_id AND h.hold_status = 'ACTIVE';
+
+/** Ledger transactions on this account, most recent first */
+Account.transactions := SELECT * FROM Account_Transaction t WHERE this.account_id = t.account_id ORDER BY transaction_at DESC;
+
+/** Unified transaction records for this account, most recent first */
+Account.unified_transactions := SELECT * FROM Unified_Transaction u WHERE this.account_id = u.account_id ORDER BY transaction_at DESC;
+
+/** ACH transactions on this account */
+Account.ach_transactions := SELECT * FROM Ach_Transaction a WHERE this.account_id = a.account_id;
+
+/** Wire transfers on this account */
+Account.wire_transfers := SELECT * FROM Wire_Transfer w WHERE this.account_id = w.account_id;
+
+/** Card authorizations on this account */
+Account.card_authorizations := SELECT * FROM Card_Authorization c WHERE this.account_id = c.account_id;
+
+/** Card settlements on this account */
+Account.card_settlements := SELECT * FROM Card_Settlement c WHERE this.account_id = c.account_id;
+
+/** Card chargebacks on this account */
+Account.chargebacks := SELECT * FROM Card_Chargeback c WHERE this.account_id = c.account_id;
+
+/** Monthly activity summaries for this account, most recent first */
+Account.activity_summaries := SELECT * FROM Account_Activity_Summary a WHERE this.account_id = a.account_id ORDER BY summary_month DESC;
+
+/** Balance trend history for this account, most recent first */
+Account.balance_trends := SELECT * FROM Account_Balance_Trend t WHERE this.account_id = t.account_id ORDER BY trend_date DESC;
+
+/** Dormancy signal history for this account, most recent first */
+Account.dormancy_signals := SELECT * FROM Dormancy_Signal d WHERE this.account_id = d.account_id ORDER BY assessment_date DESC;
+
+/** Most recent dormancy assessment for this account */
+Account.current_dormancy_signal := SELECT * FROM Dormancy_Signal d WHERE this.account_id = d.account_id ORDER BY assessment_date DESC LIMIT 1;
+
+-- =====================================================
+-- Account Product Relationships
+-- =====================================================
+
+/** Accounts opened under this product */
+Account_Product.accounts := SELECT * FROM Account a WHERE this.product_code = a.product_code;
+
+-- =====================================================
+-- Account Transaction Relationships
+-- =====================================================
+
+/** Transaction type reference for this ledger entry */
+Account_Transaction.transaction_type := SELECT * FROM Transaction_Type t WHERE this.transaction_type_code = t.transaction_type_code;
+
+/** Reversals recorded against this ledger entry */
+Account_Transaction.reversals := SELECT * FROM Transaction_Reversal r WHERE this.transaction_id = r.original_transaction_id;
+
+/** Card settlement detail for this ledger entry, if any */
+Account_Transaction.card_settlement := SELECT * FROM Card_Settlement c WHERE this.transaction_id = c.transaction_id;
+
+/** ACH detail for this ledger entry, if any */
+Account_Transaction.ach_detail := SELECT * FROM Ach_Transaction a WHERE this.transaction_id = a.transaction_id;
+
+/** Wire detail for this ledger entry, if any */
+Account_Transaction.wire_detail := SELECT * FROM Wire_Transfer w WHERE this.transaction_id = w.transaction_id;
+
+-- =====================================================
+-- Card Authorization / Settlement Relationships
+-- =====================================================
+
+/** Settlements resulting from this authorization */
+Card_Authorization.settlements := SELECT * FROM Card_Settlement s WHERE this.authorization_id = s.authorization_id;
+
+/** Merchant category code reference for this authorization */
+Card_Authorization.mcc := SELECT * FROM Mcc_Reference m WHERE this.mcc_code = m.mcc_code;
+
+/** Authorization that produced this settlement */
+Card_Settlement.authorization := SELECT * FROM Card_Authorization a WHERE this.authorization_id = a.authorization_id;
+
+/** Chargebacks filed against this settlement */
+Card_Settlement.chargebacks := SELECT * FROM Card_Chargeback c WHERE this.settlement_id = c.settlement_id;
+
+-- =====================================================
+-- ACH / Wire Relationships
+-- =====================================================
+
+/** Returns filed against this ACH transaction */
+Ach_Transaction.returns := SELECT * FROM Payment_Return r WHERE this.ach_transaction_id = r.ach_transaction_id;
+
+/** Returns filed against this wire transfer */
+Wire_Transfer.returns := SELECT * FROM Payment_Return r WHERE this.wire_transfer_id = r.wire_transfer_id;
+
+-- =====================================================
+-- Enriched Transaction Relationships
+-- =====================================================
+
+/** Merchant enrichment for this transaction, if any */
+Unified_Transaction.merchant := SELECT * FROM Merchant_Enrichment m WHERE this.merchant_id = m.merchant_id;
+
+/** Category for this transaction, if any */
+Unified_Transaction.category := SELECT * FROM Transaction_Category c WHERE this.category_id = c.category_id;
+
+/** Recurring payment series this transaction belongs to, if any */
+Unified_Transaction.recurring_payment := SELECT * FROM Recurring_Payment r WHERE this.recurring_payment_id = r.recurring_payment_id;
+
+/** Unified transactions attributed to this merchant */
+Merchant_Enrichment.unified_transactions := SELECT * FROM Unified_Transaction u WHERE this.merchant_id = u.merchant_id;
+
+/** Unified transactions belonging to this recurring payment series */
+Recurring_Payment.unified_transactions := SELECT * FROM Unified_Transaction u WHERE this.recurring_payment_id = u.recurring_payment_id;
+
+/** Parent category, if any */
+Transaction_Category.parent := SELECT * FROM Transaction_Category p WHERE this.parent_category_id = p.category_id;
+
+/** Child categories under this category */
+Transaction_Category.children := SELECT * FROM Transaction_Category c WHERE this.category_id = c.parent_category_id;
+
+-- =====================================================
+-- Data Quality & Assertions: Referential Integrity
+-- =====================================================
+
+/** Every Account must reference an existing Account_Product */
+/*+test(no_rows) */
+AccountReferencesValidProduct_Test := SELECT a.* FROM Account a
+    LEFT JOIN Account_Product p ON a.product_code = p.product_code
+    WHERE p.product_code IS NULL;
+
+/** Every Account_Holder must reference an existing Account */
+/*+test(no_rows) */
+AccountHolderReferencesValidAccount_Test := SELECT h.* FROM Account_Holder h
+    LEFT JOIN Account a ON h.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Status_History must reference an existing Account */
+/*+test(no_rows) */
+StatusHistoryReferencesValidAccount_Test := SELECT s.* FROM Account_Status_History s
+    LEFT JOIN Account a ON s.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Balance_Daily must reference an existing Account */
+/*+test(no_rows) */
+BalanceDailyReferencesValidAccount_Test := SELECT b.* FROM Account_Balance_Daily b
+    LEFT JOIN Account a ON b.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Interest_Accrual must reference an existing Account */
+/*+test(no_rows) */
+InterestAccrualReferencesValidAccount_Test := SELECT i.* FROM Interest_Accrual i
+    LEFT JOIN Account a ON i.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Hold must reference an existing Account */
+/*+test(no_rows) */
+AccountHoldReferencesValidAccount_Test := SELECT h.* FROM Account_Hold h
+    LEFT JOIN Account a ON h.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Activity_Summary must reference an existing Account */
+/*+test(no_rows) */
+ActivitySummaryReferencesValidAccount_Test := SELECT s.* FROM Account_Activity_Summary s
+    LEFT JOIN Account a ON s.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Balance_Trend must reference an existing Account */
+/*+test(no_rows) */
+BalanceTrendReferencesValidAccount_Test := SELECT t.* FROM Account_Balance_Trend t
+    LEFT JOIN Account a ON t.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Dormancy_Signal must reference an existing Account */
+/*+test(no_rows) */
+DormancySignalReferencesValidAccount_Test := SELECT d.* FROM Dormancy_Signal d
+    LEFT JOIN Account a ON d.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Transaction must reference an existing Account */
+/*+test(no_rows) */
+LedgerTransactionReferencesValidAccount_Test := SELECT t.* FROM Account_Transaction t
+    LEFT JOIN Account a ON t.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Account_Transaction must reference an existing Transaction_Type */
+/*+test(no_rows) */
+LedgerTransactionReferencesValidType_Test := SELECT t.* FROM Account_Transaction t
+    LEFT JOIN Transaction_Type y ON t.transaction_type_code = y.transaction_type_code
+    WHERE y.transaction_type_code IS NULL;
+
+/** Every Transaction_Reversal's original transaction must exist in the ledger */
+/*+test(no_rows) */
+ReversalReferencesValidOriginal_Test := SELECT r.* FROM Transaction_Reversal r
+    LEFT JOIN Account_Transaction t ON r.original_transaction_id = t.transaction_id
+    WHERE t.transaction_id IS NULL;
+
+/** Every Transaction_Reversal's reversing transaction must exist in the ledger */
+/*+test(no_rows) */
+ReversalReferencesValidReversing_Test := SELECT r.* FROM Transaction_Reversal r
+    LEFT JOIN Account_Transaction t ON r.reversing_transaction_id = t.transaction_id
+    WHERE t.transaction_id IS NULL;
+
+/** Every Card_Settlement must reference an existing Card_Authorization */
+/*+test(no_rows) */
+SettlementReferencesValidAuthorization_Test := SELECT s.* FROM Card_Settlement s
+    LEFT JOIN Card_Authorization a ON s.authorization_id = a.authorization_id
+    WHERE a.authorization_id IS NULL;
+
+/** Every Card_Settlement must reference an existing Account */
+/*+test(no_rows) */
+SettlementReferencesValidAccount_Test := SELECT s.* FROM Card_Settlement s
+    LEFT JOIN Account a ON s.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Card_Authorization must reference an existing Account */
+/*+test(no_rows) */
+AuthorizationReferencesValidAccount_Test := SELECT c.* FROM Card_Authorization c
+    LEFT JOIN Account a ON c.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Card_Chargeback must reference an existing Account */
+/*+test(no_rows) */
+ChargebackReferencesValidAccount_Test := SELECT c.* FROM Card_Chargeback c
+    LEFT JOIN Account a ON c.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Ach_Transaction must reference an existing Account */
+/*+test(no_rows) */
+AchReferencesValidAccount_Test := SELECT c.* FROM Ach_Transaction c
+    LEFT JOIN Account a ON c.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Wire_Transfer must reference an existing Account */
+/*+test(no_rows) */
+WireReferencesValidAccount_Test := SELECT w.* FROM Wire_Transfer w
+    LEFT JOIN Account a ON w.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Payment_Return must reference an existing Account */
+/*+test(no_rows) */
+PaymentReturnReferencesValidAccount_Test := SELECT r.* FROM Payment_Return r
+    LEFT JOIN Account a ON r.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Unified_Transaction must reference an existing Account */
+/*+test(no_rows) */
+UnifiedTransactionReferencesValidAccount_Test := SELECT u.* FROM Unified_Transaction u
+    LEFT JOIN Account a ON u.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Recurring_Payment must reference an existing Account */
+/*+test(no_rows) */
+RecurringPaymentReferencesValidAccount_Test := SELECT r.* FROM Recurring_Payment r
+    LEFT JOIN Account a ON r.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Card_Chargeback must reference an existing Card_Settlement */
+/*+test(no_rows) */
+ChargebackReferencesValidSettlement_Test := SELECT c.* FROM Card_Chargeback c
+    LEFT JOIN Card_Settlement s ON c.settlement_id = s.settlement_id
+    WHERE s.settlement_id IS NULL;
+
+/** Every Card_Authorization must reference an existing Mcc_Reference */
+/*+test(no_rows) */
+AuthorizationReferencesValidMcc_Test := SELECT c.* FROM Card_Authorization c
+    LEFT JOIN Mcc_Reference m ON c.mcc_code = m.mcc_code
+    WHERE m.mcc_code IS NULL;
+
+/** Every Card_Settlement must reference an existing Mcc_Reference */
+/*+test(no_rows) */
+SettlementReferencesValidMcc_Test := SELECT c.* FROM Card_Settlement c
+    LEFT JOIN Mcc_Reference m ON c.mcc_code = m.mcc_code
+    WHERE m.mcc_code IS NULL;
+
+/** Every Ach_Transaction must reference an existing ledger transaction */
+/*+test(no_rows) */
+AchReferencesValidLedgerTransaction_Test := SELECT c.* FROM Ach_Transaction c
+    LEFT JOIN Account_Transaction t ON c.transaction_id = t.transaction_id
+    WHERE t.transaction_id IS NULL;
+
+/** Every Wire_Transfer must reference an existing ledger transaction */
+/*+test(no_rows) */
+WireReferencesValidLedgerTransaction_Test := SELECT w.* FROM Wire_Transfer w
+    LEFT JOIN Account_Transaction t ON w.transaction_id = t.transaction_id
+    WHERE t.transaction_id IS NULL;
+
+/** Every Card_Settlement must reference an existing ledger transaction */
+/*+test(no_rows) */
+SettlementReferencesValidLedgerTransaction_Test := SELECT c.* FROM Card_Settlement c
+    LEFT JOIN Account_Transaction t ON c.transaction_id = t.transaction_id
+    WHERE t.transaction_id IS NULL;
+
+/** A Payment_Return that names an ACH transaction must reference one that exists */
+/*+test(no_rows) */
+ReturnReferencesValidAchTransaction_Test := SELECT r.* FROM Payment_Return r
+    LEFT JOIN Ach_Transaction a ON r.ach_transaction_id = a.ach_transaction_id
+    WHERE r.ach_transaction_id IS NOT NULL AND a.ach_transaction_id IS NULL;
+
+/** A Payment_Return that names a wire transfer must reference one that exists */
+/*+test(no_rows) */
+ReturnReferencesValidWireTransfer_Test := SELECT r.* FROM Payment_Return r
+    LEFT JOIN Wire_Transfer w ON r.wire_transfer_id = w.wire_transfer_id
+    WHERE r.wire_transfer_id IS NOT NULL AND w.wire_transfer_id IS NULL;
+
+/** A Unified_Transaction that names a merchant must reference one that exists */
+/*+test(no_rows) */
+UnifiedTransactionReferencesValidMerchant_Test := SELECT u.* FROM Unified_Transaction u
+    LEFT JOIN Merchant_Enrichment m ON u.merchant_id = m.merchant_id
+    WHERE u.merchant_id IS NOT NULL AND m.merchant_id IS NULL;
+
+/** A Unified_Transaction that names a category must reference one that exists */
+/*+test(no_rows) */
+UnifiedTransactionReferencesValidCategory_Test := SELECT u.* FROM Unified_Transaction u
+    LEFT JOIN Transaction_Category c ON u.category_id = c.category_id
+    WHERE u.category_id IS NOT NULL AND c.category_id IS NULL;
+
+/** A Unified_Transaction that names a recurring payment must reference one that exists */
+/*+test(no_rows) */
+UnifiedTransactionReferencesValidRecurringPayment_Test := SELECT u.* FROM Unified_Transaction u
+    LEFT JOIN Recurring_Payment r ON u.recurring_payment_id = r.recurring_payment_id
+    WHERE u.recurring_payment_id IS NOT NULL AND r.recurring_payment_id IS NULL;
+
+/** Every Recurring_Payment must reference an existing merchant */
+/*+test(no_rows) */
+RecurringPaymentReferencesValidMerchant_Test := SELECT r.* FROM Recurring_Payment r
+    LEFT JOIN Merchant_Enrichment m ON r.merchant_id = m.merchant_id
+    WHERE m.merchant_id IS NULL;
+
+/** A Transaction_Category that names a parent must reference one that exists */
+/*+test(no_rows) */
+CategoryReferencesValidParent_Test := SELECT c.* FROM Transaction_Category c
+    LEFT JOIN Transaction_Category p ON c.parent_category_id = p.category_id
+    WHERE c.parent_category_id IS NOT NULL AND p.category_id IS NULL;
+
+-- =====================================================
+-- Data Quality & Assertions: Enum Validity
+-- =====================================================
+
+/** Account type must be a valid enumeration value */
+/*+test(no_rows) */
+AccountHasValidType_Test := SELECT * FROM Account WHERE account_type NOT IN ('CHECKING', 'SAVINGS', 'MONEY_MARKET', 'CD', 'IRA');
+
+/** Account status must be a valid enumeration value */
+/*+test(no_rows) */
+AccountHasValidStatus_Test := SELECT * FROM Account WHERE account_status NOT IN ('OPEN', 'CLOSED', 'DORMANT', 'FROZEN', 'ESCHEAT');
+
+/** Account compounding frequency, when set, must be a valid enumeration value */
+/*+test(no_rows) */
+AccountHasValidCompoundingFrequency_Test := SELECT * FROM Account
+    WHERE compounding_frequency IS NOT NULL AND compounding_frequency NOT IN ('DAILY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY');
+
+/** Account interest payment frequency, when set, must be a valid enumeration value */
+/*+test(no_rows) */
+AccountHasValidInterestPaymentFrequency_Test := SELECT * FROM Account
+    WHERE interest_payment_frequency IS NOT NULL AND interest_payment_frequency NOT IN ('MONTHLY', 'QUARTERLY', 'ANNUALLY', 'AT_MATURITY');
+
+/** Account holder type must be a valid enumeration value */
+/*+test(no_rows) */
+HolderHasValidType_Test := SELECT * FROM Account_Holder WHERE holder_type NOT IN ('PRIMARY', 'JOINT', 'BENEFICIARY', 'CUSTODIAN', 'TRUSTEE', 'POA');
+
+/** Status history change channel must be a valid enumeration value */
+/*+test(no_rows) */
+StatusHistoryHasValidChannel_Test := SELECT * FROM Account_Status_History WHERE change_channel NOT IN ('BRANCH', 'ONLINE', 'PHONE', 'SYSTEM');
+
+/** Account product category must be a valid enumeration value */
+/*+test(no_rows) */
+ProductHasValidCategory_Test := SELECT * FROM Account_Product WHERE product_category NOT IN ('CHECKING', 'SAVINGS', 'MONEY_MARKET', 'CD', 'IRA');
+
+/** Account hold type must be a valid enumeration value */
+/*+test(no_rows) */
+HoldHasValidType_Test := SELECT * FROM Account_Hold WHERE hold_type NOT IN ('DEPOSIT', 'LEGAL', 'ADMINISTRATIVE', 'DISPUTE', 'AUTHORIZATION');
+
+/** Account hold status must be a valid enumeration value */
+/*+test(no_rows) */
+HoldHasValidStatus_Test := SELECT * FROM Account_Hold WHERE hold_status NOT IN ('ACTIVE', 'RELEASED', 'EXPIRED');
+
+/** Interest accrual type must be a valid enumeration value */
+/*+test(no_rows) */
+AccrualHasValidType_Test := SELECT * FROM Interest_Accrual WHERE interest_type NOT IN ('CREDIT', 'DEBIT');
+
+/** Balance trend direction must be a valid enumeration value */
+/*+test(no_rows) */
+TrendHasValidDirection_Test := SELECT * FROM Account_Balance_Trend WHERE trend_direction NOT IN ('INCREASING', 'STABLE', 'DECREASING');
+
+/** Dormancy status must be a valid enumeration value */
+/*+test(no_rows) */
+DormancyHasValidStatus_Test := SELECT * FROM Dormancy_Signal WHERE dormancy_status NOT IN ('ACTIVE', 'AT_RISK', 'PRE_DORMANT', 'DORMANT', 'ESCHEAT_ELIGIBLE');
+
+/** Dormancy recommended action must be a valid enumeration value */
+/*+test(no_rows) */
+DormancyHasValidRecommendedAction_Test := SELECT * FROM Dormancy_Signal WHERE recommended_action NOT IN ('NONE', 'OUTREACH', 'CERTIFIED_LETTER', 'ESCHEAT_PREP');
+
+/** Ledger transaction category must be a valid enumeration value */
+/*+test(no_rows) */
+LedgerTransactionHasValidCategory_Test := SELECT * FROM Account_Transaction WHERE transaction_category NOT IN ('DEBIT', 'CREDIT');
+
+/** Ledger transaction status must be a valid enumeration value */
+/*+test(no_rows) */
+LedgerTransactionHasValidStatus_Test := SELECT * FROM Account_Transaction WHERE transaction_status NOT IN ('PENDING', 'POSTED', 'REVERSED', 'RETURNED');
+
+/** Ledger transaction channel must be a valid enumeration value */
+/*+test(no_rows) */
+LedgerTransactionHasValidChannel_Test := SELECT * FROM Account_Transaction
+    WHERE channel NOT IN ('BRANCH', 'ATM', 'ONLINE', 'MOBILE', 'ACH', 'WIRE', 'CHECK', 'POS', 'INTERNAL');
+
+/** Transaction type category must be a valid enumeration value */
+/*+test(no_rows) */
+TransactionTypeHasValidCategory_Test := SELECT * FROM Transaction_Type WHERE category NOT IN ('DEBIT', 'CREDIT');
+
+/** Transaction reversal type must be a valid enumeration value */
+/*+test(no_rows) */
+ReversalHasValidType_Test := SELECT * FROM Transaction_Reversal WHERE reversal_type NOT IN ('FULL', 'PARTIAL', 'CORRECTION');
+
+/** Card authorization status must be a valid enumeration value */
+/*+test(no_rows) */
+AuthorizationHasValidStatus_Test := SELECT * FROM Card_Authorization
+    WHERE authorization_status NOT IN ('APPROVED', 'DECLINED', 'PENDING', 'EXPIRED', 'REVERSED');
+
+/** Card authorization transaction type must be a valid enumeration value */
+/*+test(no_rows) */
+AuthorizationHasValidTransactionType_Test := SELECT * FROM Card_Authorization
+    WHERE transaction_type NOT IN ('PURCHASE', 'CASH_ADVANCE', 'REFUND', 'BALANCE_INQUIRY');
+
+/** Card authorization entry mode must be a valid enumeration value */
+/*+test(no_rows) */
+AuthorizationHasValidEntryMode_Test := SELECT * FROM Card_Authorization
+    WHERE entry_mode NOT IN ('CHIP', 'SWIPE', 'CONTACTLESS', 'MANUAL', 'ECOMMERCE', 'RECURRING');
+
+/** Card authorization network must be a valid enumeration value */
+/*+test(no_rows) */
+AuthorizationHasValidNetwork_Test := SELECT * FROM Card_Authorization WHERE network NOT IN ('VISA', 'MASTERCARD', 'DISCOVER', 'AMEX');
+
+/** Card settlement network must be a valid enumeration value */
+/*+test(no_rows) */
+SettlementHasValidNetwork_Test := SELECT * FROM Card_Settlement WHERE network NOT IN ('VISA', 'MASTERCARD', 'DISCOVER', 'AMEX');
+
+/** Card settlement status must be a valid enumeration value */
+/*+test(no_rows) */
+SettlementHasValidStatus_Test := SELECT * FROM Card_Settlement WHERE settlement_status NOT IN ('SETTLED', 'PENDING', 'REJECTED');
+
+/** Card chargeback status must be a valid enumeration value */
+/*+test(no_rows) */
+ChargebackHasValidStatus_Test := SELECT * FROM Card_Chargeback WHERE chargeback_status NOT IN ('INITIATED', 'PENDING', 'WON', 'LOST', 'EXPIRED');
+
+/** Card chargeback category must be a valid enumeration value */
+/*+test(no_rows) */
+ChargebackHasValidCategory_Test := SELECT * FROM Card_Chargeback
+    WHERE chargeback_category NOT IN ('FRAUD', 'CONSUMER_DISPUTE', 'PROCESSING_ERROR', 'AUTHORIZATION');
+
+/** Card chargeback resolution outcome, when set, must be a valid enumeration value */
+/*+test(no_rows) */
+ChargebackHasValidResolutionOutcome_Test := SELECT * FROM Card_Chargeback
+    WHERE resolution_outcome IS NOT NULL AND resolution_outcome NOT IN ('MERCHANT_WIN', 'CUSTOMER_WIN', 'SPLIT');
+
+/** ACH direction must be a valid enumeration value */
+/*+test(no_rows) */
+AchHasValidDirection_Test := SELECT * FROM Ach_Transaction WHERE direction NOT IN ('INBOUND', 'OUTBOUND');
+
+/** Wire direction must be a valid enumeration value */
+/*+test(no_rows) */
+WireHasValidDirection_Test := SELECT * FROM Wire_Transfer WHERE direction NOT IN ('INBOUND', 'OUTBOUND');
+
+/** ACH type must be a valid enumeration value */
+/*+test(no_rows) */
+AchHasValidType_Test := SELECT * FROM Ach_Transaction WHERE ach_type NOT IN ('CREDIT', 'DEBIT');
+
+/** ACH transaction status must be a valid enumeration value */
+/*+test(no_rows) */
+AchHasValidStatus_Test := SELECT * FROM Ach_Transaction
+    WHERE transaction_status NOT IN ('ORIGINATED', 'PENDING', 'POSTED', 'RETURNED', 'REJECTED');
+
+/** Wire type must be a valid enumeration value */
+/*+test(no_rows) */
+WireHasValidType_Test := SELECT * FROM Wire_Transfer WHERE wire_type NOT IN ('DOMESTIC', 'INTERNATIONAL');
+
+/** Wire status must be a valid enumeration value */
+/*+test(no_rows) */
+WireHasValidStatus_Test := SELECT * FROM Wire_Transfer
+    WHERE wire_status NOT IN ('INITIATED', 'PENDING', 'SENT', 'RECEIVED', 'COMPLETED', 'RETURNED', 'CANCELLED');
+
+/** Wire OFAC status must be a valid enumeration value */
+/*+test(no_rows) */
+WireHasValidOfacStatus_Test := SELECT * FROM Wire_Transfer WHERE ofac_status NOT IN ('CLEAR', 'HOLD', 'BLOCKED');
+
+/** Wire approval status must be a valid enumeration value */
+/*+test(no_rows) */
+WireHasValidApprovalStatus_Test := SELECT * FROM Wire_Transfer WHERE approval_status NOT IN ('PENDING', 'APPROVED', 'REJECTED');
+
+/** Payment return type must be a valid enumeration value */
+/*+test(no_rows) */
+ReturnHasValidType_Test := SELECT * FROM Payment_Return WHERE return_type NOT IN ('ACH_RETURN', 'ACH_NOC', 'WIRE_RETURN', 'WIRE_REJECT');
+
+/** Payment return status must be a valid enumeration value */
+/*+test(no_rows) */
+ReturnHasValidStatus_Test := SELECT * FROM Payment_Return WHERE return_status NOT IN ('PENDING', 'PROCESSED', 'DISPUTED');
+
+/** Unified transaction source must be a valid enumeration value */
+/*+test(no_rows) */
+UnifiedTransactionHasValidSource_Test := SELECT * FROM Unified_Transaction WHERE transaction_source NOT IN ('CORE', 'CARD', 'ACH', 'WIRE');
+
+/** Unified transaction debit/credit must be a valid enumeration value */
+/*+test(no_rows) */
+UnifiedTransactionHasValidDebitCredit_Test := SELECT * FROM Unified_Transaction WHERE debit_credit NOT IN ('DEBIT', 'CREDIT');
+
+/** Unified transaction status must be a valid enumeration value */
+/*+test(no_rows) */
+UnifiedTransactionHasValidStatus_Test := SELECT * FROM Unified_Transaction WHERE transaction_status NOT IN ('PENDING', 'POSTED', 'REVERSED', 'RETURNED');
+
+/** Unified transaction channel must be a valid enumeration value */
+/*+test(no_rows) */
+UnifiedTransactionHasValidChannel_Test := SELECT * FROM Unified_Transaction
+    WHERE channel NOT IN ('BRANCH', 'ATM', 'ONLINE', 'MOBILE', 'ACH', 'WIRE', 'POS', 'CHECK');
+
+/** Merchant type must be a valid enumeration value */
+/*+test(no_rows) */
+MerchantHasValidType_Test := SELECT * FROM Merchant_Enrichment
+    WHERE merchant_type NOT IN ('RETAIL', 'RESTAURANT', 'SERVICE', 'UTILITY', 'SUBSCRIPTION', 'GOVERNMENT');
+
+/** Merchant enrichment source must be a valid enumeration value */
+/*+test(no_rows) */
+MerchantHasValidEnrichmentSource_Test := SELECT * FROM Merchant_Enrichment WHERE enrichment_source NOT IN ('PLAID', 'YODLEE', 'MX', 'INTERNAL');
+
+/** Recurring payment type must be a valid enumeration value */
+/*+test(no_rows) */
+RecurringPaymentHasValidType_Test := SELECT * FROM Recurring_Payment
+    WHERE payment_type NOT IN ('SUBSCRIPTION', 'BILL', 'LOAN_PAYMENT', 'MEMBERSHIP', 'INSURANCE');
+
+/** Recurring payment frequency must be a valid enumeration value */
+/*+test(no_rows) */
+RecurringPaymentHasValidFrequency_Test := SELECT * FROM Recurring_Payment
+    WHERE frequency NOT IN ('WEEKLY', 'BIWEEKLY', 'MONTHLY', 'QUARTERLY', 'ANNUAL');
+
+/** Recurring payment status must be a valid enumeration value */
+/*+test(no_rows) */
+RecurringPaymentHasValidStatus_Test := SELECT * FROM Recurring_Payment WHERE status NOT IN ('ACTIVE', 'PAUSED', 'ENDED', 'UNCERTAIN');
+
+/** Recurring payment detection method must be a valid enumeration value */
+/*+test(no_rows) */
+RecurringPaymentHasValidDetectionMethod_Test := SELECT * FROM Recurring_Payment
+    WHERE detection_method NOT IN ('AMOUNT_FREQUENCY', 'MERCHANT_MATCH', 'DESCRIPTION_MATCH');
+
+-- =====================================================
+-- Data Quality & Assertions: Numeric Sanity
+-- =====================================================
+
+/** Ledger transaction amounts must never be negative */
+/*+test(no_rows) */
+LedgerTransactionAmountNonNegative_Test := SELECT * FROM Account_Transaction WHERE amount_cents < 0;
+
+/** Card authorization amounts must never be negative */
+/*+test(no_rows) */
+AuthorizationAmountNonNegative_Test := SELECT * FROM Card_Authorization WHERE authorization_amount_cents < 0;
+
+/** Card settlement amounts must never be negative */
+/*+test(no_rows) */
+SettlementAmountNonNegative_Test := SELECT * FROM Card_Settlement WHERE settlement_amount_cents < 0;
+
+/** Wire fee amounts must never be negative */
+/*+test(no_rows) */
+WireFeeNonNegative_Test := SELECT * FROM Wire_Transfer WHERE fee_cents < 0;
+
+/** Hold amounts must be strictly positive */
+/*+test(no_rows) */
+HoldAmountPositive_Test := SELECT * FROM Account_Hold WHERE hold_amount_cents <= 0;
+
+/** Daily balance day count must be between 1 and 366 */
+/*+test(no_rows) */
+BalanceDailyDayCountInRange_Test := SELECT * FROM Account_Balance_Daily WHERE day_count < 1 OR day_count > 366;
+
+/** Dormancy risk score must be between 0 and 100 */
+/*+test(no_rows) */
+DormancyRiskScoreInRange_Test := SELECT * FROM Dormancy_Signal WHERE dormancy_risk_score < 0 OR dormancy_risk_score > 100;
+
+/** Balance trend percentile must be between 0 and 100 */
+/*+test(no_rows) */
+BalanceTrendPercentileInRange_Test := SELECT * FROM Account_Balance_Trend WHERE balance_percentile < 0 OR balance_percentile > 100;
+
+/** Balance trend strength must be between 0 and 100 */
+/*+test(no_rows) */
+BalanceTrendStrengthInRange_Test := SELECT * FROM Account_Balance_Trend WHERE trend_strength < 0 OR trend_strength > 100;
+
+/** Merchant enrichment confidence score must be between 0 and 100 */
+/*+test(no_rows) */
+MerchantConfidenceScoreInRange_Test := SELECT * FROM Merchant_Enrichment WHERE confidence_score < 0 OR confidence_score > 100;
+
+/** Recurring payment confidence score must be between 0 and 100 */
+/*+test(no_rows) */
+RecurringPaymentConfidenceScoreInRange_Test := SELECT * FROM Recurring_Payment WHERE confidence_score < 0 OR confidence_score > 100;
+
+-- =====================================================
+-- Data Quality & Assertions: Date Ordering
+-- =====================================================
+
+/** Account closed date must not be before its opened date */
+/*+test(no_rows) */
+AccountClosedNotBeforeOpened_Test := SELECT * FROM Account WHERE closed_date IS NOT NULL AND closed_date < opened_date;
+
+/** Account holder removed date must not be before its added date */
+/*+test(no_rows) */
+HolderRemovedNotBeforeAdded_Test := SELECT * FROM Account_Holder WHERE removed_date IS NOT NULL AND removed_date < added_date;
+
+/** Account product discontinuation date must not be before its effective date */
+/*+test(no_rows) */
+ProductEffectiveToNotBeforeFrom_Test := SELECT * FROM Account_Product WHERE effective_to IS NOT NULL AND effective_to < effective_from;
+
+/** Account hold release time must not be before its placement time */
+/*+test(no_rows) */
+HoldReleasedNotBeforePlaced_Test := SELECT * FROM Account_Hold WHERE released_at IS NOT NULL AND released_at < placed_at;
+
+/** Card chargeback resolution time must not be before its initiation time */
+/*+test(no_rows) */
+ChargebackResolvedNotBeforeInitiated_Test := SELECT * FROM Card_Chargeback WHERE resolved_at IS NOT NULL AND resolved_at < initiated_at;
+
+/** Wire sent time must not be before its initiation time */
+/*+test(no_rows) */
+WireSentNotBeforeInitiated_Test := SELECT * FROM Wire_Transfer WHERE sent_at IS NOT NULL AND sent_at < initiated_at;
+
+/** Wire completed time must not be before its sent time */
+/*+test(no_rows) */
+WireCompletedNotBeforeSent_Test := SELECT * FROM Wire_Transfer WHERE completed_at IS NOT NULL AND sent_at IS NOT NULL AND completed_at < sent_at;
+
+/** Recurring payment last occurrence must not be before its first occurrence */
+/*+test(no_rows) */
+RecurringPaymentLastNotBeforeFirst_Test := SELECT * FROM Recurring_Payment WHERE last_occurrence_date < first_occurrence_date;
+
+/** Balance trend minimum 30-day balance must not exceed the maximum */
+/*+test(no_rows) */
+BalanceTrendMinNotAboveMax_Test := SELECT * FROM Account_Balance_Trend WHERE min_balance_30d_cents > max_balance_30d_cents;
+
+-- =====================================================
+-- Data Quality & Assertions: Cross-Field Consistency
+-- =====================================================
+
+/** A CLOSED account must have a closed date */
+/*+test(no_rows) */
+ClosedAccountHasClosedDate_Test := SELECT * FROM Account WHERE account_status = 'CLOSED' AND closed_date IS NULL;
+
+/** An inactive holder must have a removed date */
+/*+test(no_rows) */
+InactiveHolderHasRemovedDate_Test := SELECT * FROM Account_Holder WHERE NOT is_active AND removed_date IS NULL;
+
+/** A DECLINED authorization must carry a decline reason code */
+/*+test(no_rows) */
+DeclinedAuthorizationHasReasonCode_Test := SELECT * FROM Card_Authorization WHERE authorization_status = 'DECLINED' AND decline_reason_code IS NULL;
+
+/** A RELEASED hold must have a release time */
+/*+test(no_rows) */
+ReleasedHoldHasReleasedAt_Test := SELECT * FROM Account_Hold WHERE hold_status = 'RELEASED' AND released_at IS NULL;
+
+/** A CD account must have a maturity date */
+/*+test(no_rows) */
+CdAccountHasMaturityDate_Test := SELECT * FROM Account WHERE account_type = 'CD' AND maturity_date IS NULL;
+
+/** A unified transaction's recurring flag must agree with its recurring payment reference */
+/*+test(no_rows) */
+UnifiedTransactionRecurringFlagConsistent_Test := SELECT * FROM Unified_Transaction
+    WHERE (is_recurring AND recurring_payment_id IS NULL) OR (NOT is_recurring AND recurring_payment_id IS NOT NULL);
+
+-- =====================================================
+-- Data Quality & Assertions: Self-Reference
+-- =====================================================
+
+/** A transaction category cannot be its own parent */
+/*+test(no_rows) */
+CategoryNotOwnParent_Test := SELECT * FROM Transaction_Category WHERE parent_category_id = category_id;
+
+/** An account's overdraft-linked account cannot be itself */
+/*+test(no_rows) */
+AccountOverdraftLinkNotSelf_Test := SELECT * FROM Account WHERE overdraft_linked_account_id = account_id;
+
+/** A reversal's original and reversing transaction identifiers cannot be equal */
+/*+test(no_rows) */
+ReversalOriginalNotReversing_Test := SELECT * FROM Transaction_Reversal WHERE original_transaction_id = reversing_transaction_id;

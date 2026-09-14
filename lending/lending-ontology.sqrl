@@ -2,6 +2,8 @@ IMPORT cards_consumer_credit.credit_cards-{{environment}}.*;
 IMPORT cards_consumer_credit.consumer_loans-{{environment}}.*;
 IMPORT mortgages.mortgage_originations-{{environment}}.*;
 IMPORT mortgages.mortgage_servicing-{{environment}}.*;
+IMPORT cards_consumer_credit.credit_risk_signals-{{environment}}.*;
+IMPORT mortgages.mortgage_performance-{{environment}}.*;
 
 -- =====================================================
 -- Credit Card Account Relationships
@@ -141,3 +143,350 @@ Property_Collateral.valuations := SELECT * FROM Property_Valuation v WHERE this.
 /** Most recent valuation for this property */
 Property_Collateral.current_valuation := SELECT * FROM Property_Valuation v WHERE this.property_id = v.property_id
                                                                         ORDER BY valuation_date DESC LIMIT 1;
+
+-- =====================================================
+-- Credit Utilization / Mortgage Performance Relationships
+-- =====================================================
+
+/** Utilization history for this account, most recent first */
+Credit_Card_Account.utilization_history := SELECT * FROM Credit_Utilization u WHERE this.credit_card_account_id = u.credit_card_account_id
+                                                                           ORDER BY utilization_date DESC;
+
+/** Most recent utilization snapshot for this account */
+Credit_Card_Account.current_utilization := SELECT * FROM Credit_Utilization u WHERE this.credit_card_account_id = u.credit_card_account_id
+                                                                           ORDER BY utilization_date DESC LIMIT 1;
+
+/** Monthly performance history for this mortgage, most recent first */
+Mortgage_Loan.monthly_performance := SELECT * FROM Loan_Performance_Monthly p WHERE this.loan_id = p.loan_id
+                                                                          ORDER BY reporting_month DESC;
+
+/** Most recent monthly performance snapshot for this mortgage */
+Mortgage_Loan.latest_monthly_performance := SELECT * FROM Loan_Performance_Monthly p WHERE this.loan_id = p.loan_id
+                                                                                 ORDER BY reporting_month DESC LIMIT 1;
+
+/** Prepayment risk signal history for this mortgage, most recent first */
+Mortgage_Loan.prepayment_signals := SELECT * FROM Prepayment_Signal s WHERE this.loan_id = s.loan_id
+                                                                  ORDER BY signal_date DESC;
+
+/** Most recent prepayment risk signal for this mortgage */
+Mortgage_Loan.latest_prepayment_signal := SELECT * FROM Prepayment_Signal s WHERE this.loan_id = s.loan_id
+                                                                        ORDER BY signal_date DESC LIMIT 1;
+
+-- =====================================================
+-- Data Quality & Assertions: Referential Integrity
+-- =====================================================
+
+/** Every Credit_Utilization record must reference an existing Credit_Card_Account */
+/*+test(no_rows) */
+UtilizationReferencesValidAccount_Test := SELECT u.* FROM Credit_Utilization u
+    LEFT JOIN Credit_Card_Account a ON u.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every Loan_Performance_Monthly record must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+MonthlyPerformanceReferencesValidLoan_Test := SELECT p.* FROM Loan_Performance_Monthly p
+    LEFT JOIN Mortgage_Loan l ON p.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Prepayment_Signal record must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+PrepaymentSignalReferencesValidLoan_Test := SELECT s.* FROM Prepayment_Signal s
+    LEFT JOIN Mortgage_Loan l ON s.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Credit_Card must reference an existing Credit_Card_Account */
+/*+test(no_rows) */
+CardReferencesValidAccount_Test := SELECT c.* FROM Credit_Card c
+    LEFT JOIN Credit_Card_Account a ON c.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every Credit_Card_Statement must reference an existing Credit_Card_Account */
+/*+test(no_rows) */
+StatementReferencesValidAccount_Test := SELECT s.* FROM Credit_Card_Statement s
+    LEFT JOIN Credit_Card_Account a ON s.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every Credit_Card_Payment must reference an existing Credit_Card_Account */
+/*+test(no_rows) */
+CardPaymentReferencesValidAccount_Test := SELECT p.* FROM Credit_Card_Payment p
+    LEFT JOIN Credit_Card_Account a ON p.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** A Credit_Card_Payment that names a statement must reference one that exists */
+/*+test(no_rows) */
+CardPaymentReferencesValidStatement_Test := SELECT p.* FROM Credit_Card_Payment p
+    LEFT JOIN Credit_Card_Statement s ON p.statement_id = s.statement_id
+    WHERE p.statement_id IS NOT NULL AND s.statement_id IS NULL;
+
+/** Every Credit_Limit_History record must reference an existing Credit_Card_Account */
+/*+test(no_rows) */
+LimitHistoryReferencesValidAccount_Test := SELECT h.* FROM Credit_Limit_History h
+    LEFT JOIN Credit_Card_Account a ON h.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** Every Card_Delinquency_Event must reference an existing Credit_Card_Account */
+/*+test(no_rows) */
+CardDelinquencyReferencesValidAccount_Test := SELECT d.* FROM Card_Delinquency_Event d
+    LEFT JOIN Credit_Card_Account a ON d.credit_card_account_id = a.credit_card_account_id
+    WHERE a.credit_card_account_id IS NULL;
+
+/** A Personal_Loan that names an application must reference one that exists */
+/*+test(no_rows) */
+PersonalLoanReferencesValidApplication_Test := SELECT l.* FROM Personal_Loan l
+    LEFT JOIN Loan_Application a ON l.application_id = a.application_id
+    WHERE l.application_id IS NOT NULL AND a.application_id IS NULL;
+
+/** An Auto_Loan that names an application must reference one that exists */
+/*+test(no_rows) */
+AutoLoanReferencesValidApplication_Test := SELECT l.* FROM Auto_Loan l
+    LEFT JOIN Loan_Application a ON l.application_id = a.application_id
+    WHERE l.application_id IS NOT NULL AND a.application_id IS NULL;
+
+/** Every Loan_Payment for a PERSONAL loan must reference an existing Personal_Loan */
+/*+test(no_rows) */
+LoanPaymentReferencesValidPersonalLoan_Test := SELECT p.* FROM Loan_Payment p
+    LEFT JOIN Personal_Loan l ON p.loan_id = l.loan_id
+    WHERE p.loan_type = 'PERSONAL' AND l.loan_id IS NULL;
+
+/** Every Loan_Payment for an AUTO loan must reference an existing Auto_Loan */
+/*+test(no_rows) */
+LoanPaymentReferencesValidAutoLoan_Test := SELECT p.* FROM Loan_Payment p
+    LEFT JOIN Auto_Loan l ON p.loan_id = l.loan_id
+    WHERE p.loan_type = 'AUTO' AND l.loan_id IS NULL;
+
+/** Every Consumer_Loan_Delinquency_Event for a PERSONAL loan must reference an existing Personal_Loan */
+/*+test(no_rows) */
+ConsumerDelinquencyReferencesValidPersonalLoan_Test := SELECT d.* FROM Consumer_Loan_Delinquency_Event d
+    LEFT JOIN Personal_Loan l ON d.loan_id = l.loan_id
+    WHERE d.loan_type = 'PERSONAL' AND l.loan_id IS NULL;
+
+/** Every Consumer_Loan_Delinquency_Event for an AUTO loan must reference an existing Auto_Loan */
+/*+test(no_rows) */
+ConsumerDelinquencyReferencesValidAutoLoan_Test := SELECT d.* FROM Consumer_Loan_Delinquency_Event d
+    LEFT JOIN Auto_Loan l ON d.loan_id = l.loan_id
+    WHERE d.loan_type = 'AUTO' AND l.loan_id IS NULL;
+
+/** A Mortgage_Loan that names an application must reference one that exists */
+/*+test(no_rows) */
+MortgageLoanReferencesValidApplication_Test := SELECT l.* FROM Mortgage_Loan l
+    LEFT JOIN Mortgage_Application a ON l.application_id = a.application_id
+    WHERE l.application_id IS NOT NULL AND a.application_id IS NULL;
+
+/** Every Property_Collateral must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+CollateralReferencesValidLoan_Test := SELECT p.* FROM Property_Collateral p
+    LEFT JOIN Mortgage_Loan l ON p.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Mortgage_Borrower must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+BorrowerReferencesValidLoan_Test := SELECT b.* FROM Mortgage_Borrower b
+    LEFT JOIN Mortgage_Loan l ON b.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Mortgage_Payment must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+MortgagePaymentReferencesValidLoan_Test := SELECT p.* FROM Mortgage_Payment p
+    LEFT JOIN Mortgage_Loan l ON p.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Escrow_Account must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+EscrowReferencesValidLoan_Test := SELECT e.* FROM Escrow_Account e
+    LEFT JOIN Mortgage_Loan l ON e.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every mortgage Delinquency_Event must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+MortgageDelinquencyReferencesValidLoan_Test := SELECT d.* FROM Delinquency_Event d
+    LEFT JOIN Mortgage_Loan l ON d.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Loan_Modification must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+ModificationReferencesValidLoan_Test := SELECT m.* FROM Loan_Modification m
+    LEFT JOIN Mortgage_Loan l ON m.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Property_Valuation must reference an existing Mortgage_Loan */
+/*+test(no_rows) */
+ValuationReferencesValidLoan_Test := SELECT v.* FROM Property_Valuation v
+    LEFT JOIN Mortgage_Loan l ON v.loan_id = l.loan_id
+    WHERE l.loan_id IS NULL;
+
+/** Every Property_Valuation must reference an existing Property_Collateral */
+/*+test(no_rows) */
+ValuationReferencesValidProperty_Test := SELECT v.* FROM Property_Valuation v
+    LEFT JOIN Property_Collateral p ON v.property_id = p.property_id
+    WHERE p.property_id IS NULL;
+
+-- =====================================================
+-- Data Quality & Assertions: Enum Validity
+-- =====================================================
+
+/** Credit card account status must be a valid enumeration value */
+/*+test(no_rows) */
+CardAccountHasValidStatus_Test := SELECT * FROM Credit_Card_Account WHERE account_status NOT IN ('OPEN', 'CLOSED', 'SUSPENDED', 'CHARGED_OFF');
+
+/** Credit card status must be a valid enumeration value */
+/*+test(no_rows) */
+CardHasValidStatus_Test := SELECT * FROM Credit_Card
+    WHERE card_status NOT IN ('ACTIVE', 'INACTIVE', 'LOST', 'STOLEN', 'EXPIRED', 'REPLACED', 'CLOSED');
+
+/** Personal loan status must be a valid enumeration value */
+/*+test(no_rows) */
+PersonalLoanHasValidStatus_Test := SELECT * FROM Personal_Loan WHERE loan_status NOT IN ('ACTIVE', 'PAID_OFF', 'CHARGED_OFF', 'SETTLED');
+
+/** Auto loan status must be a valid enumeration value */
+/*+test(no_rows) */
+AutoLoanHasValidStatus_Test := SELECT * FROM Auto_Loan WHERE loan_status NOT IN ('ACTIVE', 'PAID_OFF', 'CHARGED_OFF', 'REPOSSESSED');
+
+/** Loan application loan type must be a valid enumeration value */
+/*+test(no_rows) */
+LoanApplicationHasValidLoanType_Test := SELECT * FROM Loan_Application WHERE loan_type NOT IN ('PERSONAL', 'AUTO');
+
+/** Loan application status must be a valid enumeration value */
+/*+test(no_rows) */
+LoanApplicationHasValidStatus_Test := SELECT * FROM Loan_Application
+    WHERE application_status NOT IN ('SUBMITTED', 'IN_REVIEW', 'APPROVED', 'COUNTER_OFFER', 'DENIED', 'WITHDRAWN', 'FUNDED');
+
+/** Mortgage application status must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageApplicationHasValidStatus_Test := SELECT * FROM Mortgage_Application
+    WHERE application_status NOT IN ('SUBMITTED', 'IN_REVIEW', 'APPROVED', 'CONDITIONALLY_APPROVED', 'DENIED', 'WITHDRAWN', 'FUNDED');
+
+/** Card delinquency bucket must be a valid enumeration value */
+/*+test(no_rows) */
+CardDelinquencyHasValidBucket_Test := SELECT * FROM Card_Delinquency_Event
+    WHERE delinquency_bucket NOT IN ('CURRENT', '30_DAY', '60_DAY', '90_DAY', '120_DAY', '150_DAY', '180_PLUS');
+
+/** Consumer loan delinquency bucket must be a valid enumeration value */
+/*+test(no_rows) */
+ConsumerDelinquencyHasValidBucket_Test := SELECT * FROM Consumer_Loan_Delinquency_Event
+    WHERE delinquency_bucket NOT IN ('CURRENT', '30_DAY', '60_DAY', '90_DAY', '120_PLUS');
+
+/** Mortgage delinquency bucket must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageDelinquencyHasValidBucket_Test := SELECT * FROM Delinquency_Event
+    WHERE delinquency_bucket NOT IN ('CURRENT', '30_DAY', '60_DAY', '90_DAY', '120_PLUS');
+
+/** Mortgage loan status must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageLoanHasValidStatus_Test := SELECT * FROM Mortgage_Loan
+    WHERE loan_status NOT IN ('ACTIVE', 'PAID_OFF', 'FORECLOSURE', 'REO', 'TRANSFERRED', 'CHARGED_OFF');
+
+/** Mortgage borrower type must be a valid enumeration value */
+/*+test(no_rows) */
+BorrowerHasValidType_Test := SELECT * FROM Mortgage_Borrower WHERE borrower_type NOT IN ('PRIMARY', 'CO_BORROWER', 'GUARANTOR');
+
+/** Personal loan rate type must be a valid enumeration value */
+/*+test(no_rows) */
+PersonalLoanHasValidRateType_Test := SELECT * FROM Personal_Loan WHERE rate_type NOT IN ('FIXED', 'VARIABLE');
+
+/** Auto loan rate type must be a valid enumeration value */
+/*+test(no_rows) */
+AutoLoanHasValidRateType_Test := SELECT * FROM Auto_Loan WHERE rate_type NOT IN ('FIXED', 'VARIABLE');
+
+/** Mortgage loan rate type must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageLoanHasValidRateType_Test := SELECT * FROM Mortgage_Loan WHERE rate_type NOT IN ('FIXED', 'ARM');
+
+/** Mortgage loan lien position must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageLoanHasValidLienPosition_Test := SELECT * FROM Mortgage_Loan WHERE lien_position NOT IN ('FIRST', 'SECOND', 'HELOC');
+
+/** Mortgage loan occupancy type, when set, must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageLoanHasValidOccupancyType_Test := SELECT * FROM Mortgage_Loan
+    WHERE occupancy_type IS NOT NULL AND occupancy_type NOT IN ('PRIMARY', 'SECOND_HOME', 'INVESTMENT');
+
+/** Mortgage loan program, when set, must be a valid enumeration value */
+/*+test(no_rows) */
+MortgageLoanHasValidProgram_Test := SELECT * FROM Mortgage_Loan
+    WHERE loan_program IS NOT NULL AND loan_program NOT IN ('CONVENTIONAL', 'FHA', 'VA', 'USDA', 'JUMBO');
+
+-- =====================================================
+-- Data Quality & Assertions: Date Ordering
+-- =====================================================
+
+/** Credit card account closed date must not be before its opened date */
+/*+test(no_rows) */
+CardAccountClosedNotBeforeOpened_Test := SELECT * FROM Credit_Card_Account WHERE closed_date IS NOT NULL AND closed_date < opened_date;
+
+/** Personal loan maturity date must not be before its funding date */
+/*+test(no_rows) */
+PersonalLoanMaturityNotBeforeFunding_Test := SELECT * FROM Personal_Loan WHERE maturity_date < funding_date;
+
+/** Auto loan maturity date must not be before its funding date */
+/*+test(no_rows) */
+AutoLoanMaturityNotBeforeFunding_Test := SELECT * FROM Auto_Loan WHERE maturity_date < funding_date;
+
+/** Mortgage loan maturity date must not be before its funding date */
+/*+test(no_rows) */
+MortgageLoanMaturityNotBeforeFunding_Test := SELECT * FROM Mortgage_Loan WHERE maturity_date < funding_date;
+
+/** Mortgage loan first payment date must not be before its funding date */
+/*+test(no_rows) */
+MortgageLoanFirstPaymentNotBeforeFunding_Test := SELECT * FROM Mortgage_Loan WHERE first_payment_date < funding_date;
+
+-- =====================================================
+-- Data Quality & Assertions: Numeric Sanity
+-- =====================================================
+
+/** Credit card account balances must never be negative */
+/*+test(no_rows) */
+CardAccountBalanceNonNegative_Test := SELECT * FROM Credit_Card_Account WHERE credit_limit_cents < 0 OR current_balance_cents < 0;
+
+/** Credit card payment amounts must never be negative */
+/*+test(no_rows) */
+CardPaymentAmountNonNegative_Test := SELECT * FROM Credit_Card_Payment WHERE payment_amount_cents < 0;
+
+/** Personal and auto loan amounts must never be negative */
+/*+test(no_rows) */
+PersonalLoanAmountNonNegative_Test := SELECT * FROM Personal_Loan
+    WHERE original_amount_cents < 0 OR current_balance_cents < 0 OR monthly_payment_cents < 0;
+
+/** Auto loan amounts must never be negative */
+/*+test(no_rows) */
+AutoLoanAmountNonNegative_Test := SELECT * FROM Auto_Loan
+    WHERE original_amount_cents < 0 OR current_balance_cents < 0 OR monthly_payment_cents < 0;
+
+/** Consumer loan payment amounts must never be negative */
+/*+test(no_rows) */
+LoanPaymentAmountNonNegative_Test := SELECT * FROM Loan_Payment WHERE payment_amount_cents < 0;
+
+/** Mortgage loan amounts must never be negative */
+/*+test(no_rows) */
+MortgageLoanAmountNonNegative_Test := SELECT * FROM Mortgage_Loan
+    WHERE original_principal_cents < 0 OR current_principal_cents < 0 OR monthly_pi_payment_cents < 0 OR total_monthly_payment_cents < 0;
+
+/** Mortgage payment amounts must never be negative */
+/*+test(no_rows) */
+MortgagePaymentAmountNonNegative_Test := SELECT * FROM Mortgage_Payment WHERE payment_amount_cents < 0;
+
+/** Credit scores, where recorded, must fall within the standard 300-850 scoring range */
+/*+test(no_rows) */
+CreditScoresInValidRange_Test := SELECT * FROM Loan_Application WHERE credit_score IS NOT NULL AND (credit_score < 300 OR credit_score > 850);
+
+/** Personal loan origination credit scores, where recorded, must fall within the standard 300-850 scoring range */
+/*+test(no_rows) */
+PersonalLoanCreditScoreInRange_Test := SELECT * FROM Personal_Loan
+    WHERE credit_score_at_origination IS NOT NULL AND (credit_score_at_origination < 300 OR credit_score_at_origination > 850);
+
+/** Auto loan origination credit scores, where recorded, must fall within the standard 300-850 scoring range */
+/*+test(no_rows) */
+AutoLoanCreditScoreInRange_Test := SELECT * FROM Auto_Loan
+    WHERE credit_score_at_origination IS NOT NULL AND (credit_score_at_origination < 300 OR credit_score_at_origination > 850);
+
+/** Mortgage borrower origination credit scores, where recorded, must fall within the standard 300-850 scoring range */
+/*+test(no_rows) */
+MortgageBorrowerCreditScoreInRange_Test := SELECT * FROM Mortgage_Borrower
+    WHERE credit_score_at_origination IS NOT NULL AND (credit_score_at_origination < 300 OR credit_score_at_origination > 850);
+
+-- =====================================================
+-- Data Quality & Assertions: Cross-Field Consistency
+-- =====================================================
+
+/** A closed credit card account must record a closure reason */
+/*+test(no_rows) */
+ClosedCardAccountHasClosureReason_Test := SELECT * FROM Credit_Card_Account WHERE account_status = 'CLOSED' AND closure_reason IS NULL;

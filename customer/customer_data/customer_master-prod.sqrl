@@ -9,7 +9,7 @@ CREATE TABLE Customer (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer',
@@ -26,7 +26,7 @@ CREATE TABLE Customer_Address (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_address',
@@ -43,7 +43,7 @@ CREATE TABLE Customer_Contact (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_contact',
@@ -60,7 +60,7 @@ CREATE TABLE Customer_Employment (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_employment',
@@ -77,7 +77,7 @@ CREATE TABLE Customer_Relationship (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${CUSTOMER_DATA_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'customer_master.customer_relationship',

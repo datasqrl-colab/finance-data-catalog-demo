@@ -6,3 +6,6 @@ sqrl_iceberg_data/
 .idea/
 *.iml
 
+.claude/
+adr/
+.code_agent_results.json

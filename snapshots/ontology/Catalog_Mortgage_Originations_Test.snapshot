@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Mortgage_Originations_Test" : [ {
+      "loan_id" : "ML-001",
+      "primary_borrower_customer_id" : "CUST-001",
+      "loan_status" : "ACTIVE",
+      "original_principal_cents" : 32000000
+    } ]
+  }
+}

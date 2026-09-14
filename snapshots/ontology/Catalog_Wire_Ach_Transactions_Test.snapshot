@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Wire_Ach_Transactions_Test" : [ {
+      "wire_transfer_id" : "WIRE-001",
+      "account_id" : "ACCT-003",
+      "wire_status" : "COMPLETED",
+      "amount_cents" : 50000
+    } ]
+  }
+}

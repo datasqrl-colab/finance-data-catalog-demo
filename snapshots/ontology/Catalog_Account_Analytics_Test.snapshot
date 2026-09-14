@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Account_Analytics_Test" : [ {
+      "account_id" : "ACCT-001",
+      "summary_month" : "2024-01-01",
+      "total_transaction_count" : 5,
+      "net_change_cents" : -145000
+    } ]
+  }
+}

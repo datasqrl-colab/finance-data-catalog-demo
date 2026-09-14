@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Mortgage_Servicing_Test" : [ {
+      "escrow_account_id" : "ESC-001",
+      "loan_id" : "ML-001",
+      "as_of_date" : "2024-01-01",
+      "escrow_balance_cents" : 285000
+    } ]
+  }
+}

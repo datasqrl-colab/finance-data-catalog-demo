@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Card_Transactions_Test" : [ {
+      "authorization_id" : "AUTH-001",
+      "account_id" : "ACCT-001",
+      "authorization_status" : "APPROVED",
+      "authorization_amount_cents" : 4500
+    } ]
+  }
+}

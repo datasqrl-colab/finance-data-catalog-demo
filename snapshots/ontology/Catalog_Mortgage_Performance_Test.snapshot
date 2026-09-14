@@ -1,0 +1,15 @@
+{
+  "data" : {
+    "Catalog_Mortgage_Performance_Test" : [ {
+      "loan_id" : "ML-001",
+      "reporting_month" : "2023-12-01",
+      "loan_status" : "CURRENT",
+      "current_upb_cents" : 29910000
+    }, {
+      "loan_id" : "ML-001",
+      "reporting_month" : "2024-01-01",
+      "loan_status" : "CURRENT",
+      "current_upb_cents" : 29850000
+    } ]
+  }
+}

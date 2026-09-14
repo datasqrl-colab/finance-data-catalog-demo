@@ -20,7 +20,10 @@ The Accounts team owns deposit account data including account lifecycle manageme
 ## Key Entities
 
 - **Account**: Primary deposit account record
+- **Account_Holder**: Links customers to the accounts they own
+- **Account_Product**: Deposit product configuration and terms
 - **Account_Balance_Daily**: Point-in-time balance snapshots
+- **Account_Hold**: Holds placed on funds reducing available balance
 - **Dormancy_Signal**: Regulatory compliance for dormant account monitoring
 
 ## Data Governance
@@ -29,3 +32,12 @@ The Accounts team owns deposit account data including account lifecycle manageme
 - **Regulatory Scope**: GLBA, GDPR, CCPA, Regulation E, Regulation DD
 - **Data Steward**: Deposit Operations
 - **Refresh Frequency**: Daily for bronze, daily for silver
+
+## Environments
+
+- **-test**: Local data for testing
+- **-prod**: Production data (Kafka or Iceberg)
+
+## Test Data
+
+Test fixtures for every table in this folder's datasets live under [`testdata/`](testdata/), one `.jsonl` file per table named `{dataset}-{table}.jsonl`.
