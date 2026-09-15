@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Core_Transactions_Test" : [ {
+      "transaction_id" : "TXN-001",
+      "account_id" : "ACCT-001",
+      "transaction_category" : "CREDIT",
+      "amount_cents" : 200000
+    } ]
+  }
+}

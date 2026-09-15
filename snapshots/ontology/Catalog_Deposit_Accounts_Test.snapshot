@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Deposit_Accounts_Test" : [ {
+      "account_id" : "ACCT-001",
+      "account_type" : "CHECKING",
+      "account_status" : "OPEN",
+      "product_code" : "PROD-CHK-BASIC"
+    } ]
+  }
+}

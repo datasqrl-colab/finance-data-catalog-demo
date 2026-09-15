@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Enriched_Transactions_Test" : [ {
+      "transaction_id" : "TXN-002",
+      "account_id" : "ACCT-001",
+      "transaction_source" : "CARD",
+      "amount_cents" : 5000
+    } ]
+  }
+}

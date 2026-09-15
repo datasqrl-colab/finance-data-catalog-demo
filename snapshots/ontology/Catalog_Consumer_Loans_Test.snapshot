@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Consumer_Loans_Test" : [ {
+      "loan_id" : "PL-001",
+      "primary_borrower_customer_id" : "CUST-001",
+      "loan_status" : "ACTIVE",
+      "original_amount_cents" : 2500000
+    } ]
+  }
+}

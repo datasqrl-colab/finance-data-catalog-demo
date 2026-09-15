@@ -1,5 +1,6 @@
 IMPORT customer_data.customer_master-{{environment}}.*;
 IMPORT customer_data.kyc_aml-{{environment}}.*;
+IMPORT customer_data.customer_enriched-{{environment}}.*;
 
 -- =====================================================
 -- Relationships
@@ -55,6 +56,24 @@ Customer.risk_rating := SELECT * FROM Customer_Risk_Rating r WHERE this.customer
 /** Complete risk rating history for the customer */
 Customer.risk_rating_history := SELECT * FROM Customer_Risk_Rating r WHERE this.customer_id = r.customer_id
                                                                  ORDER BY effective_to DESC NULLS FIRST;
+
+/** Consolidated profile for this customer */
+Customer.profile := SELECT * FROM Customer_Profile p WHERE this.customer_id = p.customer_id;
+
+/** All segment assignments for this customer */
+Customer.segments := SELECT * FROM Customer_Segment s WHERE this.customer_id = s.customer_id;
+
+/** Currently active segment assignments for this customer */
+Customer.current_segments := SELECT * FROM Customer_Segment s WHERE this.customer_id = s.customer_id AND s.is_current;
+
+/** Household grouping for this customer */
+Customer.household := SELECT * FROM Customer_Household h WHERE this.customer_id = h.customer_id AND h.is_current;
+
+/** Complete lifetime value calculation history for this customer */
+Customer.lifetime_values := SELECT * FROM Customer_Lifetime_Value v WHERE this.customer_id = v.customer_id ORDER BY calculation_date DESC;
+
+/** Most recent lifetime value calculation for this customer */
+Customer.current_lifetime_value := SELECT * FROM Customer_Lifetime_Value v WHERE this.customer_id = v.customer_id ORDER BY calculation_date DESC LIMIT 1;
 
 -- =====================================================
 -- Data Quality & Assertions

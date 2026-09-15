@@ -21,7 +21,9 @@ The Transactions team owns transaction data across all payment channels includin
 
 ## Key Entities
 
-- **Transaction**: Primary ledger record for all account movements
+- **Account_Transaction**: Primary ledger record for all account movements. Named `Account_Transaction` rather than `Transaction` because `Transaction` is a reserved Flink SQL keyword and fails to parse as a standalone table name.
+- **Card_Authorization / Card_Settlement**: Card payment lifecycle from authorization through settlement
+- **Wire_Transfer / Ach_Transaction**: Electronic funds transfer records
 - **Unified_Transaction**: Consolidated view across all transaction types
 - **Recurring_Payment**: Detected recurring payment patterns
 
@@ -31,3 +33,12 @@ The Transactions team owns transaction data across all payment channels includin
 - **Regulatory Scope**: GLBA, GDPR, CCPA, Regulation E, BSA, OFAC, PCI-DSS
 - **Data Steward**: Payment Operations
 - **Refresh Frequency**: Real-time for bronze, hourly for silver
+
+## Environments
+
+- **-test**: Local data for testing
+- **-prod**: Production data (Kafka or Iceberg)
+
+## Test Data
+
+Test fixtures for every table in this folder's datasets live under [`testdata/`](testdata/), one `.jsonl` file per table named `{dataset}-{table}.jsonl`.

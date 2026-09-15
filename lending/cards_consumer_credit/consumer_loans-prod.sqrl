@@ -9,7 +9,7 @@ CREATE TABLE Personal_Loan (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.personal_loan',
@@ -26,7 +26,7 @@ CREATE TABLE Auto_Loan (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.auto_loan',
@@ -43,7 +43,7 @@ CREATE TABLE Loan_Payment (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.loan_payment',
@@ -60,7 +60,7 @@ CREATE TABLE Loan_Application (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.loan_application',
@@ -77,7 +77,7 @@ CREATE TABLE Consumer_Loan_Delinquency_Event (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'consumer_loans.consumer_loan_delinquency_event',

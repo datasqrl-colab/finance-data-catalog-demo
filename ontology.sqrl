@@ -1,5 +1,6 @@
-IMPORT customer.customer_ontology.*;
+IMPORT customer.customer-ontology.*;
 IMPORT lending.lending-ontology.*;
+IMPORT deposits_payments.deposits_payments-ontology.*;
 
 -- =====================================================
 -- Customer to Credit Card Relationships
@@ -74,3 +75,280 @@ Customer.mortgage_delinquency_events := SELECT * FROM Delinquency_Event d WHERE 
 /** Mortgage loan modifications for this customer */
 Customer.mortgage_modifications := SELECT * FROM Loan_Modification m WHERE this.customer_id = m.customer_id
                                                                  ORDER BY request_date DESC;
+
+-- =====================================================
+-- Customer to Deposits & Payments Relationships
+-- =====================================================
+
+/** Deposit account holder records for this customer */
+Customer.account_holdings := SELECT * FROM Account_Holder h WHERE this.customer_id = h.customer_id;
+
+/** Deposit accounts this customer holds (as any holder type) */
+Customer.deposit_accounts := SELECT a.* FROM Account_Holder h JOIN Account a ON h.account_id = a.account_id
+                                                          WHERE this.customer_id = h.customer_id;
+
+/** Open deposit accounts this customer holds */
+Customer.open_deposit_accounts := SELECT a.* FROM Account_Holder h JOIN Account a ON h.account_id = a.account_id
+                                                               WHERE this.customer_id = h.customer_id
+                                                                 AND a.account_status = 'OPEN';
+
+/** Unified transactions for this customer, most recent first */
+Customer.unified_transactions := SELECT * FROM Unified_Transaction u WHERE this.customer_id = u.customer_id
+                                                                 ORDER BY transaction_at DESC;
+
+/** Recurring payments for this customer */
+Customer.recurring_payments := SELECT * FROM Recurring_Payment r WHERE this.customer_id = r.customer_id;
+
+/** Wire transfers for this customer */
+Customer.wire_transfers := SELECT * FROM Wire_Transfer w WHERE this.customer_id = w.customer_id;
+
+/** Card chargebacks for this customer */
+Customer.card_chargebacks := SELECT * FROM Card_Chargeback c WHERE this.customer_id = c.customer_id;
+
+/** Customer that this account holder record belongs to */
+Account_Holder.customer := SELECT * FROM Customer c WHERE this.customer_id = c.customer_id;
+
+/** Customers who hold this deposit account */
+Account.customers := SELECT c.* FROM Account_Holder h JOIN Customer c ON h.customer_id = c.customer_id
+                                                  WHERE this.account_id = h.account_id;
+
+/** Customer this unified transaction belongs to */
+Unified_Transaction.customer := SELECT * FROM Customer c WHERE this.customer_id = c.customer_id;
+
+-- =====================================================
+-- Data Quality & Assertions: Cross-Domain Referential Integrity
+-- =====================================================
+
+/** Every Account_Holder must reference an existing Customer */
+/*+test(no_rows) */
+AccountHolderReferencesValidCustomer_Test := SELECT h.* FROM Account_Holder h
+    LEFT JOIN Customer c ON h.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Wire_Transfer must reference an existing Customer */
+/*+test(no_rows) */
+WireTransferReferencesValidCustomer_Test := SELECT w.* FROM Wire_Transfer w
+    LEFT JOIN Customer c ON w.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Card_Chargeback must reference an existing Customer */
+/*+test(no_rows) */
+ChargebackReferencesValidCustomer_Test := SELECT ch.* FROM Card_Chargeback ch
+    LEFT JOIN Customer c ON ch.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Unified_Transaction must reference an existing Customer */
+/*+test(no_rows) */
+UnifiedTransactionReferencesValidCustomer_Test := SELECT u.* FROM Unified_Transaction u
+    LEFT JOIN Customer c ON u.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Recurring_Payment must reference an existing Customer */
+/*+test(no_rows) */
+RecurringPaymentReferencesValidCustomer_Test := SELECT r.* FROM Recurring_Payment r
+    LEFT JOIN Customer c ON r.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Credit_Card_Account must reference an existing Customer */
+/*+test(no_rows) */
+CardAccountReferencesValidCustomer_Test := SELECT a.* FROM Credit_Card_Account a
+    LEFT JOIN Customer c ON a.primary_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Credit_Card must reference an existing Customer as cardholder */
+/*+test(no_rows) */
+CardReferencesValidCustomer_Test := SELECT cc.* FROM Credit_Card cc
+    LEFT JOIN Customer c ON cc.cardholder_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Card_Delinquency_Event must reference an existing Customer */
+/*+test(no_rows) */
+CardDelinquencyReferencesValidCustomer_Test := SELECT d.* FROM Card_Delinquency_Event d
+    LEFT JOIN Customer c ON d.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Personal_Loan must reference an existing Customer as primary borrower */
+/*+test(no_rows) */
+PersonalLoanReferencesValidCustomer_Test := SELECT l.* FROM Personal_Loan l
+    LEFT JOIN Customer c ON l.primary_borrower_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Auto_Loan must reference an existing Customer as primary borrower */
+/*+test(no_rows) */
+AutoLoanReferencesValidCustomer_Test := SELECT l.* FROM Auto_Loan l
+    LEFT JOIN Customer c ON l.primary_borrower_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Loan_Application must reference an existing Customer as primary applicant */
+/*+test(no_rows) */
+LoanApplicationReferencesValidPrimaryApplicant_Test := SELECT a.* FROM Loan_Application a
+    LEFT JOIN Customer c ON a.primary_applicant_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** A Loan_Application that names a co-applicant must reference an existing Customer */
+/*+test(no_rows) */
+LoanApplicationReferencesValidCoApplicant_Test := SELECT a.* FROM Loan_Application a
+    LEFT JOIN Customer c ON a.co_applicant_customer_id = c.customer_id
+    WHERE a.co_applicant_customer_id IS NOT NULL AND c.customer_id IS NULL;
+
+/** Every Consumer_Loan_Delinquency_Event must reference an existing Customer */
+/*+test(no_rows) */
+ConsumerDelinquencyReferencesValidCustomer_Test := SELECT d.* FROM Consumer_Loan_Delinquency_Event d
+    LEFT JOIN Customer c ON d.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Mortgage_Application must reference an existing Customer as primary borrower */
+/*+test(no_rows) */
+MortgageApplicationReferencesValidCustomer_Test := SELECT a.* FROM Mortgage_Application a
+    LEFT JOIN Customer c ON a.primary_borrower_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Mortgage_Loan must reference an existing Customer as primary borrower */
+/*+test(no_rows) */
+MortgageLoanReferencesValidCustomer_Test := SELECT l.* FROM Mortgage_Loan l
+    LEFT JOIN Customer c ON l.primary_borrower_customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Mortgage_Borrower must reference an existing Customer */
+/*+test(no_rows) */
+MortgageBorrowerReferencesValidCustomer_Test := SELECT b.* FROM Mortgage_Borrower b
+    LEFT JOIN Customer c ON b.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every mortgage Delinquency_Event must reference an existing Customer */
+/*+test(no_rows) */
+MortgageDelinquencyReferencesValidCustomer_Test := SELECT d.* FROM Delinquency_Event d
+    LEFT JOIN Customer c ON d.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Loan_Modification must reference an existing Customer */
+/*+test(no_rows) */
+ModificationReferencesValidCustomer_Test := SELECT m.* FROM Loan_Modification m
+    LEFT JOIN Customer c ON m.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Customer_Profile must reference an existing Customer */
+/*+test(no_rows) */
+ProfileReferencesValidCustomer_Test := SELECT p.* FROM Customer_Profile p
+    LEFT JOIN Customer c ON p.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Customer_Segment must reference an existing Customer */
+/*+test(no_rows) */
+SegmentReferencesValidCustomer_Test := SELECT s.* FROM Customer_Segment s
+    LEFT JOIN Customer c ON s.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Customer_Household must reference an existing Customer */
+/*+test(no_rows) */
+HouseholdReferencesValidCustomer_Test := SELECT h.* FROM Customer_Household h
+    LEFT JOIN Customer c ON h.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Customer_Lifetime_Value must reference an existing Customer */
+/*+test(no_rows) */
+LifetimeValueReferencesValidCustomer_Test := SELECT v.* FROM Customer_Lifetime_Value v
+    LEFT JOIN Customer c ON v.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Customer_Credit_Exposure must reference an existing Customer */
+/*+test(no_rows) */
+CreditExposureReferencesValidCustomer_Test := SELECT e.* FROM Customer_Credit_Exposure e
+    LEFT JOIN Customer c ON e.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Payment_Behavior record must reference an existing Customer */
+/*+test(no_rows) */
+PaymentBehaviorReferencesValidCustomer_Test := SELECT b.* FROM Payment_Behavior b
+    LEFT JOIN Customer c ON b.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+/** Every Credit_Utilization record must reference an existing Customer */
+/*+test(no_rows) */
+UtilizationReferencesValidCustomer_Test := SELECT u.* FROM Credit_Utilization u
+    LEFT JOIN Customer c ON u.customer_id = c.customer_id
+    WHERE c.customer_id IS NULL;
+
+-- =====================================================
+-- Import Chain & Test Data Snapshots
+-- =====================================================
+
+/*+test */
+Catalog_Customer_Master_Test := SELECT customer_id, first_name, last_name, customer_status
+                                FROM Customer WHERE customer_id = 'CUST-001'
+                                ORDER BY customer_id;
+
+/*+test */
+Catalog_Kyc_Verification_Test := SELECT verification_id, customer_id, verification_type, verification_result
+                                 FROM Kyc_Verification WHERE customer_id = 'CUST-001'
+                                 ORDER BY verification_id;
+
+/*+test */
+Catalog_Customer_Enriched_Test := SELECT customer_id, full_name, customer_type, customer_status
+                                  FROM Customer_Profile WHERE customer_id = 'CUST-001'
+                                  ORDER BY customer_id;
+
+/*+test */
+Catalog_Credit_Cards_Test := SELECT credit_card_account_id, primary_customer_id, account_status, credit_limit_cents
+                             FROM Credit_Card_Account WHERE credit_card_account_id = 'CCA-001'
+                             ORDER BY credit_card_account_id;
+
+/*+test */
+Catalog_Consumer_Loans_Test := SELECT loan_id, primary_borrower_customer_id, loan_status, original_amount_cents
+                               FROM Personal_Loan WHERE loan_id = 'PL-001'
+                               ORDER BY loan_id;
+
+/*+test */
+Catalog_Credit_Risk_Signals_Test := SELECT customer_id, snapshot_date, risk_tier, risk_score
+                                    FROM Customer_Credit_Exposure WHERE customer_id = 'CUST-001'
+                                    ORDER BY customer_id, snapshot_date;
+
+/*+test */
+Catalog_Mortgage_Originations_Test := SELECT loan_id, primary_borrower_customer_id, loan_status, original_principal_cents
+                                      FROM Mortgage_Loan WHERE loan_id = 'ML-001'
+                                      ORDER BY loan_id;
+
+/*+test */
+Catalog_Mortgage_Servicing_Test := SELECT escrow_account_id, loan_id, as_of_date, escrow_balance_cents
+                                   FROM Escrow_Account WHERE escrow_account_id = 'ESC-001'
+                                   ORDER BY escrow_account_id, as_of_date;
+
+/*+test */
+Catalog_Mortgage_Performance_Test := SELECT loan_id, reporting_month, loan_status, current_upb_cents
+                                     FROM Loan_Performance_Monthly WHERE loan_id = 'ML-001'
+                                     ORDER BY loan_id, reporting_month;
+
+/*+test */
+Catalog_Deposit_Accounts_Test := SELECT account_id, account_type, account_status, product_code
+                                 FROM Account WHERE account_id = 'ACCT-001'
+                                 ORDER BY account_id;
+
+/*+test */
+Catalog_Account_Balances_Test := SELECT account_id, balance_date, ledger_balance_cents, available_balance_cents
+                                 FROM Account_Balance_Daily WHERE account_id = 'ACCT-001'
+                                 ORDER BY account_id, balance_date;
+
+/*+test */
+Catalog_Account_Analytics_Test := SELECT account_id, summary_month, total_transaction_count, net_change_cents
+                                  FROM Account_Activity_Summary WHERE account_id = 'ACCT-001'
+                                  ORDER BY account_id, summary_month;
+
+/*+test */
+Catalog_Core_Transactions_Test := SELECT transaction_id, account_id, transaction_category, amount_cents
+                                  FROM Account_Transaction WHERE transaction_id = 'TXN-001'
+                                  ORDER BY transaction_id;
+
+/*+test */
+Catalog_Card_Transactions_Test := SELECT authorization_id, account_id, authorization_status, authorization_amount_cents
+                                  FROM Card_Authorization WHERE authorization_id = 'AUTH-001'
+                                  ORDER BY authorization_id;
+
+/*+test */
+Catalog_Wire_Ach_Transactions_Test := SELECT wire_transfer_id, account_id, wire_status, amount_cents
+                                      FROM Wire_Transfer WHERE wire_transfer_id = 'WIRE-001'
+                                      ORDER BY wire_transfer_id;
+
+/*+test */
+Catalog_Enriched_Transactions_Test := SELECT transaction_id, account_id, transaction_source, amount_cents
+                                      FROM Unified_Transaction WHERE transaction_id = 'TXN-002'
+                                      ORDER BY transaction_id;

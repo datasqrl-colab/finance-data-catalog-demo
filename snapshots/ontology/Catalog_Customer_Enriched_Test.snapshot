@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Customer_Enriched_Test" : [ {
+      "customer_id" : "CUST-001",
+      "full_name" : "John Michael Smith",
+      "customer_type" : "INDIVIDUAL",
+      "customer_status" : "ACTIVE"
+    } ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "Catalog_Credit_Risk_Signals_Test" : [ {
+      "customer_id" : "CUST-001",
+      "snapshot_date" : "2024-01-25",
+      "risk_tier" : "PRIME",
+      "risk_score" : 15
+    } ]
+  }
+}

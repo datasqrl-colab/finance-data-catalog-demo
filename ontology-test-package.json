@@ -1,8 +1,5 @@
 {
-  "version": "1",
-  "enabled-engines": ["flink", "postgres", "vertx"],
   "script": {
-    "main": "ontology.sqrl",
     "config": {
       "environment": "test"
     }
@@ -10,22 +7,13 @@
   "engines": {
     "flink": {
       "config": {
-        "execution.runtime-mode": "STREAMING",
         "table.exec.source.idle-timeout": "1 s"
       }
     }
   },
-  "compiler": {
-    "predicate-pushdown-rules": "LIMITED_RULES",
-    "api": {
-      "protocols": ["GRAPHQL", "REST", "MCP"],
-      "endpoints": "FULL",
-      "max-result-depth": 1,
-      "add-prefix": true
-    }
-  },
   "test-runner": {
     "delay-sec": -1,
-    "required-checkpoints": 1
+    "required-checkpoints": 1,
+    "snapshot-folder": "snapshots/ontology/"
   }
 }

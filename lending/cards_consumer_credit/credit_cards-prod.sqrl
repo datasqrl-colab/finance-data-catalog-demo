@@ -9,7 +9,7 @@ CREATE TABLE Credit_Card_Account (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card_account',
@@ -26,7 +26,7 @@ CREATE TABLE Credit_Card (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card',
@@ -43,7 +43,7 @@ CREATE TABLE Credit_Card_Statement (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card_statement',
@@ -60,7 +60,7 @@ CREATE TABLE Credit_Card_Payment (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_card_payment',
@@ -77,7 +77,7 @@ CREATE TABLE Credit_Limit_History (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.credit_limit_history',
@@ -94,7 +94,7 @@ CREATE TABLE Card_Delinquency_Event (
   ingested_at TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
   WATERMARK FOR ingested_at AS ingested_at - INTERVAL '30' SECOND
 ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'kafka-safe',
     'properties.bootstrap.servers' = '${LENDING_KAFKA_BROKERS}',
     'properties.group.id' = '${DEPLOYMENT_ID}',
     'topic' = 'credit_cards.card_delinquency_event',
