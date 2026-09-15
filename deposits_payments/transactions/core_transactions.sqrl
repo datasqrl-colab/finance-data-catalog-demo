@@ -44,18 +44,18 @@
 CREATE TABLE Account_Transaction_schema (
   transaction_id STRING NOT NULL,
   account_id STRING NOT NULL,
-  transaction_type_code STRING NOT NULL,
-  transaction_category STRING NOT NULL,
-  amount_cents BIGINT NOT NULL,
-  currency_code STRING NOT NULL,
-  transaction_status STRING NOT NULL,
+  transaction_type_code STRING,
+  transaction_category STRING,
+  amount_cents BIGINT,
+  currency_code STRING,
+  transaction_status STRING,
   posted_date DATE,
-  transaction_at TIMESTAMP_LTZ(3) NOT NULL,
-  effective_date DATE NOT NULL,
-  description STRING NOT NULL,
+  transaction_at TIMESTAMP_LTZ(3),
+  effective_date DATE,
+  description STRING,
   memo STRING,
   running_balance_cents BIGINT,
-  channel STRING NOT NULL,
+  channel STRING,
   external_reference STRING,
   trace_number STRING,
   check_number STRING,
@@ -64,9 +64,9 @@ CREATE TABLE Account_Transaction_schema (
   teller_id STRING,
   counterparty_account_id STRING,
   counterparty_name STRING,
-  is_reconciled BOOLEAN NOT NULL,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  is_reconciled BOOLEAN,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Transaction type reference data defining transaction classifications.
@@ -88,18 +88,18 @@ CREATE TABLE Account_Transaction_schema (
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Transaction_Type_schema (
   transaction_type_code STRING NOT NULL,
-  transaction_type_name STRING NOT NULL,
-  description STRING NOT NULL,
-  category STRING NOT NULL,
+  transaction_type_name STRING,
+  description STRING,
+  category STRING,
   subcategory STRING,
-  is_customer_initiated BOOLEAN NOT NULL,
-  affects_available_balance BOOLEAN NOT NULL,
-  is_fee BOOLEAN NOT NULL,
-  is_interest BOOLEAN NOT NULL,
-  gl_account_code STRING NOT NULL,
-  is_active BOOLEAN NOT NULL,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  is_customer_initiated BOOLEAN,
+  affects_available_balance BOOLEAN,
+  is_fee BOOLEAN,
+  is_interest BOOLEAN,
+  gl_account_code STRING,
+  is_active BOOLEAN,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Transaction reversals and corrections linking to original transactions.
@@ -124,15 +124,15 @@ CREATE TABLE Transaction_Reversal_schema (
   reversal_id STRING NOT NULL,
   original_transaction_id STRING NOT NULL,
   reversing_transaction_id STRING NOT NULL,
-  reversal_type STRING NOT NULL,
-  reversal_amount_cents BIGINT NOT NULL,
-  reason_code STRING NOT NULL,
+  reversal_type STRING,
+  reversal_amount_cents BIGINT,
+  reason_code STRING,
   reason_description STRING,
-  reversed_at TIMESTAMP_LTZ(3) NOT NULL,
+  reversed_at TIMESTAMP_LTZ(3),
   posted_date DATE,
-  reversed_by STRING NOT NULL,
+  reversed_by STRING,
   approved_by STRING,
-  channel STRING NOT NULL,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  channel STRING,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );

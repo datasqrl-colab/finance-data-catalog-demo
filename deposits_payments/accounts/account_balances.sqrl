@@ -34,22 +34,22 @@
 CREATE TABLE Account_Balance_Daily_schema (
   account_id STRING NOT NULL,
   balance_date DATE NOT NULL,
-  ledger_balance_cents BIGINT NOT NULL,
-  available_balance_cents BIGINT NOT NULL,
-  collected_balance_cents BIGINT NOT NULL,
-  hold_amount_cents BIGINT NOT NULL,
-  pending_credits_cents BIGINT NOT NULL,
-  pending_debits_cents BIGINT NOT NULL,
-  overdraft_amount_cents BIGINT NOT NULL,
+  ledger_balance_cents BIGINT,
+  available_balance_cents BIGINT,
+  collected_balance_cents BIGINT,
+  hold_amount_cents BIGINT,
+  pending_credits_cents BIGINT,
+  pending_debits_cents BIGINT,
+  overdraft_amount_cents BIGINT,
   interest_bearing_balance_cents BIGINT,
-  day_count INT NOT NULL,
-  mtd_average_balance_cents BIGINT NOT NULL,
-  ytd_average_balance_cents BIGINT NOT NULL,
-  transaction_count INT NOT NULL,
-  debit_amount_cents BIGINT NOT NULL,
-  credit_amount_cents BIGINT NOT NULL,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  day_count INT,
+  mtd_average_balance_cents BIGINT,
+  ytd_average_balance_cents BIGINT,
+  transaction_count INT,
+  debit_amount_cents BIGINT,
+  credit_amount_cents BIGINT,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Interest accrual records tracking daily interest earned or charged.
@@ -72,17 +72,17 @@ CREATE TABLE Account_Balance_Daily_schema (
 CREATE TABLE Interest_Accrual_schema (
   account_id STRING NOT NULL,
   accrual_date DATE NOT NULL,
-  calculation_balance_cents BIGINT NOT NULL,
-  interest_rate DECIMAL(12, 10) NOT NULL,
-  apy DECIMAL(10, 6) NOT NULL,
-  accrued_interest_cents BIGINT NOT NULL,
-  mtd_accrued_interest_cents BIGINT NOT NULL,
-  ytd_accrued_interest_cents BIGINT NOT NULL,
-  ytd_interest_paid_cents BIGINT NOT NULL,
+  calculation_balance_cents BIGINT,
+  interest_rate DECIMAL(12, 10),
+  apy DECIMAL(10, 6),
+  accrued_interest_cents BIGINT,
+  mtd_accrued_interest_cents BIGINT,
+  ytd_accrued_interest_cents BIGINT,
+  ytd_interest_paid_cents BIGINT,
   rate_tier STRING,
-  interest_type STRING NOT NULL,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  interest_type STRING,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Account holds placed on funds reducing available balance.
@@ -107,17 +107,17 @@ CREATE TABLE Interest_Accrual_schema (
 CREATE TABLE Account_Hold_schema (
   hold_id STRING NOT NULL,
   account_id STRING NOT NULL,
-  hold_type STRING NOT NULL,
-  hold_amount_cents BIGINT NOT NULL,
-  hold_status STRING NOT NULL,
-  hold_reason STRING NOT NULL,
-  placed_at TIMESTAMP_LTZ(3) NOT NULL,
+  hold_type STRING,
+  hold_amount_cents BIGINT,
+  hold_status STRING,
+  hold_reason STRING,
+  placed_at TIMESTAMP_LTZ(3),
   scheduled_release_at TIMESTAMP_LTZ(3),
   released_at TIMESTAMP_LTZ(3),
   related_transaction_id STRING,
   legal_reference STRING,
-  placed_by STRING NOT NULL,
+  placed_by STRING,
   released_by STRING,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );

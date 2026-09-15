@@ -36,26 +36,26 @@
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Account_schema (
   account_id STRING NOT NULL,
-  account_number STRING NOT NULL,
-  account_type STRING NOT NULL,
-  product_code STRING NOT NULL,
-  account_title STRING NOT NULL,
-  account_status STRING NOT NULL,
-  opened_date DATE NOT NULL,
+  account_number STRING,
+  account_type STRING,
+  product_code STRING,
+  account_title STRING,
+  account_status STRING,
+  opened_date DATE,
   closed_date DATE,
   closure_reason STRING,
   opening_branch_id STRING,
   servicing_branch_id STRING,
-  currency_code STRING NOT NULL,
+  currency_code STRING,
   interest_rate DECIMAL(10, 6),
   compounding_frequency STRING,
   interest_payment_frequency STRING,
   maturity_date DATE,
   original_term_months INT,
-  overdraft_protection_enabled BOOLEAN NOT NULL,
+  overdraft_protection_enabled BOOLEAN,
   overdraft_linked_account_id STRING,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Account ownership and holder information linking customers to accounts.
@@ -76,15 +76,15 @@ CREATE TABLE Account_schema (
 CREATE TABLE Account_Holder_schema (
   account_id STRING NOT NULL,
   customer_id STRING NOT NULL,
-  holder_type STRING NOT NULL,
+  holder_type STRING,
   ownership_percentage DECIMAL(5, 2),
-  has_signing_authority BOOLEAN NOT NULL,
-  added_date DATE NOT NULL,
+  has_signing_authority BOOLEAN,
+  added_date DATE,
   removed_date DATE,
-  is_active BOOLEAN NOT NULL,
+  is_active BOOLEAN,
   tax_reporting_percentage DECIMAL(5, 2),
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Account status change history for audit and compliance tracking.
@@ -104,14 +104,14 @@ CREATE TABLE Account_Holder_schema (
 CREATE TABLE Account_Status_History_schema (
   account_id STRING NOT NULL,
   previous_status STRING,
-  new_status STRING NOT NULL,
-  change_reason STRING NOT NULL,
+  new_status STRING,
+  change_reason STRING,
   status_changed_at TIMESTAMP_LTZ(3) NOT NULL,
-  changed_by STRING NOT NULL,
-  change_channel STRING NOT NULL,
+  changed_by STRING,
+  change_channel STRING,
   notes STRING,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );
 
 /** Deposit product configuration and terms reference data.
@@ -138,21 +138,21 @@ CREATE TABLE Account_Status_History_schema (
     * source_updated_at: Timestamp when record was last updated in source system */
 CREATE TABLE Account_Product_schema (
   product_code STRING NOT NULL,
-  product_name STRING NOT NULL,
-  product_category STRING NOT NULL,
-  is_active BOOLEAN NOT NULL,
-  minimum_opening_deposit_cents BIGINT NOT NULL,
-  minimum_balance_cents BIGINT NOT NULL,
-  monthly_fee_cents BIGINT NOT NULL,
-  fee_waiver_eligible BOOLEAN NOT NULL,
+  product_name STRING,
+  product_category STRING,
+  is_active BOOLEAN,
+  minimum_opening_deposit_cents BIGINT,
+  minimum_balance_cents BIGINT,
+  monthly_fee_cents BIGINT,
+  fee_waiver_eligible BOOLEAN,
   fee_waiver_conditions STRING,
-  base_interest_rate DECIMAL(10, 6) NOT NULL,
+  base_interest_rate DECIMAL(10, 6),
   rate_tiers STRING,
   max_monthly_transactions INT,
-  interest_bearing BOOLEAN NOT NULL,
-  fdic_insured BOOLEAN NOT NULL,
+  interest_bearing BOOLEAN,
+  fdic_insured BOOLEAN,
   effective_from DATE NOT NULL,
   effective_to DATE,
-  source_system STRING NOT NULL,
-  source_updated_at TIMESTAMP_LTZ(3) NOT NULL
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
 );

@@ -58,7 +58,7 @@ CREATE TABLE Mortgage_Application_schema (
   loan_program STRING,
   application_status STRING NOT NULL,
   submitted_at TIMESTAMP_LTZ(3) NOT NULL,
-  received_date DATE NOT NULL,
+  received_date DATE,
   decision_date DATE,
   decision_type STRING,
   denial_reasons STRING,
