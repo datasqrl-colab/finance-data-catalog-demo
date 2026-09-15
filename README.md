@@ -8,7 +8,7 @@ A data catalog covering the **bronze** (source) and **silver** (enriched/conform
 |---|---|---|---|
 | Customer | Customer Data | [customer/customer_data/](customer/customer_data/) | Customer master, KYC/AML, Customer profiles |
 | Deposits & Payments | Accounts | [deposits_payments/accounts/](deposits_payments/accounts/) | Deposit accounts, Balances, Account analytics |
-| Deposits & Payments | Transactions | [deposits_payments/transactions/](deposits_payments/transactions/) | Core transactions, Card/Wire/ACH, Enriched transactions |
+| Deposits & Payments | Transactions | [deposits_payments/transactions/](deposits_payments/transactions/) | Core transactions, Card/Wire/ACH, Instant payments (RTP, FedNow, Zelle, push-to-card), Enriched transactions |
 | Lending | Mortgages | [lending/mortgages/](lending/mortgages/) | Originations, Servicing, Performance analytics |
 | Lending | Cards & Consumer Credit | [lending/cards_consumer_credit/](lending/cards_consumer_credit/) | Credit cards, Consumer loans, Credit risk signals |
 
@@ -110,6 +110,11 @@ numeric-sanity, date-ordering, cross-field-consistency and self-reference checks
   `Credit_Card_Account.primary_customer_id` referencing `Customer`) can only be asserted in the
   root `ontology.sqrl`, since it is the only file that imports every unit.
 
+Instant payment assertions group related rules into one assertion per table and concern, and each
+assertion's doc-string lists every rule it enforces. Every test table becomes a GraphQL Query field,
+and the DataSQRL test planner parses the generated schema with graphql-java's 15,000-token limit, so
+grouping keeps the catalog under that limit while still enforcing each rule.
+
 The root `ontology.sqrl` also carries one `/*+test */` snapshot query per imported dataset,
 filtered on a known identifier from that dataset's test data, so a change to a schema, connector or
 test-data file that alters what the catalog serves shows up as a snapshot diff.
@@ -139,3 +144,8 @@ see `./run-tests.sh --list-invocations` for what a given flag combination would 
   `Card_Chargeback.card_id` in `deposits_payments/transactions/card_transactions.sqrl` have no
   parent table anywhere in this catalog, so no referential-integrity assertion is written for
   them. A future card-issuing dataset would need to add one.
+- **The generated GraphQL schema is close to the DataSQRL test-planner limit.** `TestPlanner` parses
+  the schema with graphql-java's default limit of 15,000 grammar tokens, and every table, relationship
+  and test table adds to it (a test table costs about 18 tokens). Group new data-quality rules into
+  per-table assertions, as the instant payment assertions do, and measure the token count of
+  `build/ontology/inferred_schema.graphqls` when adding a dataset.

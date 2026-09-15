@@ -7,7 +7,7 @@
 -- Layer:            silver
 -- Classification:   Restricted
 -- Regulatory scope: GLBA, GDPR, CCPA
--- Upstream:         core_transactions.sqrl (Account_Transaction), card_transactions.sqrl, wire_ach_transactions.sqrl
+-- Upstream:         core_transactions.sqrl (Account_Transaction), card_transactions.sqrl, wire_ach_transactions.sqrl, instant_payments.sqrl
 
 /** Unified transaction view combining all transaction types with standardized attributes.
     Grain: one row per transaction_id.
@@ -16,7 +16,7 @@
     * transaction_id: Unique identifier for the transaction
     * account_id: Reference to account @npi
     * customer_id: Reference to customer @pii
-    * transaction_source: Transaction source: CORE, CARD, ACH, WIRE
+    * transaction_source: Transaction source: CORE, CARD, ACH, WIRE, INSTANT
     * source_transaction_id: Original source system transaction ID
     * transaction_type: Standardized transaction type
     * debit_credit: Transaction category: DEBIT, CREDIT
@@ -27,7 +27,7 @@
     * posted_date: Date transaction was posted
     * original_description: Original description @pii
     * clean_description: Cleaned/standardized description @pii
-    * channel: Transaction channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, POS, CHECK
+    * channel: Transaction channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, INSTANT, POS, CHECK
     * merchant_id: Merchant or counterparty ID (enriched)
     * merchant_name: Merchant or counterparty name (enriched) @pii
     * mcc_code: Merchant category code

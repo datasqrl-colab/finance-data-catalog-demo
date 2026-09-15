@@ -4,6 +4,7 @@ IMPORT accounts.account_analytics-{{environment}}.*;
 IMPORT transactions.core_transactions-{{environment}}.*;
 IMPORT transactions.card_transactions-{{environment}}.*;
 IMPORT transactions.wire_ach_transactions-{{environment}}.*;
+IMPORT transactions.instant_payments-{{environment}}.*;
 IMPORT transactions.enriched_transactions-{{environment}}.*;
 
 -- =====================================================
@@ -52,6 +53,9 @@ Account.ach_transactions := SELECT * FROM Ach_Transaction a WHERE this.account_i
 /** Wire transfers on this account */
 Account.wire_transfers := SELECT * FROM Wire_Transfer w WHERE this.account_id = w.account_id;
 
+/** Instant payments (RTP, FedNow, Zelle, push-to-card) on this account, most recent first */
+Account.instant_payments := SELECT * FROM Instant_Payment p WHERE this.account_id = p.account_id ORDER BY initiated_at DESC;
+
 /** Card authorizations on this account */
 Account.card_authorizations := SELECT * FROM Card_Authorization c WHERE this.account_id = c.account_id;
 
@@ -99,6 +103,9 @@ Account_Transaction.ach_detail := SELECT * FROM Ach_Transaction a WHERE this.tra
 /** Wire detail for this ledger entry, if any */
 Account_Transaction.wire_detail := SELECT * FROM Wire_Transfer w WHERE this.transaction_id = w.transaction_id;
 
+/** Instant payment detail for this ledger entry, if any */
+Account_Transaction.instant_payment_detail := SELECT * FROM Instant_Payment p WHERE this.transaction_id = p.transaction_id;
+
 -- =====================================================
 -- Card Authorization / Settlement Relationships
 -- =====================================================
@@ -124,6 +131,22 @@ Ach_Transaction.returns := SELECT * FROM Payment_Return r WHERE this.ach_transac
 
 /** Returns filed against this wire transfer */
 Wire_Transfer.returns := SELECT * FROM Payment_Return r WHERE this.wire_transfer_id = r.wire_transfer_id;
+
+-- =====================================================
+-- Instant Payment Relationships
+-- =====================================================
+
+/** Request for payment this transfer pays, if any */
+Instant_Payment.request_for_payment := SELECT * FROM Request_For_Payment r WHERE this.request_for_payment_id = r.request_for_payment_id;
+
+/** Return requests raised against this payment, most recent first */
+Instant_Payment.returns := SELECT * FROM Instant_Payment_Return r WHERE this.instant_payment_id = r.instant_payment_id ORDER BY requested_at DESC;
+
+/** Instant payments that paid this request */
+Request_For_Payment.payments := SELECT * FROM Instant_Payment p WHERE this.request_for_payment_id = p.request_for_payment_id;
+
+/** Instant payment this return request was raised against */
+Instant_Payment_Return.instant_payment := SELECT * FROM Instant_Payment p WHERE this.instant_payment_id = p.instant_payment_id;
 
 -- =====================================================
 -- Enriched Transaction Relationships
@@ -364,6 +387,39 @@ CategoryReferencesValidParent_Test := SELECT c.* FROM Transaction_Category c
     LEFT JOIN Transaction_Category p ON c.parent_category_id = p.category_id
     WHERE c.parent_category_id IS NOT NULL AND p.category_id IS NULL;
 
+/** Every Instant_Payment must reference its parents: an existing Account; the ledger transaction it
+    names, if any; a debtor and a creditor participant on the payment's rail; and the request for
+    payment it names, if any */
+/*+test(no_rows) */
+InstantPaymentReferencesValidParents_Test := SELECT p.* FROM Instant_Payment p
+    LEFT JOIN Account a ON p.account_id = a.account_id
+    LEFT JOIN Account_Transaction t ON p.transaction_id = t.transaction_id
+    LEFT JOIN Instant_Payment_Participant d ON p.debtor_agent_id = d.participant_id AND p.payment_rail = d.payment_rail
+    LEFT JOIN Instant_Payment_Participant c ON p.creditor_agent_id = c.participant_id AND p.payment_rail = c.payment_rail
+    LEFT JOIN Request_For_Payment r ON p.request_for_payment_id = r.request_for_payment_id
+    WHERE a.account_id IS NULL
+       OR (p.transaction_id IS NOT NULL AND t.transaction_id IS NULL)
+       OR d.participant_id IS NULL
+       OR c.participant_id IS NULL
+       OR (p.request_for_payment_id IS NOT NULL AND r.request_for_payment_id IS NULL);
+
+/** Every Request_For_Payment must reference an existing Account */
+/*+test(no_rows) */
+RequestForPaymentReferencesValidAccount_Test := SELECT r.* FROM Request_For_Payment r
+    LEFT JOIN Account a ON r.account_id = a.account_id
+    WHERE a.account_id IS NULL;
+
+/** Every Instant_Payment_Return must reference its parents: an existing Instant_Payment, an existing
+    Account, and the ledger transaction it names, if any */
+/*+test(no_rows) */
+InstantPaymentReturnReferencesValidParents_Test := SELECT r.* FROM Instant_Payment_Return r
+    LEFT JOIN Instant_Payment p ON r.instant_payment_id = p.instant_payment_id
+    LEFT JOIN Account a ON r.account_id = a.account_id
+    LEFT JOIN Account_Transaction t ON r.return_transaction_id = t.transaction_id
+    WHERE p.instant_payment_id IS NULL
+       OR a.account_id IS NULL
+       OR (r.return_transaction_id IS NOT NULL AND t.transaction_id IS NULL);
+
 -- =====================================================
 -- Data Quality & Assertions: Enum Validity
 -- =====================================================
@@ -433,7 +489,7 @@ LedgerTransactionHasValidStatus_Test := SELECT * FROM Account_Transaction WHERE 
 /** Ledger transaction channel must be a valid enumeration value */
 /*+test(no_rows) */
 LedgerTransactionHasValidChannel_Test := SELECT * FROM Account_Transaction
-    WHERE channel NOT IN ('BRANCH', 'ATM', 'ONLINE', 'MOBILE', 'ACH', 'WIRE', 'CHECK', 'POS', 'INTERNAL');
+    WHERE channel NOT IN ('BRANCH', 'ATM', 'ONLINE', 'MOBILE', 'ACH', 'WIRE', 'INSTANT', 'CHECK', 'POS', 'INTERNAL');
 
 /** Transaction type category must be a valid enumeration value */
 /*+test(no_rows) */
@@ -528,7 +584,7 @@ ReturnHasValidStatus_Test := SELECT * FROM Payment_Return WHERE return_status NO
 
 /** Unified transaction source must be a valid enumeration value */
 /*+test(no_rows) */
-UnifiedTransactionHasValidSource_Test := SELECT * FROM Unified_Transaction WHERE transaction_source NOT IN ('CORE', 'CARD', 'ACH', 'WIRE');
+UnifiedTransactionHasValidSource_Test := SELECT * FROM Unified_Transaction WHERE transaction_source NOT IN ('CORE', 'CARD', 'ACH', 'WIRE', 'INSTANT');
 
 /** Unified transaction debit/credit must be a valid enumeration value */
 /*+test(no_rows) */
@@ -538,10 +594,16 @@ UnifiedTransactionHasValidDebitCredit_Test := SELECT * FROM Unified_Transaction 
 /*+test(no_rows) */
 UnifiedTransactionHasValidStatus_Test := SELECT * FROM Unified_Transaction WHERE transaction_status NOT IN ('PENDING', 'POSTED', 'REVERSED', 'RETURNED');
 
-/** Unified transaction channel must be a valid enumeration value */
+/** Unified transaction channel must be a valid enumeration value, INSTANT is the channel of exactly
+    the transactions sourced from instant payments, and every transaction sourced from an instant payment
+    references an existing Instant_Payment through source_transaction_id */
 /*+test(no_rows) */
-UnifiedTransactionHasValidChannel_Test := SELECT * FROM Unified_Transaction
-    WHERE channel NOT IN ('BRANCH', 'ATM', 'ONLINE', 'MOBILE', 'ACH', 'WIRE', 'POS', 'CHECK');
+UnifiedTransactionHasValidChannel_Test := SELECT u.* FROM Unified_Transaction u
+    LEFT JOIN Instant_Payment p ON u.source_transaction_id = p.instant_payment_id
+    WHERE u.channel NOT IN ('BRANCH', 'ATM', 'ONLINE', 'MOBILE', 'ACH', 'WIRE', 'INSTANT', 'POS', 'CHECK')
+       OR (u.transaction_source = 'INSTANT' AND u.channel <> 'INSTANT')
+       OR (u.transaction_source <> 'INSTANT' AND u.channel = 'INSTANT')
+       OR (u.transaction_source = 'INSTANT' AND p.instant_payment_id IS NULL);
 
 /** Merchant type must be a valid enumeration value */
 /*+test(no_rows) */
@@ -570,6 +632,19 @@ RecurringPaymentHasValidStatus_Test := SELECT * FROM Recurring_Payment WHERE sta
 /*+test(no_rows) */
 RecurringPaymentHasValidDetectionMethod_Test := SELECT * FROM Recurring_Payment
     WHERE detection_method NOT IN ('AMOUNT_FREQUENCY', 'MERCHANT_MATCH', 'DESCRIPTION_MATCH');
+
+/** Instant payment enumerations must be valid: payment rail, direction, payment type, initiation
+    channel, payment status, ISO 20022 status code (when set), card network (when set) and OFAC status */
+/*+test(no_rows) */
+InstantPaymentHasValidEnums_Test := SELECT * FROM Instant_Payment
+    WHERE payment_rail NOT IN ('RTP', 'FEDNOW', 'ZELLE', 'PUSH_TO_CARD')
+       OR direction NOT IN ('INBOUND', 'OUTBOUND')
+       OR payment_type NOT IN ('P2P', 'BILL_PAY', 'PAYROLL', 'DISBURSEMENT', 'B2B', 'ACCOUNT_TO_ACCOUNT')
+       OR initiation_channel NOT IN ('MOBILE', 'ONLINE', 'BRANCH', 'API', 'NETWORK')
+       OR payment_status NOT IN ('PENDING', 'COMPLETED', 'REJECTED', 'RETURNED')
+       OR iso_status_code NOT IN ('ACTC', 'ACWP', 'ACSC', 'RJCT')
+       OR card_network NOT IN ('VISA_DIRECT', 'MASTERCARD_SEND')
+       OR ofac_status NOT IN ('CLEAR', 'HOLD', 'BLOCKED');
 
 -- =====================================================
 -- Data Quality & Assertions: Numeric Sanity
@@ -687,6 +762,120 @@ CdAccountHasMaturityDate_Test := SELECT * FROM Account WHERE account_type = 'CD'
 /*+test(no_rows) */
 UnifiedTransactionRecurringFlagConsistent_Test := SELECT * FROM Unified_Transaction
     WHERE (is_recurring AND recurring_payment_id IS NULL) OR (NOT is_recurring AND recurring_payment_id IS NOT NULL);
+
+/** An instant payment's status must agree with its settlement: RTP and FedNow payments carry an ISO
+    20022 status matching the business status (PENDING = ACTC or ACWP, COMPLETED and RETURNED = ACSC,
+    REJECTED = RJCT) while Zelle and push-to-card payments carry none; COMPLETED and RETURNED payments
+    have settled and posted to the ledger; REJECTED payments carry a reason code and never settle or post */
+/*+test(no_rows) */
+InstantPaymentStatusIsConsistent_Test := SELECT * FROM Instant_Payment
+    WHERE (payment_rail IN ('RTP', 'FEDNOW')
+           AND (iso_status_code IS NULL
+                OR NOT ((payment_status = 'PENDING' AND iso_status_code IN ('ACTC', 'ACWP'))
+                     OR (payment_status IN ('COMPLETED', 'RETURNED') AND iso_status_code = 'ACSC')
+                     OR (payment_status = 'REJECTED' AND iso_status_code = 'RJCT'))))
+       OR (payment_rail IN ('ZELLE', 'PUSH_TO_CARD') AND iso_status_code IS NOT NULL)
+       OR (payment_status IN ('COMPLETED', 'RETURNED') AND (transaction_id IS NULL OR settled_at IS NULL))
+       OR (payment_status = 'REJECTED' AND (status_reason_code IS NULL OR transaction_id IS NOT NULL OR settled_at IS NOT NULL));
+
+/** An instant payment's fields must be consistent: a positive amount, a non-negative fee, a fraud score
+    between 0 and 100, settlement not before initiation, USD currency (every rail in scope is domestic),
+    card network and card token on push-to-card payments only, a counterparty alias on Zelle payments,
+    the counterparty's account number on RTP and FedNow payments (the creditor's on outbound payments, the
+    debtor's on inbound payments), NETWORK as the channel of inbound payments only, and different debtor
+    and creditor institutions except on Zelle, which routes transfers between two customers of the same bank */
+/*+test(no_rows) */
+InstantPaymentFieldsAreConsistent_Test := SELECT * FROM Instant_Payment
+    WHERE amount_cents <= 0 OR fee_cents < 0 OR fraud_score < 0 OR fraud_score > 100
+       OR settled_at < initiated_at
+       OR currency_code <> 'USD'
+       OR (payment_rail = 'PUSH_TO_CARD' AND (card_network IS NULL OR creditor_card_token IS NULL))
+       OR (payment_rail <> 'PUSH_TO_CARD' AND (card_network IS NOT NULL OR creditor_card_token IS NOT NULL))
+       OR (payment_rail = 'ZELLE' AND counterparty_alias IS NULL)
+       OR (payment_rail IN ('RTP', 'FEDNOW') AND direction = 'OUTBOUND' AND creditor_account IS NULL)
+       OR (payment_rail IN ('RTP', 'FEDNOW') AND direction = 'INBOUND' AND debtor_account IS NULL)
+       OR (direction = 'INBOUND' AND initiation_channel <> 'NETWORK')
+       OR (direction = 'OUTBOUND' AND initiation_channel = 'NETWORK')
+       OR (payment_rail <> 'ZELLE' AND debtor_agent_id = creditor_agent_id);
+
+/** An instant payment must agree with the participants and request it references: a RECEIVE_ONLY
+    participant never sends, a payment that was not rejected stays within the receiving participant's
+    limit, and a payment travels on the rail of the request it pays, in the opposite direction */
+/*+test(no_rows) */
+InstantPaymentConsistentWithReferences_Test := SELECT p.* FROM Instant_Payment p
+    LEFT JOIN Instant_Payment_Participant d ON p.debtor_agent_id = d.participant_id AND p.payment_rail = d.payment_rail
+    LEFT JOIN Instant_Payment_Participant c ON p.creditor_agent_id = c.participant_id AND p.payment_rail = c.payment_rail
+    LEFT JOIN Request_For_Payment r ON p.request_for_payment_id = r.request_for_payment_id
+    WHERE d.participation_type = 'RECEIVE_ONLY'
+       OR (p.payment_status <> 'REJECTED' AND p.amount_cents > c.max_transaction_amount_cents)
+       OR p.payment_rail <> r.payment_rail
+       OR p.direction = r.direction;
+
+/** An instant payment participant must be valid: rail, participation type and status are valid
+    enumeration values, the transaction limit is positive, the termination date is not before the joined
+    date, and a TERMINATED participant has a termination date */
+/*+test(no_rows) */
+ParticipantIsValid_Test := SELECT * FROM Instant_Payment_Participant
+    WHERE payment_rail NOT IN ('RTP', 'FEDNOW', 'ZELLE', 'PUSH_TO_CARD')
+       OR participation_type NOT IN ('SEND_AND_RECEIVE', 'RECEIVE_ONLY')
+       OR participant_status NOT IN ('ACTIVE', 'SUSPENDED', 'TERMINATED')
+       OR max_transaction_amount_cents <= 0
+       OR terminated_date < joined_date
+       OR (participant_status = 'TERMINATED' AND terminated_date IS NULL);
+
+/** A request for payment must be valid: it travels on RTP or FedNow (the rails that support requests
+    for payment), direction and status are valid enumeration values, the amount is positive, the
+    response is not before presentation, the expiry is after presentation, a DECLINED request carries a
+    response reason code, and ACCEPTED, PAID and DECLINED requests have a response time */
+/*+test(no_rows) */
+RequestForPaymentIsValid_Test := SELECT * FROM Request_For_Payment
+    WHERE payment_rail NOT IN ('RTP', 'FEDNOW')
+       OR direction NOT IN ('INBOUND', 'OUTBOUND')
+       OR rfp_status NOT IN ('PRESENTED', 'ACCEPTED', 'PAID', 'DECLINED', 'EXPIRED', 'CANCELLED')
+       OR requested_amount_cents <= 0
+       OR responded_at < presented_at
+       OR expires_at <= presented_at
+       OR (rfp_status = 'DECLINED' AND response_reason_code IS NULL)
+       OR (rfp_status IN ('ACCEPTED', 'PAID', 'DECLINED') AND responded_at IS NULL);
+
+/** A PAID request for payment must be paid by a settled instant payment */
+/*+test(no_rows) */
+PaidRequestForPaymentHasSettledPayment_Test := SELECT r.* FROM Request_For_Payment r
+    LEFT JOIN Instant_Payment p ON r.request_for_payment_id = p.request_for_payment_id
+                               AND p.payment_status IN ('COMPLETED', 'RETURNED')
+    WHERE r.rfp_status = 'PAID' AND p.instant_payment_id IS NULL;
+
+/** An instant payment return must be valid: direction, request reason and status are valid enumeration
+    values, the amount is positive, the response is not before the request, a RETURNED return carries its
+    return message, ledger posting and response time, and a REJECTED return carries a response reason code */
+/*+test(no_rows) */
+InstantPaymentReturnIsValid_Test := SELECT * FROM Instant_Payment_Return
+    WHERE direction NOT IN ('INBOUND', 'OUTBOUND')
+       OR request_reason_code NOT IN ('DUPL', 'FRAD', 'TECH', 'CUST', 'AC03', 'AM09')
+       OR return_status NOT IN ('PENDING', 'RETURNED', 'REJECTED')
+       OR return_amount_cents <= 0
+       OR responded_at < requested_at
+       OR (return_status = 'RETURNED' AND (return_message_id IS NULL OR return_transaction_id IS NULL OR responded_at IS NULL))
+       OR (return_status = 'REJECTED' AND response_reason_code IS NULL);
+
+/** An instant payment return must agree with the payment it returns: it is requested after that payment
+    settled, the payment is COMPLETED or RETURNED, direction and account match, and the return amount does
+    not exceed the payment amount */
+/*+test(no_rows) */
+InstantPaymentReturnConsistentWithPayment_Test := SELECT r.* FROM Instant_Payment_Return r
+    JOIN Instant_Payment p ON r.instant_payment_id = p.instant_payment_id
+    WHERE r.requested_at < p.settled_at
+       OR p.payment_status NOT IN ('COMPLETED', 'RETURNED')
+       OR r.direction <> p.direction
+       OR r.account_id <> p.account_id
+       OR r.return_amount_cents > p.amount_cents;
+
+/** A RETURNED instant payment must have a return request whose funds were returned */
+/*+test(no_rows) */
+ReturnedInstantPaymentHasReturnedReturn_Test := SELECT p.* FROM Instant_Payment p
+    LEFT JOIN Instant_Payment_Return r ON p.instant_payment_id = r.instant_payment_id
+                                      AND r.return_status = 'RETURNED'
+    WHERE p.payment_status = 'RETURNED' AND r.return_id IS NULL;
 
 -- =====================================================
 -- Data Quality & Assertions: Self-Reference

@@ -1,0 +1,11 @@
+{
+  "data" : {
+    "Catalog_Instant_Payments_Test" : [ {
+      "instant_payment_id" : "IP-001",
+      "account_id" : "ACCT-001",
+      "payment_rail" : "RTP",
+      "payment_status" : "COMPLETED",
+      "amount_cents" : 12500
+    } ]
+  }
+}
