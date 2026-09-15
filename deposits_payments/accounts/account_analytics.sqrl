@@ -27,6 +27,7 @@
     * pos_transaction_count: Number of POS/debit card transactions
     * ach_transaction_count: Number of ACH transactions
     * wire_transaction_count: Number of wire transfers
+    * instant_payment_count: Number of instant payment transactions (channel INSTANT: RTP, FedNow, Zelle and push-to-card)
     * mobile_deposit_count: Number of mobile deposit transactions
     * branch_transaction_count: Number of branch transactions
     * online_transaction_count: Number of online banking transactions
@@ -51,6 +52,7 @@ CREATE TABLE Account_Activity_Summary_schema (
   pos_transaction_count INT,
   ach_transaction_count INT,
   wire_transaction_count INT,
+  instant_payment_count INT,
   mobile_deposit_count INT,
   branch_transaction_count INT,
   online_transaction_count INT,

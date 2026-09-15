@@ -193,7 +193,7 @@ CREATE TABLE Credit_Card_Statement_schema (
     * payment_amount_cents: Payment amount in cents @npi @confidential
     * payment_type: Payment type: REGULAR, AUTOPAY, PAYOFF
     * payment_status: Payment status: PENDING, POSTED, RETURNED, REVERSED
-    * payment_method: Payment method: ACH, CHECK, DEBIT_CARD, TRANSFER
+    * payment_method: Payment method: ACH, CHECK, DEBIT_CARD, TRANSFER, INSTANT (RTP or FedNow credit transfer)
     * source_account: Source account for payment @npi
     * source_routing: Source routing number
     * received_date: Date payment was received

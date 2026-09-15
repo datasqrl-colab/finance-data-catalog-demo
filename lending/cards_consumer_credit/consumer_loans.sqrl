@@ -174,7 +174,7 @@ CREATE TABLE Auto_Loan_schema (
     * due_date: Date payment was due
     * received_date: Date payment was received
     * applied_date: Date payment was applied
-    * payment_method: Payment method: ACH, CHECK, DEBIT_CARD, ONLINE
+    * payment_method: Payment method: ACH, CHECK, DEBIT_CARD, ONLINE, INSTANT (RTP or FedNow credit transfer)
     * principal_balance_after_cents: Principal balance after payment in cents @npi @confidential
     * days_past_due_at_payment: Days past due at time of payment
     * confirmation_number: Confirmation number

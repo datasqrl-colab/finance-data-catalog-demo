@@ -1,0 +1,237 @@
+-- ## Instant Payments
+--
+-- Real-time push payments that move funds within seconds, 24x7x365, over the
+-- US instant payment rails:
+--   * RTP          - The Clearing House RTP network (ISO 20022)
+--   * FEDNOW       - the Federal Reserve FedNow Service (ISO 20022)
+--   * ZELLE        - the Early Warning Services P2P network, which addresses the
+--                    counterparty by an email or mobile number alias
+--   * PUSH_TO_CARD - card network original credit transactions (Visa Direct,
+--                    Mastercard Send) that credit a debit or prepaid card
+-- Every rail in scope is domestic and settles in USD. Payments are irrevocable
+-- once settled, so fraud and sanctions screening happen before acceptance, and
+-- funds come back only through a return request that the receiving institution
+-- agrees to. Covers the participant directory, the payments, requests for
+-- payment (RTP and FedNow only, pain.013 / pain.014), and return requests with
+-- their returns.
+--
+-- Layer:            bronze
+-- Classification:   Restricted
+-- Regulatory scope: GLBA, GDPR, CCPA, BSA, OFAC, PCI-DSS, Regulation E, Regulation J, UCC Article 4A
+
+/** Directory of financial institutions reachable on an instant payment rail, with the
+    capabilities and limits each participant has published to the rail operator.
+    Grain: one row per participant_id, payment_rail combination.
+
+    # Columns:
+    * participant_id: Identifier of the institution on the rail: ABA routing number for RTP, FedNow and Zelle; issuer BIN for PUSH_TO_CARD
+    * payment_rail: Instant payment rail: RTP, FEDNOW, ZELLE, PUSH_TO_CARD
+    * participant_name: Participating institution name
+    * participation_type: Participation type: SEND_AND_RECEIVE, RECEIVE_ONLY
+    * supports_request_for_payment: Whether the participant exchanges requests for payment
+    * max_transaction_amount_cents: Largest credit transfer the participant accepts, in cents
+    * participant_status: Participant status: ACTIVE, SUSPENDED, TERMINATED
+    * joined_date: Date the institution joined the rail
+    * terminated_date: Date the institution left the rail
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Instant_Payment_Participant_schema (
+  participant_id STRING NOT NULL,
+  payment_rail STRING NOT NULL,
+  participant_name STRING,
+  participation_type STRING,
+  supports_request_for_payment BOOLEAN,
+  max_transaction_amount_cents BIGINT,
+  participant_status STRING,
+  joined_date DATE,
+  terminated_date DATE,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
+);
+
+/** Instant push payments sent or received over RTP, FedNow, Zelle or a card network push-to-card service.
+    Grain: one row per instant_payment_id.
+
+    The payments hub publishes a record when a payment is initiated, before the bank releases it
+    (payment_status PENDING), and a new record each time the payment's status changes. The record with
+    the latest source_updated_at for an instant_payment_id is the payment's current state, so fraud and
+    sanctions checks that must run before release read the PENDING record.
+
+    # Columns:
+    * instant_payment_id: Unique identifier for the instant payment
+    * transaction_id: Reference to posted transaction; null while pending and for rejected payments, which never post
+    * account_id: Reference to account @npi
+    * customer_id: Reference to customer @pii
+    * payment_rail: Instant payment rail: RTP, FEDNOW, ZELLE, PUSH_TO_CARD
+    * direction: Direction: INBOUND, OUTBOUND
+    * payment_type: Payment type: P2P, BILL_PAY, PAYROLL, DISBURSEMENT, B2B, ACCOUNT_TO_ACCOUNT
+    * initiation_channel: Channel the payment was initiated through: MOBILE, ONLINE, BRANCH, API for outbound payments; NETWORK for inbound payments, which arrive from the rail
+    * message_id: Payment message identifier: the pacs.008 message identification on RTP and FedNow, the network payment identifier on Zelle and push-to-card
+    * end_to_end_id: End-to-end identification assigned by the originator
+    * uetr: Unique end-to-end transaction reference (UUID); null on Zelle and push-to-card
+    * clearing_system_reference: Reference assigned by the rail operator
+    * amount_cents: Transfer amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217); always USD, since every rail in scope is domestic
+    * fee_cents: Fee charged to the customer in cents
+    * payment_status: Payment status: PENDING, COMPLETED, REJECTED, RETURNED
+    * iso_status_code: ISO 20022 pacs.002 transaction status: ACTC (accepted technical validation), ACWP (accepted without posting), ACSC (accepted settlement completed), RJCT (rejected); null on Zelle and push-to-card
+    * status_reason_code: ISO 20022 status reason code (e.g. AC03, AM02, RR04) or network decline code; set when the payment was rejected
+    * status_reason_description: Status reason description @confidential
+    * debtor_name: Debtor (payer) name @pii @encrypt
+    * debtor_account: Debtor account number; always set on RTP and FedNow, null when an inbound Zelle payer is addressed by an alias @npi @mask
+    * debtor_agent_id: Debtor agent (payer institution) participant identifier, matching Instant_Payment_Participant.participant_id
+    * creditor_name: Creditor (payee) name @pii @encrypt
+    * creditor_account: Creditor account number; always set on RTP and FedNow, null when an outbound payee is addressed by a Zelle alias or a card @npi @mask
+    * creditor_agent_id: Creditor agent (payee institution) participant identifier: routing number, or issuer BIN for push-to-card
+    * counterparty_alias: Tokenized email or mobile number that addresses the Zelle counterparty @pii @tokenize
+    * creditor_card_token: Token of the debit or prepaid card credited by a push-to-card payment @pci @tokenize
+    * card_network: Card network push-to-card service: VISA_DIRECT, MASTERCARD_SEND; set for PUSH_TO_CARD only
+    * remittance_information: Unstructured remittance information @pii
+    * request_for_payment_id: Reference to the request for payment this transfer pays, if any
+    * fraud_score: Pre-acceptance fraud score (0-100) @confidential
+    * ofac_status: OFAC screening result: CLEAR, HOLD, BLOCKED @bsa
+    * initiated_at: Date and time the payment was initiated
+    * settled_at: Date and time the rail confirmed settlement
+    * settlement_date: Interbank settlement date assigned by the rail
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Instant_Payment_schema (
+  instant_payment_id STRING NOT NULL,
+  transaction_id STRING,
+  account_id STRING NOT NULL,
+  customer_id STRING NOT NULL,
+  payment_rail STRING,
+  direction STRING,
+  payment_type STRING,
+  initiation_channel STRING,
+  message_id STRING,
+  end_to_end_id STRING,
+  uetr STRING,
+  clearing_system_reference STRING,
+  amount_cents BIGINT,
+  currency_code STRING,
+  fee_cents BIGINT,
+  payment_status STRING,
+  iso_status_code STRING,
+  status_reason_code STRING,
+  status_reason_description STRING,
+  debtor_name STRING,
+  debtor_account STRING,
+  debtor_agent_id STRING,
+  creditor_name STRING,
+  creditor_account STRING,
+  creditor_agent_id STRING,
+  counterparty_alias STRING,
+  creditor_card_token STRING,
+  card_network STRING,
+  remittance_information STRING,
+  request_for_payment_id STRING,
+  fraud_score INT,
+  ofac_status STRING,
+  initiated_at TIMESTAMP_LTZ(3),
+  settled_at TIMESTAMP_LTZ(3),
+  settlement_date DATE,
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
+);
+
+/** Requests for payment exchanged over an instant payment rail, asking a payer to push a
+    credit transfer to the requestor. A paid request is linked from the instant payment
+    that settled it.
+    Grain: one row per request_for_payment_id.
+
+    # Columns:
+    * request_for_payment_id: Unique identifier for the request for payment
+    * account_id: Reference to account; the payer's account for inbound requests, the requestor's account for outbound requests @npi
+    * customer_id: Reference to customer @pii
+    * payment_rail: Instant payment rail: RTP, FEDNOW; requests for payment exist only on these ISO 20022 rails
+    * direction: Direction: INBOUND (the customer is asked to pay), OUTBOUND (the customer requests payment)
+    * message_id: ISO 20022 message identification of the pain.013 request
+    * end_to_end_id: End-to-end identification assigned by the requestor
+    * requestor_name: Requestor (payee) name @pii @encrypt
+    * requestor_account: Requestor account number @npi @mask
+    * requestor_agent_routing_number: Requestor institution routing number
+    * payer_name: Payer name @pii @encrypt
+    * payer_account: Payer account number @npi @mask
+    * payer_agent_routing_number: Payer institution routing number
+    * requested_amount_cents: Requested amount in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * rfp_status: Request status: PRESENTED, ACCEPTED, PAID, DECLINED, EXPIRED, CANCELLED
+    * response_reason_code: ISO 20022 pain.014 response reason code; set when the request was declined
+    * remittance_information: Unstructured remittance information, such as an invoice number @pii
+    * requested_execution_date: Date the requestor asked the payment to be made
+    * presented_at: Date and time the request was presented to the payer
+    * responded_at: Date and time the payer responded
+    * expires_at: Date and time after which the request can no longer be paid
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Request_For_Payment_schema (
+  request_for_payment_id STRING NOT NULL,
+  account_id STRING NOT NULL,
+  customer_id STRING NOT NULL,
+  payment_rail STRING,
+  direction STRING,
+  message_id STRING,
+  end_to_end_id STRING,
+  requestor_name STRING,
+  requestor_account STRING,
+  requestor_agent_routing_number STRING,
+  payer_name STRING,
+  payer_account STRING,
+  payer_agent_routing_number STRING,
+  requested_amount_cents BIGINT,
+  currency_code STRING,
+  rfp_status STRING,
+  response_reason_code STRING,
+  remittance_information STRING,
+  requested_execution_date DATE,
+  presented_at TIMESTAMP_LTZ(3),
+  responded_at TIMESTAMP_LTZ(3),
+  expires_at TIMESTAMP_LTZ(3),
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
+);
+
+/** Return requests raised against settled instant payments, and the returns that resolve
+    them. Because instant payments are irrevocable, funds come back only when the receiving
+    institution agrees to a return request and sends the funds back (camt.056 and pacs.004 on
+    RTP and FedNow, the network's own recall and return messages on Zelle and push-to-card).
+    Grain: one row per return_id.
+
+    # Columns:
+    * return_id: Unique identifier for the return request
+    * instant_payment_id: Reference to the original instant payment
+    * account_id: Reference to account @npi
+    * return_transaction_id: Reference to the posted transaction that moved the returned funds; null until funds are returned
+    * direction: Direction: OUTBOUND (the bank asks the receiving institution to return a payment it sent), INBOUND (another institution asks the bank to return a payment it received)
+    * request_message_id: Return request message identifier (camt.056 on RTP and FedNow)
+    * return_message_id: Return message identifier (pacs.004 on RTP and FedNow); null unless funds were returned
+    * request_reason_code: Return request reason: DUPL (duplicate), FRAD (fraud), TECH (technical error), CUST (customer request), AC03 (wrong account), AM09 (wrong amount)
+    * request_reason_description: Return request reason description @confidential
+    * return_status: Return status: PENDING, RETURNED, REJECTED
+    * response_reason_code: ISO 20022 camt.029 reason the request was refused (e.g. NOAS, CUST, AC04); set when rejected
+    * return_amount_cents: Amount requested for return in cents @npi @confidential
+    * currency_code: Currency code (ISO 4217)
+    * requested_at: Date and time the return was requested
+    * responded_at: Date and time the counterparty responded
+    * source_system: Source system identifier
+    * source_updated_at: Timestamp when record was last updated in source system */
+CREATE TABLE Instant_Payment_Return_schema (
+  return_id STRING NOT NULL,
+  instant_payment_id STRING NOT NULL,
+  account_id STRING NOT NULL,
+  return_transaction_id STRING,
+  direction STRING,
+  request_message_id STRING,
+  return_message_id STRING,
+  request_reason_code STRING,
+  request_reason_description STRING,
+  return_status STRING,
+  response_reason_code STRING,
+  return_amount_cents BIGINT,
+  currency_code STRING,
+  requested_at TIMESTAMP_LTZ(3),
+  responded_at TIMESTAMP_LTZ(3),
+  source_system STRING,
+  source_updated_at TIMESTAMP_LTZ(3)
+);

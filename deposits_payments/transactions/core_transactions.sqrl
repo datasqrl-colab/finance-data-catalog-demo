@@ -29,7 +29,7 @@
     * description: Transaction description @pii
     * memo: Memo or reference text @pii
     * running_balance_cents: Running balance after transaction in cents @npi @confidential
-    * channel: Channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, CHECK, POS, INTERNAL
+    * channel: Channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, INSTANT, CHECK, POS, INTERNAL
     * external_reference: Reference number for external transactions
     * trace_number: Trace number for ACH transactions
     * check_number: Check number if applicable

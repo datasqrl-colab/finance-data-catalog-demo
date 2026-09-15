@@ -26,7 +26,7 @@
     * due_date: Date payment was due
     * received_date: Date payment was received
     * applied_date: Date payment was applied
-    * payment_channel: Payment channel: ACH, CHECK, ONLINE, PHONE, WIRE
+    * payment_channel: Payment channel: ACH, CHECK, ONLINE, PHONE, WIRE, INSTANT (RTP or FedNow credit transfer)
     * principal_balance_after_cents: Principal balance after payment in cents @npi @confidential
     * payment_period: Payment for period (month/year)
     * days_past_due_at_payment: Days past due at time of payment

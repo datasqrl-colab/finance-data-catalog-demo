@@ -90,7 +90,7 @@ CREATE TABLE Customer_Credit_Exposure_schema (
     * months_since_late: Months since last late payment
     * months_since_missed: Months since last missed payment
     * autopay_coverage: Autopay coverage (% of products enrolled)
-    * primary_payment_method: Primary payment method: ACH, CHECK, DEBIT_CARD, ONLINE
+    * primary_payment_method: Primary payment method: ACH, CHECK, DEBIT_CARD, ONLINE, INSTANT (RTP or FedNow credit transfer)
     * payment_consistency_score: Payment consistency score (0-100) */
 CREATE TABLE Payment_Behavior_schema (
   customer_id STRING NOT NULL,
