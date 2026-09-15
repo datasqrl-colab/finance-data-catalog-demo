@@ -116,9 +116,9 @@ test-data file that alters what the catalog serves shows up as a snapshot diff.
 
 ## Compile and Test
 
-Configuration is split into a shared base plus a thin overlay per environment:
-`ontology-shared-package.json`, `ontology-test-package.json`, `ontology-prod-package.json`. Compile
-and test by layering the base then the environment overlay (last one wins):
+Configuration is split into a shared base plus a thin test overlay:
+`ontology-shared-package.json` and `ontology-test-package.json`. Compile and test by layering the
+base then the overlay (last one wins):
 
 ```bash
 docker run -it --rm -p 8888:8888 -p 8081:8081 -v $PWD:/build datasqrl/cmd \
@@ -129,8 +129,8 @@ docker run -it --rm -p 8888:8888 -p 8081:8081 -v $PWD:/build datasqrl/cmd \
 ```
 
 [`run-tests.sh`](run-tests.sh) at the catalog root is the single entry point for the catalog's
-tests (`./run-tests.sh` runs every suite against `test`; `./run-tests.sh --compile --env prod`
-compiles the production configuration). It is what the code agent, CI and a developer all run —
+tests (`./run-tests.sh` runs every suite against `test`; `./run-tests.sh --compile` compiles it
+without running the tests). It is what the code agent, CI and a developer all run —
 see `./run-tests.sh --list-invocations` for what a given flag combination would execute.
 
 ## Known Gaps

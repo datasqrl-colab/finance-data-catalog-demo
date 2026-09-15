@@ -22,7 +22,7 @@
 # EXAMPLES
 #   ./run-tests.sh                                     test every suite, env test
 #   ./run-tests.sh ontology                            test just that sub-project
-#   ./run-tests.sh --compile --env prod                compile every suite as prod
+#   ./run-tests.sh --compile                           compile every suite, env test
 #   ./run-tests.sh --list-invocations --compile --env test   show what would run
 #
 # An unknown sub-project name, or an environment this project does not declare, is an error
@@ -70,7 +70,7 @@ resolve_image() {
 # ── EDIT FOR YOUR PROJECT ────────────────────────────────────────────────────
 # The environments this project's configs cover, and the sub-projects it ships. This catalog has
 # a single deployment (the root ontology), so there is one sub-project: ontology.
-ENVS="test prod"
+ENVS="test"
 SUBPROJECTS="ontology"
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -159,7 +159,6 @@ sqrl() {
 suite() {
   case "$1/$2" in
     ontology/test) echo "ontology-shared-package.json ontology-test-package.json" ;;
-    ontology/prod) echo "ontology-shared-package.json ontology-prod-package.json" ;;
     *) return 1 ;;
   esac
 }
