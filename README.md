@@ -133,30 +133,6 @@ tests (`./run-tests.sh` runs every suite against `test`; `./run-tests.sh --compi
 without running the tests). It is what the code agent, CI and a developer all run —
 see `./run-tests.sh --list-invocations` for what a given flag combination would execute.
 
-## Test Data
-
-Every `testdata/*.jsonl` file is generated, not hand-maintained:
-
-```bash
-python3 scripts/generate_testdata.py           # rewrite every */testdata/*.jsonl file
-python3 scripts/generate_testdata.py --check   # verify the files on disk match the generator
-```
-
-The generator needs only the Python standard library. It is deterministic — the seed in
-[`scripts/testdata_gen/common.py`](scripts/testdata_gen/common.py) fixes every random draw, so two
-runs produce byte-identical files and a re-run shows up in `git diff` only when a generator module
-actually changed. `--check` runs in CI so a hand-edited data file, or a module edit that was never
-re-run, fails the build instead of drifting silently.
-
-The original hand-authored rows live unchanged in `scripts/testdata_gen/seed/` and are copied
-verbatim into the output, keeping the identifiers the root ontology's snapshot tests are filtered on
-(`CUST-001`, `ML-001`, `ACCT-001`, …). Generated rows number upward from the highest seeded key in
-each table, so they add volume without moving any snapshot.
-
-One module per subject area builds the book in dependency order — `customers`, `accounts`, `ledger`,
-`deposit_rows`, `balances`, `cards_loans`, `mortgages`, then `enriched` for the silver profiles,
-segments, households and credit-risk signals that aggregate everything before them.
-
 ## Known Gaps
 
 - **No debit-card master dataset.** `Card_Authorization.card_id`, `Card_Settlement.card_id` and
