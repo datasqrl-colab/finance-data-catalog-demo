@@ -9,3 +9,6 @@ sqrl_iceberg_data/
 .claude/
 adr/
 .code_agent_results.json
+# Python
+__pycache__/
+*.py[cod]
