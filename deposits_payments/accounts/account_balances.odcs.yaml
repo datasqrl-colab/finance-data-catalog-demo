@@ -1,0 +1,305 @@
+# Data contract (ODCS v3.2) for the tables of account_balances.sqrl. DataSQRL checks the connector
+# tables of account_balances-test.sqrl and account_balances-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:account_balances"
+name: Account Balances
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Accounts
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Daily account balance snapshots, interest accrual tracking, and account holds. Provides point-
+    in-time balance information for reporting, analytics, and regulatory compliance including
+    average daily balance calculations and interest computation.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, Regulation DD]
+schema:
+  - name: Account_Balance_Daily
+    physicalName: account_balances.account_balance_daily
+    physicalType: topic
+    logicalType: object
+    description: Daily end-of-day balance snapshot for each account.
+    dataGranularityDescription: one row per account_id, balance_date combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: balance_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of the balance snapshot
+      - name: ledger_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Ledger balance at end of day in cents
+        tags: [confidential, npi]
+      - name: available_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Available balance at end of day in cents
+        tags: [confidential, npi]
+      - name: collected_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Collected balance at end of day in cents
+        tags: [confidential, npi]
+      - name: hold_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total holds amount in cents
+      - name: pending_credits_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Pending credits amount in cents
+      - name: pending_debits_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Pending debits amount in cents
+      - name: overdraft_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Overdraft amount if negative in cents
+      - name: interest_bearing_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest-bearing balance in cents
+        tags: [confidential, npi]
+      - name: day_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Day count for average balance calculation
+      - name: mtd_average_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Month-to-date average ledger balance in cents
+        tags: [confidential, npi]
+      - name: ytd_average_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Year-to-date average ledger balance in cents
+        tags: [confidential, npi]
+      - name: transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of transactions posted on this day
+      - name: debit_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total debits posted on this day in cents
+      - name: credit_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total credits posted on this day in cents
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Interest_Accrual
+    physicalName: account_balances.interest_accrual
+    physicalType: topic
+    logicalType: object
+    description: Interest accrual records tracking daily interest earned or charged.
+    dataGranularityDescription: one row per account_id, accrual_date combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: accrual_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of interest accrual
+      - name: calculation_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance used for interest calculation in cents
+        tags: [confidential, npi]
+      - name: interest_rate
+        logicalType: number
+        physicalType: DECIMAL(12, 10)
+        description: Interest rate applied (daily rate)
+      - name: apy
+        logicalType: number
+        physicalType: DECIMAL(10, 6)
+        description: Annual percentage yield
+      - name: accrued_interest_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest accrued for this day in cents
+        tags: [confidential, npi]
+      - name: mtd_accrued_interest_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Month-to-date accrued interest in cents
+        tags: [confidential, npi]
+      - name: ytd_accrued_interest_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Year-to-date accrued interest in cents
+        tags: [confidential, npi]
+      - name: ytd_interest_paid_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Year-to-date interest paid in cents
+        tags: [confidential, npi]
+      - name: rate_tier
+        logicalType: string
+        physicalType: STRING
+        description: Rate tier applied based on balance
+      - name: interest_type
+        logicalType: string
+        physicalType: STRING
+        description: "Interest type: CREDIT (earned), DEBIT (charged for overdraft)"
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Account_Hold
+    physicalName: account_balances.account_hold
+    physicalType: topic
+    logicalType: object
+    description: Account holds placed on funds reducing available balance.
+    dataGranularityDescription: one row per hold_id
+    properties:
+      - name: hold_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the hold
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: hold_type
+        logicalType: string
+        physicalType: STRING
+        description: "Hold type: DEPOSIT, LEGAL, ADMINISTRATIVE, DISPUTE, AUTHORIZATION"
+      - name: hold_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Hold amount in cents
+        tags: [confidential, npi]
+      - name: hold_status
+        logicalType: string
+        physicalType: STRING
+        description: "Hold status: ACTIVE, RELEASED, EXPIRED"
+      - name: hold_reason
+        logicalType: string
+        physicalType: STRING
+        description: Reason for the hold
+        tags: [confidential]
+      - name: placed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time hold was placed
+      - name: scheduled_release_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Scheduled release date and time
+      - name: released_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Actual release date and time
+      - name: related_transaction_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to related transaction if applicable
+      - name: legal_reference
+        logicalType: string
+        physicalType: STRING
+        description: Reference to legal order or case number
+        tags: [confidential]
+      - name: placed_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee or system that placed the hold
+      - name: released_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee or system that released the hold
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system

@@ -1,0 +1,389 @@
+# Data contract (ODCS v3.2) for the tables of account_analytics.sqrl. DataSQRL checks the connector
+# tables of account_analytics-test.sqrl and account_analytics-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:account_analytics"
+name: Account Analytics
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Accounts
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Derived analytics datasets providing insights into account activity patterns, balance trends,
+    and dormancy risk signals. These silver-layer tables support product analytics, customer
+    engagement initiatives, and regulatory compliance for dormant account monitoring.
+customProperties:
+  - property: layer
+    value: silver
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA]
+  - property: upstream
+    value: deposit_accounts.sqrl, account_balances.sqrl, ../transactions/core_transactions.sqrl (Account_Transaction)
+schema:
+  - name: Account_Activity_Summary
+    physicalName: accounts.account_activity_summary
+    physicalType: table
+    logicalType: object
+    description: Monthly account activity summary with transaction metrics.
+    dataGranularityDescription: one row per account_id, summary_month combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: summary_month
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Month of activity summary (first day of month)
+      - name: total_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Total number of transactions
+      - name: debit_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of debit transactions
+      - name: credit_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of credit transactions
+      - name: total_debit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total debit amount in cents
+        tags: [confidential, npi]
+      - name: total_credit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total credit amount in cents
+        tags: [confidential, npi]
+      - name: net_change_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Net change in balance in cents
+        tags: [confidential, npi]
+      - name: avg_transaction_size_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Average transaction size in cents
+      - name: atm_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of ATM transactions
+      - name: pos_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of POS/debit card transactions
+      - name: ach_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of ACH transactions
+      - name: wire_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of wire transfers
+      - name: mobile_deposit_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of mobile deposit transactions
+      - name: branch_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of branch transactions
+      - name: online_transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of online banking transactions
+      - name: fee_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of fee transactions charged
+      - name: total_fees_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total fees charged in cents
+      - name: overdraft_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of overdraft events
+      - name: overdraft_days
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days with overdraft balance
+      - name: nsf_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of NSF/returned items
+      - name: interest_earned_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest earned in cents
+        tags: [confidential, npi]
+      - name: last_activity_date
+        logicalType: date
+        physicalType: DATE
+        description: Last activity date in month
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when summary was computed
+  - name: Account_Balance_Trend
+    physicalName: accounts.account_balance_trend
+    physicalType: table
+    logicalType: object
+    description: Account balance trend analysis with moving averages and volatility.
+    dataGranularityDescription: one row per account_id, trend_date combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: trend_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of trend calculation
+      - name: eod_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: End of day balance in cents
+        tags: [confidential, npi]
+      - name: ma_7d_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: "7-day moving average balance in cents"
+        tags: [confidential, npi]
+      - name: ma_30d_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: "30-day moving average balance in cents"
+        tags: [confidential, npi]
+      - name: ma_90d_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: "90-day moving average balance in cents"
+        tags: [confidential, npi]
+      - name: daily_change_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance change from prior day in cents
+      - name: weekly_change_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance change from 7 days ago in cents
+      - name: monthly_change_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance change from 30 days ago in cents
+      - name: volatility_30d
+        logicalType: number
+        logicalTypeOptions:
+          format: f64
+        physicalType: DOUBLE
+        description: "30-day balance volatility (standard deviation)"
+      - name: min_balance_30d_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Minimum balance in trailing 30 days in cents
+        tags: [confidential, npi]
+      - name: max_balance_30d_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Maximum balance in trailing 30 days in cents
+        tags: [confidential, npi]
+      - name: balance_percentile
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Balance percentile vs account history (0-100)
+      - name: trend_direction
+        logicalType: string
+        physicalType: STRING
+        description: "Trend direction: INCREASING, STABLE, DECREASING"
+      - name: trend_strength
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Trend strength (0-100)
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when trend was computed
+  - name: Dormancy_Signal
+    physicalName: accounts.dormancy_signal
+    physicalType: table
+    logicalType: object
+    description: Dormancy risk signals for regulatory compliance and customer engagement.
+    dataGranularityDescription: one row per account_id, assessment_date combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: assessment_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of dormancy assessment
+      - name: days_since_activity
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days since last customer-initiated transaction
+      - name: last_activity_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of last customer-initiated transaction
+      - name: last_activity_type
+        logicalType: string
+        physicalType: STRING
+        description: Type of last activity
+      - name: days_since_login
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days since last login to digital banking
+      - name: dormancy_status
+        logicalType: string
+        physicalType: STRING
+        description: "Dormancy status: ACTIVE, AT_RISK, PRE_DORMANT, DORMANT, ESCHEAT_ELIGIBLE"
+      - name: dormancy_risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: "Dormancy risk score (0-100, higher = more likely dormant)"
+      - name: current_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current account balance in cents
+        tags: [confidential, npi]
+      - name: has_valid_contact
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether account has valid contact information
+      - name: last_contact_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of last successful customer contact
+      - name: reactivation_attempt_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of reactivation attempts made
+      - name: last_reactivation_attempt_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of last reactivation attempt
+      - name: projected_escheat_date
+        logicalType: date
+        physicalType: DATE
+        description: Projected escheatment date based on state law
+      - name: escheat_state
+        logicalType: string
+        physicalType: STRING
+        description: State governing escheatment
+      - name: escheat_period_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Dormancy period required by state (months)
+      - name: statement_returned
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether statement was returned as undeliverable
+      - name: recommended_action
+        logicalType: string
+        physicalType: STRING
+        description: "Recommended action: NONE, OUTREACH, CERTIFIED_LETTER, ESCHEAT_PREP"
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when signal was computed

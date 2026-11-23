@@ -1,0 +1,403 @@
+# Data contract (ODCS v3.2) for the tables of customer_enriched.sqrl. DataSQRL checks the connector
+# tables of customer_enriched-test.sqrl and customer_enriched-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:customer_enriched"
+name: Customer Enriched Data
+version: 1.0.0
+status: active
+domain: customer
+team:
+  name: Customer Data
+  description: Customer line of business
+description:
+  purpose: >-
+    Curated and enriched customer data combining information from multiple bronze sources to create
+    comprehensive customer profiles, segmentation, household groupings, and lifetime value
+    calculations. These silver-layer datasets support analytics, marketing, and relationship
+    management use cases.
+customProperties:
+  - property: layer
+    value: silver
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA]
+  - property: upstream
+    value: customer_master.sqrl, kyc_aml.sqrl
+schema:
+  - name: Customer_Profile
+    physicalName: customer_data.customer_profile
+    physicalType: table
+    logicalType: object
+    description: Consolidated customer profile combining identity, contact, and status information.
+    dataGranularityDescription: one row per customer_id
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the customer
+        tags: [pii]
+      - name: full_name
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Full legal name
+        tags: [encrypt, pii]
+      - name: primary_email
+        logicalType: string
+        physicalType: STRING
+        description: Primary email address
+        tags: [encrypt, pii]
+      - name: primary_phone
+        logicalType: string
+        physicalType: STRING
+        description: Primary phone number
+        tags: [encrypt, pii]
+      - name: primary_address
+        logicalType: string
+        physicalType: STRING
+        description: Primary mailing address formatted
+        tags: [encrypt, pii]
+      - name: primary_city
+        logicalType: string
+        physicalType: STRING
+        description: City of primary address
+        tags: [pii]
+      - name: primary_state
+        logicalType: string
+        physicalType: STRING
+        description: State of primary address
+      - name: primary_postal_code
+        logicalType: string
+        physicalType: STRING
+        description: Postal code of primary address
+        tags: [pii]
+      - name: age_years
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Customer age in years
+      - name: age_band
+        logicalType: string
+        physicalType: STRING
+        description: "Age band: 18-24, 25-34, 35-44, 45-54, 55-64, 65+"
+      - name: tenure_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Customer tenure in months
+      - name: tenure_band
+        logicalType: string
+        physicalType: STRING
+        description: "Tenure band: NEW (0-6mo), DEVELOPING (6-24mo), ESTABLISHED (24-60mo), MATURE (60mo+)"
+      - name: customer_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Customer type: INDIVIDUAL, JOINT, TRUST, BUSINESS"
+      - name: customer_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Customer status: ACTIVE, INACTIVE, CLOSED, DECEASED"
+      - name: risk_rating
+        logicalType: string
+        physicalType: STRING
+        description: "Current AML risk rating: LOW, MEDIUM, HIGH"
+      - name: is_kyc_verified
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether customer has verified identity
+      - name: is_pep
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether customer is a Politically Exposed Person
+      - name: is_digital_enrolled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether customer is enrolled in digital banking
+      - name: preferred_channel
+        logicalType: string
+        physicalType: STRING
+        description: "Preferred communication channel: EMAIL, SMS, MAIL, PHONE"
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when profile was computed
+  - name: Customer_Segment
+    physicalName: customer_data.customer_segment
+    physicalType: table
+    logicalType: object
+    description: Customer segmentation for marketing and analytics purposes.
+    dataGranularityDescription: one row per customer_id, segment_type combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: segment_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Segment type: BEHAVIORAL, DEMOGRAPHIC, VALUE, LIFECYCLE, PRODUCT_PROPENSITY"
+      - name: segment_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Segment code within the segment type
+      - name: segment_name
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Human-readable segment name
+      - name: segment_description
+        logicalType: string
+        physicalType: STRING
+        description: Segment description
+      - name: confidence_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Confidence score for segment assignment (0-100)
+      - name: model_version
+        logicalType: string
+        physicalType: STRING
+        description: Model version used for segmentation
+      - name: effective_from
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date segment assignment became effective
+      - name: effective_to
+        logicalType: date
+        physicalType: DATE
+        description: Date segment assignment was superseded
+      - name: is_current
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this is the current active segment
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when segment was computed
+  - name: Customer_Household
+    physicalName: customer_data.customer_household
+    physicalType: table
+    logicalType: object
+    description: Household groupings linking related customers for household-level analytics.
+    dataGranularityDescription: one row per household_id, customer_id combination
+    properties:
+      - name: household_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the household
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer in household
+        tags: [pii]
+      - name: household_role
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Role in household: HEAD, SPOUSE, DEPENDENT, OTHER"
+      - name: is_primary
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this customer is the primary household contact
+      - name: household_size
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Household size (number of members)
+      - name: household_income_band
+        logicalType: string
+        physicalType: STRING
+        description: Estimated household income band
+        tags: [confidential, npi]
+      - name: household_address
+        logicalType: string
+        physicalType: STRING
+        description: Household address
+        tags: [encrypt, pii]
+      - name: household_city
+        logicalType: string
+        physicalType: STRING
+        description: Household city
+        tags: [pii]
+      - name: household_state
+        logicalType: string
+        physicalType: STRING
+        description: Household state
+      - name: household_postal_code
+        logicalType: string
+        physicalType: STRING
+        description: Household postal code
+        tags: [pii]
+      - name: household_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total household relationship balance in cents
+        tags: [confidential, npi]
+      - name: household_product_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Total household products count
+      - name: match_method
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Method used for householding: ADDRESS_MATCH, RELATIONSHIP, SURNAME_ADDRESS, MANUAL"
+      - name: confidence_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Confidence score for household assignment (0-100)
+      - name: effective_from
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date this household assignment became effective
+      - name: effective_to
+        logicalType: date
+        physicalType: DATE
+        description: Date this household assignment was superseded
+      - name: is_current
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this is the current active assignment
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when household was computed
+  - name: Customer_Lifetime_Value
+    physicalName: customer_data.customer_lifetime_value
+    physicalType: table
+    logicalType: object
+    description: Customer lifetime value calculations and predictions.
+    dataGranularityDescription: one row per customer_id, calculation_date combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: calculation_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of CLV calculation
+      - name: historical_ltv_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Historical lifetime value in cents (actual realized)
+        tags: [confidential, npi]
+      - name: predicted_ltv_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Predicted future lifetime value in cents
+        tags: [confidential, npi]
+      - name: total_ltv_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total lifetime value (historical + predicted) in cents
+        tags: [confidential, npi]
+      - name: ltv_percentile
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: LTV percentile rank (1-100)
+      - name: ltv_tier
+        logicalType: string
+        physicalType: STRING
+        description: "LTV tier: PLATINUM, GOLD, SILVER, BRONZE"
+      - name: deposit_revenue_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Revenue from deposit products in cents
+        tags: [confidential, npi]
+      - name: lending_revenue_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Revenue from lending products in cents
+        tags: [confidential, npi]
+      - name: fee_revenue_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Revenue from fee income in cents
+        tags: [confidential, npi]
+      - name: interchange_revenue_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Revenue from card interchange in cents
+        tags: [confidential, npi]
+      - name: churn_probability
+        logicalType: number
+        logicalTypeOptions:
+          format: f64
+        physicalType: DOUBLE
+        description: Probability of customer churn in next 12 months (0-1)
+      - name: predicted_tenure_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Predicted months until churn
+      - name: model_version
+        logicalType: string
+        physicalType: STRING
+        description: Model version used for calculation
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when CLV was computed

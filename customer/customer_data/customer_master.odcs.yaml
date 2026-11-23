@@ -1,0 +1,391 @@
+# Data contract (ODCS v3.2) for the tables of customer_master.sqrl. DataSQRL checks the connector
+# tables of customer_master-test.sqrl and customer_master-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:customer_master"
+name: Customer Master Data
+version: 1.0.0
+status: active
+domain: customer
+team:
+  name: Customer Data
+  description: Customer line of business
+description:
+  purpose: >-
+    Core customer identity and demographic information representing the bank's customer base.
+    Contains foundational customer records, addresses, contact information, employment details, and
+    relationship linkages between customers. This dataset serves as the authoritative source for
+    customer identity across all lines of business. Data is a CDC stream from source system.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, FCRA]
+schema:
+  - name: Customer
+    physicalName: customer_master.customer
+    physicalType: topic
+    logicalType: object
+    description: Primary customer record containing core identity and demographic attributes.
+    dataGranularityDescription: one row per customer_id
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the customer
+        tags: [pii]
+      - name: first_name
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Legal first name
+        tags: [encrypt, pii]
+      - name: middle_name
+        logicalType: string
+        physicalType: STRING
+        description: Legal middle name
+        tags: [encrypt, pii]
+      - name: last_name
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Legal last name
+        tags: [encrypt, pii]
+      - name: name_suffix
+        logicalType: string
+        physicalType: STRING
+        description: Name suffix (Jr., Sr., III, etc.)
+      - name: date_of_birth
+        logicalType: date
+        physicalType: DATE
+        description: Date of birth
+        tags: [encrypt, spii]
+      - name: ssn
+        logicalType: string
+        physicalType: STRING
+        description: Social Security Number
+        tags: [glba, spii, tokenize]
+      - name: tin
+        logicalType: string
+        physicalType: STRING
+        description: Tax Identification Number
+        tags: [spii, tokenize]
+      - name: customer_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Customer type: INDIVIDUAL, JOINT, TRUST, BUSINESS"
+      - name: customer_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Customer status: ACTIVE, INACTIVE, CLOSED, DECEASED"
+      - name: relationship_start_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date customer relationship was established
+      - name: relationship_end_date
+        logicalType: date
+        physicalType: DATE
+        description: Date customer relationship ended (if applicable)
+      - name: citizenship_country
+        logicalType: string
+        physicalType: STRING
+        description: Primary citizenship country code (ISO 3166-1 alpha-2)
+      - name: residency_country
+        logicalType: string
+        physicalType: STRING
+        description: Residency country code (ISO 3166-1 alpha-2)
+      - name: preferred_language
+        logicalType: string
+        physicalType: STRING
+        description: Preferred language code (ISO 639-1)
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Customer_Address
+    physicalName: customer_master.customer_address
+    physicalType: topic
+    logicalType: object
+    description: Customer address records supporting multiple address types per customer.
+    dataGranularityDescription: one row per customer_id, address_type, effective_from combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: address_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Address type: PRIMARY, MAILING, BILLING, WORK, SECONDARY"
+      - name: address_line_1
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Street address line 1
+        tags: [encrypt, pii]
+      - name: address_line_2
+        logicalType: string
+        physicalType: STRING
+        description: Street address line 2
+        tags: [encrypt, pii]
+      - name: city
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: City name
+        tags: [pii]
+      - name: state_province
+        logicalType: string
+        physicalType: STRING
+        description: State or province code
+      - name: postal_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Postal or ZIP code
+        tags: [pii]
+      - name: country_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Country code (ISO 3166-1 alpha-2)
+      - name: effective_from
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date this address became effective
+      - name: effective_to
+        logicalType: date
+        physicalType: DATE
+        description: Date this address was superseded
+      - name: is_current
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this is the current active address for this type
+      - name: verification_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Address verification status: VERIFIED, UNVERIFIED, INVALID"
+      - name: verified_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date address was last verified
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Customer_Contact
+    physicalName: customer_master.customer_contact
+    physicalType: topic
+    logicalType: object
+    description: Customer contact information including phone numbers and email addresses.
+    dataGranularityDescription: one row per customer_id, contact_type, contact_value combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: contact_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Contact type: MOBILE, HOME_PHONE, WORK_PHONE, EMAIL, FAX"
+      - name: contact_value
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Contact value (phone number or email address)
+        tags: [encrypt, pii]
+      - name: is_primary
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this is the primary contact for this type
+      - name: verification_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Contact verification status: VERIFIED, UNVERIFIED, INVALID"
+      - name: verified_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date contact was last verified
+      - name: marketing_opt_in
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether customer has opted in for marketing via this contact
+      - name: transactional_opt_in
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether customer consents to transactional communications
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Customer_Employment
+    physicalName: customer_master.customer_employment
+    physicalType: topic
+    logicalType: object
+    description: Customer employment and income information used for credit decisions.
+    dataGranularityDescription: one row per customer_id, employer_name, employment_start_date combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: employer_name
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Name of employer
+        tags: [pii]
+      - name: job_title
+        logicalType: string
+        physicalType: STRING
+        description: Job title or position
+        tags: [pii]
+      - name: employment_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Employment type: FULL_TIME, PART_TIME, SELF_EMPLOYED, RETIRED, UNEMPLOYED"
+      - name: employment_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Employment status: CURRENT, FORMER"
+      - name: employment_start_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date employment began
+      - name: employment_end_date
+        logicalType: date
+        physicalType: DATE
+        description: Date employment ended (if applicable)
+      - name: annual_income_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual income in cents
+        tags: [confidential, npi]
+      - name: income_currency
+        logicalType: string
+        physicalType: STRING
+        description: Currency code for income (ISO 4217)
+      - name: income_verification_status
+        logicalType: string
+        physicalType: STRING
+        description: "Income verification status: VERIFIED, STATED, UNVERIFIED"
+      - name: income_verified_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date income was last verified
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Customer_Relationship
+    physicalName: customer_master.customer_relationship
+    physicalType: topic
+    logicalType: object
+    description: Relationships between customers (household members, authorized users, etc.).
+    dataGranularityDescription: one row per primary_customer_id, related_customer_id, relationship_type combination
+    properties:
+      - name: primary_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Primary customer in the relationship
+        tags: [pii]
+      - name: related_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Related customer
+        tags: [pii]
+      - name: relationship_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Relationship type: SPOUSE, DEPENDENT, AUTHORIZED_USER, POWER_OF_ATTORNEY, BENEFICIARY, JOINT_OWNER"
+      - name: relationship_start_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date relationship was established
+      - name: relationship_end_date
+        logicalType: date
+        physicalType: DATE
+        description: Date relationship ended (if applicable)
+      - name: is_active
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this relationship is currently active
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system

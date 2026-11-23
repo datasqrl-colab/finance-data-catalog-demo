@@ -1,0 +1,776 @@
+# Data contract (ODCS v3.2) for the tables of credit_cards.sqrl. DataSQRL checks the connector
+# tables of credit_cards-test.sqrl and credit_cards-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:credit_cards"
+name: Credit Cards
+version: 1.0.0
+status: active
+domain: lending
+team:
+  name: Cards & Consumer Credit
+  description: Lending line of business
+description:
+  purpose: >-
+    Credit card account and transaction data including account details, physical and virtual cards,
+    statements, payments, credit limit changes, and delinquency events. Supports credit card
+    portfolio management, billing, collections, and regulatory compliance. Data is a CDC stream from
+    source system.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, FCRA, TILA, CARD Act, Regulation Z, PCI-DSS]
+schema:
+  - name: Credit_Card_Account
+    physicalName: credit_cards.credit_card_account
+    physicalType: topic
+    logicalType: object
+    description: Credit card account records with credit terms and status.
+    dataGranularityDescription: one row per credit_card_account_id
+    properties:
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the credit card account
+        tags: [npi]
+      - name: account_number
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Account number displayed to customer
+        tags: [mask, npi]
+      - name: primary_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to primary customer
+        tags: [pii]
+      - name: product_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Product code reference
+      - name: product_name
+        logicalType: string
+        physicalType: STRING
+        description: Product name (Rewards, Platinum, etc.)
+      - name: account_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Account status: OPEN, CLOSED, SUSPENDED, CHARGED_OFF"
+      - name: credit_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Credit limit in cents
+        tags: [confidential, npi]
+      - name: available_credit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Available credit in cents
+        tags: [confidential, npi]
+      - name: current_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current balance in cents
+        tags: [confidential, npi]
+      - name: statement_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Statement balance in cents
+        tags: [confidential, npi]
+      - name: minimum_payment_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Minimum payment due in cents
+        tags: [confidential, npi]
+      - name: payment_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Payment due date
+      - name: purchase_apr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        required: true
+        description: Purchase APR
+      - name: cash_advance_apr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Cash advance APR
+      - name: balance_transfer_apr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Balance transfer APR
+      - name: penalty_apr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Penalty APR
+      - name: penalty_apr_active
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether penalty APR is currently applied
+      - name: intro_apr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Introductory APR (if active)
+      - name: intro_apr_end_date
+        logicalType: date
+        physicalType: DATE
+        description: Introductory APR expiration date
+      - name: annual_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual fee in cents
+      - name: opened_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date account was opened
+      - name: closed_date
+        logicalType: date
+        physicalType: DATE
+        description: Date account was closed (if applicable)
+      - name: closure_reason
+        logicalType: string
+        physicalType: STRING
+        description: Closure reason
+      - name: last_activity_date
+        logicalType: date
+        physicalType: DATE
+        description: Last activity date
+      - name: statement_cycle_day
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Statement cycle day (1-28)
+      - name: autopay_enrolled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether account is enrolled in autopay
+      - name: autopay_type
+        logicalType: string
+        physicalType: STRING
+        description: "Autopay type: MINIMUM, STATEMENT_BALANCE, FULL_BALANCE, FIXED_AMOUNT"
+      - name: rewards_program
+        logicalType: string
+        physicalType: STRING
+        description: Rewards program enrolled
+      - name: rewards_balance
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current rewards balance (points/miles/cashback cents)
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Credit_Card
+    physicalName: credit_cards.credit_card
+    physicalType: topic
+    logicalType: object
+    description: Physical and virtual credit cards associated with accounts.
+    dataGranularityDescription: one row per card_id
+    properties:
+      - name: card_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the card
+        tags: [pci, tokenize]
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to credit card account
+        tags: [npi]
+      - name: cardholder_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to cardholder
+        tags: [pii]
+      - name: card_last_four
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Last four digits of card number
+      - name: card_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Card type: PRIMARY, AUTHORIZED_USER, EMPLOYEE, VIRTUAL"
+      - name: card_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Card status: ACTIVE, INACTIVE, LOST, STOLEN, EXPIRED, REPLACED, CLOSED"
+      - name: embossed_name
+        logicalType: string
+        physicalType: STRING
+        description: Name embossed on card
+        tags: [encrypt, pii]
+      - name: expiration_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Card expiration date
+        tags: [pci]
+      - name: issued_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date card was issued
+      - name: activated_date
+        logicalType: date
+        physicalType: DATE
+        description: Date card was activated
+      - name: status_changed_date
+        logicalType: date
+        physicalType: DATE
+        description: Date card status changed
+      - name: network
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Card network: VISA, MASTERCARD, AMEX, DISCOVER"
+      - name: card_tier
+        logicalType: string
+        physicalType: STRING
+        description: "Card tier: STANDARD, GOLD, PLATINUM, SIGNATURE, INFINITE"
+      - name: contactless_enabled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether contactless enabled
+      - name: is_virtual
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether card is virtual only
+      - name: has_chip
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether card has chip
+      - name: pin_status
+        logicalType: string
+        physicalType: STRING
+        description: "PIN status: SET, NOT_SET, LOCKED"
+      - name: spending_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Individual card spending limit in cents (if set)
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Credit_Card_Statement
+    physicalName: credit_cards.credit_card_statement
+    physicalType: topic
+    logicalType: object
+    description: Credit card statement records with billing cycle summaries.
+    dataGranularityDescription: one row per statement_id
+    properties:
+      - name: statement_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the statement
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to credit card account
+        tags: [npi]
+      - name: statement_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Statement date
+      - name: period_start_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Statement period start date
+      - name: period_end_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Statement period end date
+      - name: previous_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Previous statement balance in cents
+        tags: [confidential, npi]
+      - name: payments_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Payments received in cents
+        tags: [confidential, npi]
+      - name: credits_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Credits/refunds in cents
+      - name: purchases_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Purchases in cents
+        tags: [confidential, npi]
+      - name: cash_advances_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Cash advances in cents
+        tags: [confidential, npi]
+      - name: balance_transfers_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance transfers in cents
+        tags: [confidential, npi]
+      - name: fees_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Fees charged in cents
+      - name: interest_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest charged in cents
+        tags: [confidential, npi]
+      - name: new_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: New statement balance in cents
+        tags: [confidential, npi]
+      - name: minimum_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Minimum payment due in cents
+        tags: [confidential, npi]
+      - name: payment_due_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Payment due date
+      - name: credit_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Credit limit at statement in cents
+        tags: [confidential, npi]
+      - name: available_credit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Available credit at statement in cents
+        tags: [confidential, npi]
+      - name: transaction_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of transactions this cycle
+      - name: days_in_cycle
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Days in billing cycle
+      - name: avg_daily_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Average daily balance in cents
+        tags: [confidential, npi]
+      - name: rewards_earned
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Points/rewards earned this cycle
+      - name: rewards_redeemed
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Points/rewards redeemed this cycle
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Credit_Card_Payment
+    physicalName: credit_cards.credit_card_payment
+    physicalType: topic
+    logicalType: object
+    description: Credit card payment records.
+    dataGranularityDescription: one row per payment_id
+    properties:
+      - name: payment_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the payment
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to credit card account
+        tags: [npi]
+      - name: statement_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to statement being paid
+      - name: payment_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Payment amount in cents
+        tags: [confidential, npi]
+      - name: payment_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Payment type: REGULAR, AUTOPAY, PAYOFF"
+      - name: payment_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Payment status: PENDING, POSTED, RETURNED, REVERSED"
+      - name: payment_method
+        logicalType: string
+        physicalType: STRING
+        description: "Payment method: ACH, CHECK, DEBIT_CARD, TRANSFER"
+      - name: source_account
+        logicalType: string
+        physicalType: STRING
+        description: Source account for payment
+        tags: [npi]
+      - name: source_routing
+        logicalType: string
+        physicalType: STRING
+        description: Source routing number
+      - name: received_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was received
+      - name: posted_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was posted
+      - name: due_date
+        logicalType: date
+        physicalType: DATE
+        description: Due date for this payment cycle
+      - name: days_from_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: "Days before/after due date (negative = early)"
+      - name: balance_after_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance after payment in cents
+        tags: [confidential, npi]
+      - name: confirmation_number
+        logicalType: string
+        physicalType: STRING
+        description: Confirmation number
+      - name: return_reason_code
+        logicalType: string
+        physicalType: STRING
+        description: Return reason code (if returned)
+      - name: return_reason
+        logicalType: string
+        physicalType: STRING
+        description: Return reason description
+        tags: [confidential]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Credit_Limit_History
+    physicalName: credit_cards.credit_limit_history
+    physicalType: topic
+    logicalType: object
+    description: Credit limit change history for accounts.
+    dataGranularityDescription: one row per limit_change_id
+    properties:
+      - name: limit_change_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the limit change
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to credit card account
+        tags: [npi]
+      - name: change_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Change type: INCREASE, DECREASE, INITIAL"
+      - name: previous_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Previous credit limit in cents
+        tags: [confidential, npi]
+      - name: new_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: New credit limit in cents
+        tags: [confidential, npi]
+      - name: change_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Change amount in cents
+      - name: change_reason
+        logicalType: string
+        physicalType: STRING
+        description: "Reason for change: CUSTOMER_REQUEST, PROACTIVE, RISK_REVIEW, NEW_ACCOUNT"
+      - name: initiated_by
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Initiated by: CUSTOMER, BANK, SYSTEM"
+      - name: effective_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date change was effective
+      - name: credit_score_at_change
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score at time of change
+        tags: [confidential, npi]
+      - name: customer_notified
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether customer was notified
+      - name: notification_date
+        logicalType: date
+        physicalType: DATE
+        description: Date customer was notified
+      - name: adverse_action_required
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Adverse action required (for decreases)
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Card_Delinquency_Event
+    physicalName: credit_cards.card_delinquency_event
+    physicalType: topic
+    logicalType: object
+    description: Credit card delinquency events and collections.
+    dataGranularityDescription: one row per delinquency_event_id
+    properties:
+      - name: delinquency_event_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the delinquency event
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to credit card account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: event_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Event type: MISSED_PAYMENT, DELINQUENCY_START, DELINQUENCY_CURED, CHARGE_OFF, COLLECTION_ASSIGNED, RECOVERY"
+      - name: days_past_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Days past due at event
+      - name: delinquency_bucket
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Delinquency bucket: CURRENT, 30_DAY, 60_DAY, 90_DAY, 120_DAY, 150_DAY, 180_PLUS"
+      - name: amount_past_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Amount past due in cents
+        tags: [confidential, npi]
+      - name: total_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total balance at event in cents
+        tags: [confidential, npi]
+      - name: event_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Event date
+      - name: cured_date
+        logicalType: date
+        physicalType: DATE
+        description: Date cured (if applicable)
+      - name: collection_action
+        logicalType: string
+        physicalType: STRING
+        description: Collection action taken
+        tags: [confidential]
+      - name: collection_agency
+        logicalType: string
+        physicalType: STRING
+        description: Collection agency assigned (if applicable)
+      - name: charge_off_date
+        logicalType: date
+        physicalType: DATE
+        description: Charge-off date (if applicable)
+      - name: charge_off_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Charge-off amount in cents
+        tags: [confidential, npi]
+      - name: recovery_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Recovery amount in cents
+      - name: net_charge_off_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Net charge-off in cents
+        tags: [confidential]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system

@@ -1,0 +1,470 @@
+# Data contract (ODCS v3.2) for the tables of card_transactions.sqrl. DataSQRL checks the connector
+# tables of card_transactions-test.sqrl and card_transactions-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:card_transactions"
+name: Card Transactions
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Transactions
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Debit and prepaid card transaction data including real-time authorizations, settlements, and
+    chargeback processing. Captures the full lifecycle of card-based payments from authorization
+    through final settlement and any disputes that may arise.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, Regulation E, PCI-DSS]
+schema:
+  - name: Card_Authorization
+    physicalName: card_transactions.card_authorization
+    physicalType: topic
+    logicalType: object
+    description: Real-time card authorization requests and responses.
+    dataGranularityDescription: one row per authorization_id
+    properties:
+      - name: authorization_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the authorization
+      - name: card_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to card used
+        tags: [pci, tokenize]
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: authorization_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Authorization amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: merchant_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Merchant amount if different currency in cents
+      - name: merchant_currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Merchant currency code
+      - name: exchange_rate
+        logicalType: number
+        physicalType: DECIMAL(12, 6)
+        description: Exchange rate applied
+      - name: authorization_status
+        logicalType: string
+        physicalType: STRING
+        description: "Authorization status: APPROVED, DECLINED, PENDING, EXPIRED, REVERSED"
+      - name: decline_reason_code
+        logicalType: string
+        physicalType: STRING
+        description: Decline reason code if declined
+      - name: authorized_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time of authorization
+      - name: expires_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Authorization expiration timestamp
+      - name: merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Merchant name
+        tags: [pii]
+      - name: merchant_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Merchant ID
+      - name: mcc_code
+        logicalType: string
+        physicalType: STRING
+        description: Merchant Category Code
+      - name: merchant_city
+        logicalType: string
+        physicalType: STRING
+        description: Merchant city
+        tags: [pii]
+      - name: merchant_state
+        logicalType: string
+        physicalType: STRING
+        description: Merchant state or province
+      - name: merchant_country
+        logicalType: string
+        physicalType: STRING
+        description: Merchant country code
+      - name: transaction_type
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction type: PURCHASE, CASH_ADVANCE, REFUND, BALANCE_INQUIRY"
+      - name: entry_mode
+        logicalType: string
+        physicalType: STRING
+        description: "Entry mode: CHIP, SWIPE, CONTACTLESS, MANUAL, ECOMMERCE, RECURRING"
+      - name: pin_used
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether PIN was used
+      - name: card_present
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether card was present
+      - name: network
+        logicalType: string
+        physicalType: STRING
+        description: "Network: VISA, MASTERCARD, DISCOVER, AMEX"
+      - name: network_reference_id
+        logicalType: string
+        physicalType: STRING
+        description: Network reference ID
+      - name: rrn
+        logicalType: string
+        physicalType: STRING
+        description: Retrieval reference number
+      - name: authorization_code
+        logicalType: string
+        physicalType: STRING
+        description: Authorization code from network
+      - name: cvv_result
+        logicalType: string
+        physicalType: STRING
+        description: CVV verification result
+      - name: avs_result
+        logicalType: string
+        physicalType: STRING
+        description: AVS verification result
+      - name: three_ds_result
+        logicalType: string
+        physicalType: STRING
+        description: "3D Secure result if applicable"
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Card_Settlement
+    physicalName: card_transactions.card_settlement
+    physicalType: topic
+    logicalType: object
+    description: Card transaction settlements from payment networks.
+    dataGranularityDescription: one row per settlement_id
+    properties:
+      - name: settlement_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the settlement
+      - name: authorization_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to original authorization
+      - name: transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to posted transaction
+      - name: card_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to card
+        tags: [pci, tokenize]
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: settlement_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Settlement amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: authorization_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Original authorization amount in cents
+      - name: variance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Difference between settlement and authorization in cents
+      - name: settlement_status
+        logicalType: string
+        physicalType: STRING
+        description: "Settlement status: SETTLED, PENDING, REJECTED"
+      - name: settled_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time of settlement
+      - name: network_settlement_date
+        logicalType: date
+        physicalType: DATE
+        description: Settlement date from network
+      - name: merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Merchant name
+        tags: [pii]
+      - name: merchant_id
+        logicalType: string
+        physicalType: STRING
+        description: Merchant ID
+      - name: mcc_code
+        logicalType: string
+        physicalType: STRING
+        description: Merchant Category Code
+      - name: network
+        logicalType: string
+        physicalType: STRING
+        description: "Network: VISA, MASTERCARD, DISCOVER, AMEX"
+      - name: network_reference_id
+        logicalType: string
+        physicalType: STRING
+        description: Network reference ID
+      - name: interchange_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interchange fee in cents
+        tags: [confidential]
+      - name: assessment_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Network assessment fee in cents
+        tags: [confidential]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Card_Chargeback
+    physicalName: card_transactions.card_chargeback
+    physicalType: topic
+    logicalType: object
+    description: Card dispute and chargeback records.
+    dataGranularityDescription: one row per chargeback_id
+    properties:
+      - name: chargeback_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the chargeback
+      - name: transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to original transaction
+      - name: settlement_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to settlement
+      - name: card_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to card
+        tags: [pci, tokenize]
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: chargeback_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Chargeback amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: chargeback_status
+        logicalType: string
+        physicalType: STRING
+        description: "Chargeback status: INITIATED, PENDING, WON, LOST, EXPIRED"
+      - name: reason_code
+        logicalType: string
+        physicalType: STRING
+        description: Reason code per network rules
+      - name: reason_description
+        logicalType: string
+        physicalType: STRING
+        description: Reason description
+        tags: [confidential]
+      - name: chargeback_category
+        logicalType: string
+        physicalType: STRING
+        description: "Category: FRAUD, CONSUMER_DISPUTE, PROCESSING_ERROR, AUTHORIZATION"
+      - name: initiated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date chargeback was initiated
+      - name: response_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Response deadline
+      - name: resolved_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date chargeback was resolved
+      - name: resolution_outcome
+        logicalType: string
+        physicalType: STRING
+        description: "Resolution outcome: MERCHANT_WIN, CUSTOMER_WIN, SPLIT"
+      - name: recovery_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Amount recovered from merchant in cents
+      - name: merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Merchant name
+        tags: [pii]
+      - name: merchant_id
+        logicalType: string
+        physicalType: STRING
+        description: Merchant ID
+      - name: network
+        logicalType: string
+        physicalType: STRING
+        description: Network handling the dispute
+      - name: network_case_number
+        logicalType: string
+        physicalType: STRING
+        description: Network case number
+      - name: provisional_credit_issued
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether provisional credit was issued
+      - name: provisional_credit_date
+        logicalType: date
+        physicalType: DATE
+        description: Date provisional credit was issued
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Mcc_Reference
+    physicalName: card_transactions.mcc_reference
+    physicalType: topic
+    logicalType: object
+    description: Merchant Category Code reference data for transaction classification.
+    dataGranularityDescription: one row per mcc_code
+    properties:
+      - name: mcc_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Merchant Category Code
+      - name: mcc_description
+        logicalType: string
+        physicalType: STRING
+        description: MCC description
+      - name: category
+        logicalType: string
+        physicalType: STRING
+        description: Category grouping
+      - name: subcategory
+        logicalType: string
+        physicalType: STRING
+        description: Subcategory
+      - name: is_high_risk
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether MCC is considered high-risk
+      - name: is_cash_equivalent
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether MCC may indicate cash-like transaction
+      - name: is_restricted
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether MCC is restricted for certain card programs
+      - name: tax_category
+        logicalType: string
+        physicalType: STRING
+        description: Default tax category
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system

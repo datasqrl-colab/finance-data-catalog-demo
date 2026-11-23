@@ -1,0 +1,608 @@
+# Data contract (ODCS v3.2) for the tables of mortgage_servicing.sqrl. DataSQRL checks the connector
+# tables of mortgage_servicing-test.sqrl and mortgage_servicing-prod.sqrl against it when it
+# compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:mortgage_servicing"
+name: Mortgage Servicing
+version: 1.0.0
+status: active
+domain: lending
+team:
+  name: Mortgages
+  description: Lending line of business
+description:
+  purpose: >-
+    Mortgage loan servicing data including payment history, escrow account management, delinquency
+    events, loan modifications, and property valuations. Supports ongoing loan administration and
+    loss mitigation activities. Data is a CDC stream from source system.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, RESPA, CFPB Servicing Rules]
+schema:
+  - name: Mortgage_Payment
+    physicalName: mortgage_servicing.mortgage_payment
+    physicalType: topic
+    logicalType: object
+    description: Mortgage payment transaction records.
+    dataGranularityDescription: one row per payment_id
+    properties:
+      - name: payment_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the payment
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: payment_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Payment amount in cents
+        tags: [confidential, npi]
+      - name: principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal portion in cents
+        tags: [confidential, npi]
+      - name: interest_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest portion in cents
+        tags: [confidential, npi]
+      - name: escrow_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Escrow portion in cents
+        tags: [confidential, npi]
+      - name: late_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Late fee amount in cents
+      - name: other_fees_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Other fees in cents
+      - name: payment_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Payment type: REGULAR, PRINCIPAL_ONLY, PAYOFF, PARTIAL, ESCROW_ONLY"
+      - name: payment_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Payment status: APPLIED, PENDING, RETURNED, REVERSED"
+      - name: due_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was due
+      - name: received_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was received
+      - name: applied_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was applied
+      - name: payment_channel
+        logicalType: string
+        physicalType: STRING
+        description: "Payment channel: ACH, CHECK, ONLINE, PHONE, WIRE"
+      - name: principal_balance_after_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal balance after payment in cents
+        tags: [confidential, npi]
+      - name: payment_period
+        logicalType: string
+        physicalType: STRING
+        description: Payment for period (month/year)
+      - name: days_past_due_at_payment
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days past due at time of payment
+      - name: suspense_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Suspense amount (if partial) in cents
+      - name: unapplied_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Unapplied amount in cents
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Escrow_Account
+    physicalName: mortgage_servicing.escrow_account
+    physicalType: topic
+    logicalType: object
+    description: Escrow account for taxes and insurance.
+    dataGranularityDescription: one row per escrow_account_id, as_of_date combination
+    properties:
+      - name: escrow_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the escrow account
+        tags: [npi]
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: as_of_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: As-of date for balances
+      - name: escrow_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current escrow balance in cents
+        tags: [confidential, npi]
+      - name: target_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Target escrow balance in cents
+      - name: shortage_surplus_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Escrow shortage/surplus in cents
+      - name: monthly_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Monthly escrow payment required in cents
+        tags: [confidential, npi]
+      - name: annual_tax_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual property tax amount in cents
+        tags: [confidential, npi]
+      - name: next_tax_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Next tax due date
+      - name: annual_hazard_insurance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual hazard insurance premium in cents
+      - name: next_insurance_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Next insurance due date
+      - name: annual_flood_insurance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual flood insurance premium in cents
+      - name: annual_pmi_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual PMI/MIP amount in cents
+      - name: annual_hoa_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual HOA amount in cents
+      - name: escrow_waived
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Escrow waiver flag
+      - name: last_analysis_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of last escrow analysis
+      - name: next_analysis_date
+        logicalType: date
+        physicalType: DATE
+        description: Next scheduled analysis date
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Delinquency_Event
+    physicalName: mortgage_servicing.delinquency_event
+    physicalType: topic
+    logicalType: object
+    description: Delinquency events and collection activities.
+    dataGranularityDescription: one row per delinquency_event_id
+    properties:
+      - name: delinquency_event_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the delinquency event
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: event_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Event type: MISSED_PAYMENT, LATE_PAYMENT, DELINQUENCY_START, DELINQUENCY_CURED, FORBEARANCE_START, FORBEARANCE_END, DEFAULT, FORECLOSURE_START, FORECLOSURE_COMPLETE, REO"
+      - name: days_past_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Days past due at event
+      - name: delinquency_bucket
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Delinquency bucket: CURRENT, 30_DAY, 60_DAY, 90_DAY, 120_PLUS"
+      - name: amount_past_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Amount past due in cents
+        tags: [confidential, npi]
+      - name: total_amount_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total amount due in cents
+        tags: [confidential, npi]
+      - name: event_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Event date
+      - name: cured_date
+        logicalType: date
+        physicalType: DATE
+        description: Date cured (if applicable)
+      - name: collection_action
+        logicalType: string
+        physicalType: STRING
+        description: Collection action taken
+        tags: [confidential]
+      - name: loss_mitigation_status
+        logicalType: string
+        physicalType: STRING
+        description: "Loss mitigation status: NONE, IN_REVIEW, APPROVED, DENIED, COMPLETE"
+      - name: loss_mitigation_option
+        logicalType: string
+        physicalType: STRING
+        description: "Loss mitigation option: FORBEARANCE, MODIFICATION, SHORT_SALE, DEED_IN_LIEU, REPAYMENT_PLAN"
+      - name: attorney_referral_date
+        logicalType: date
+        physicalType: DATE
+        description: Attorney referral date (if foreclosure)
+      - name: foreclosure_sale_date
+        logicalType: date
+        physicalType: DATE
+        description: Foreclosure sale date
+      - name: reo_date
+        logicalType: date
+        physicalType: DATE
+        description: REO date
+      - name: estimated_loss_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Estimated loss in cents
+        tags: [confidential]
+      - name: actual_loss_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Actual loss in cents
+        tags: [confidential]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Loan_Modification
+    physicalName: mortgage_servicing.loan_modification
+    physicalType: topic
+    logicalType: object
+    description: Loan modification records for workouts and restructures.
+    dataGranularityDescription: one row per modification_id
+    properties:
+      - name: modification_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the modification
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: modification_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Modification type: RATE_REDUCTION, TERM_EXTENSION, PRINCIPAL_FORBEARANCE, PRINCIPAL_FORGIVENESS, CAPITALIZATION, COMBINATION"
+      - name: modification_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Modification status: TRIAL, PERMANENT, FAILED, CANCELLED"
+      - name: modification_program
+        logicalType: string
+        physicalType: STRING
+        description: "Modification program: HAMP, PROPRIETARY, GSE_FLEX, FHA_LOSS_MIT"
+      - name: request_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date modification was requested
+      - name: approval_date
+        logicalType: date
+        physicalType: DATE
+        description: Date modification was approved
+      - name: trial_start_date
+        logicalType: date
+        physicalType: DATE
+        description: Date trial period started
+      - name: permanent_date
+        logicalType: date
+        physicalType: DATE
+        description: Date permanent modification effective
+      - name: trial_payments_required
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of trial payments required
+      - name: trial_payments_made
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of trial payments made
+      - name: pre_mod_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Pre-modification interest rate
+      - name: post_mod_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Post-modification interest rate
+      - name: pre_mod_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Pre-modification monthly payment in cents
+        tags: [confidential, npi]
+      - name: post_mod_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Post-modification monthly payment in cents
+        tags: [confidential, npi]
+      - name: pre_mod_principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Pre-modification principal in cents
+        tags: [confidential, npi]
+      - name: post_mod_principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Post-modification principal in cents
+        tags: [confidential, npi]
+      - name: principal_deferred_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal deferred in cents
+        tags: [confidential, npi]
+      - name: principal_forgiven_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal forgiven in cents
+        tags: [confidential, npi]
+      - name: arrears_capitalized_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Arrears capitalized in cents
+        tags: [confidential, npi]
+      - name: pre_mod_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Pre-modification term remaining months
+      - name: post_mod_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Post-modification term months
+      - name: new_maturity_date
+        logicalType: date
+        physicalType: DATE
+        description: New maturity date
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Property_Valuation
+    physicalName: mortgage_servicing.property_valuation
+    physicalType: topic
+    logicalType: object
+    description: Property valuation history for ongoing LTV monitoring.
+    dataGranularityDescription: one row per valuation_id
+    properties:
+      - name: valuation_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the valuation
+      - name: property_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to property
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: valuation_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Valuation type: APPRAISAL, AVM, BPO, DESKTOP, DRIVE_BY"
+      - name: valuation_purpose
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Valuation purpose: ORIGINATION, MODIFICATION, MONITORING, FORECLOSURE, PMI_REMOVAL"
+      - name: valuation_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Valuation amount in cents
+        tags: [confidential, npi]
+      - name: valuation_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Valuation date
+      - name: confidence_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Confidence score (for AVMs)
+      - name: fsd
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Forecast standard deviation (for AVMs)
+      - name: valuation_provider
+        logicalType: string
+        physicalType: STRING
+        description: Valuation provider
+      - name: provider_reference
+        logicalType: string
+        physicalType: STRING
+        description: Provider reference number
+      - name: current_ltv
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Current LTV based on this valuation
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system

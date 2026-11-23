@@ -1,0 +1,329 @@
+# Data contract (ODCS v3.2) for the tables of deposit_accounts.sqrl. DataSQRL checks the connector
+# tables of deposit_accounts-test.sqrl and deposit_accounts-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:deposit_accounts"
+name: Deposit Accounts
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Accounts
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Core deposit account information including checking, savings, money market, and certificate of
+    deposit accounts. Contains account ownership, status history, and product configuration data
+    that forms the foundation of the bank's deposit product portfolio.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, Regulation E, Regulation DD]
+schema:
+  - name: Account
+    physicalName: deposit_accounts.account
+    physicalType: topic
+    logicalType: object
+    description: Primary deposit account record containing account attributes and status.
+    dataGranularityDescription: one row per account_id
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the account
+        tags: [npi]
+      - name: account_number
+        logicalType: string
+        physicalType: STRING
+        description: Account number displayed to customer
+        tags: [mask, npi]
+      - name: account_type
+        logicalType: string
+        physicalType: STRING
+        description: "Account type: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA"
+      - name: product_code
+        logicalType: string
+        physicalType: STRING
+        description: Product code reference
+      - name: account_title
+        logicalType: string
+        physicalType: STRING
+        description: Account title or name
+        tags: [pii]
+      - name: account_status
+        logicalType: string
+        physicalType: STRING
+        description: "Account status: OPEN, CLOSED, DORMANT, FROZEN, ESCHEAT"
+      - name: opened_date
+        logicalType: date
+        physicalType: DATE
+        description: Date account was opened
+      - name: closed_date
+        logicalType: date
+        physicalType: DATE
+        description: Date account was closed (if applicable)
+      - name: closure_reason
+        logicalType: string
+        physicalType: STRING
+        description: Reason for account closure
+      - name: opening_branch_id
+        logicalType: string
+        physicalType: STRING
+        description: Branch ID where account was opened
+      - name: servicing_branch_id
+        logicalType: string
+        physicalType: STRING
+        description: Branch ID for account servicing
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Account currency code (ISO 4217)
+      - name: interest_rate
+        logicalType: number
+        physicalType: DECIMAL(10, 6)
+        description: Current interest rate (annual percentage)
+      - name: compounding_frequency
+        logicalType: string
+        physicalType: STRING
+        description: "Interest compounding frequency: DAILY, MONTHLY, QUARTERLY, ANNUALLY"
+      - name: interest_payment_frequency
+        logicalType: string
+        physicalType: STRING
+        description: "Interest payment frequency: MONTHLY, QUARTERLY, ANNUALLY, AT_MATURITY"
+      - name: maturity_date
+        logicalType: date
+        physicalType: DATE
+        description: Maturity date for CDs
+      - name: original_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Original term in months for CDs
+      - name: overdraft_protection_enabled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether overdraft protection is enabled
+      - name: overdraft_linked_account_id
+        logicalType: string
+        physicalType: STRING
+        description: Linked account for overdraft protection
+        tags: [npi]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Account_Holder
+    physicalName: deposit_accounts.account_holder
+    physicalType: topic
+    logicalType: object
+    description: Account ownership and holder information linking customers to accounts.
+    dataGranularityDescription: one row per account_id, customer_id combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: holder_type
+        logicalType: string
+        physicalType: STRING
+        description: "Holder type: PRIMARY, JOINT, BENEFICIARY, CUSTODIAN, TRUSTEE, POA"
+      - name: ownership_percentage
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Ownership percentage (for joint accounts)
+      - name: has_signing_authority
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether holder has signing authority
+      - name: added_date
+        logicalType: date
+        physicalType: DATE
+        description: Date holder was added to account
+      - name: removed_date
+        logicalType: date
+        physicalType: DATE
+        description: Date holder was removed from account
+      - name: is_active
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether this holder is currently active on the account
+      - name: tax_reporting_percentage
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Tax reporting responsibility percentage
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Account_Status_History
+    physicalName: deposit_accounts.account_status_history
+    physicalType: topic
+    logicalType: object
+    description: Account status change history for audit and compliance tracking.
+    dataGranularityDescription: one row per account_id, status_changed_at combination
+    properties:
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: previous_status
+        logicalType: string
+        physicalType: STRING
+        description: Previous account status
+      - name: new_status
+        logicalType: string
+        physicalType: STRING
+        description: New account status
+      - name: change_reason
+        logicalType: string
+        physicalType: STRING
+        description: Reason for status change
+      - name: status_changed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Date and time status was changed
+      - name: changed_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee or system that initiated the change
+      - name: change_channel
+        logicalType: string
+        physicalType: STRING
+        description: "Channel through which change was made: BRANCH, ONLINE, PHONE, SYSTEM"
+      - name: notes
+        logicalType: string
+        physicalType: STRING
+        description: Additional notes about the status change
+        tags: [confidential]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Account_Product
+    physicalName: deposit_accounts.account_product
+    physicalType: topic
+    logicalType: object
+    description: Deposit product configuration and terms reference data.
+    dataGranularityDescription: one row per product_code, effective_from combination
+    properties:
+      - name: product_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique product code
+      - name: product_name
+        logicalType: string
+        physicalType: STRING
+        description: Product name
+      - name: product_category
+        logicalType: string
+        physicalType: STRING
+        description: "Product category: CHECKING, SAVINGS, MONEY_MARKET, CD, IRA"
+      - name: is_active
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether product is currently available for new accounts
+      - name: minimum_opening_deposit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Minimum opening deposit in cents
+      - name: minimum_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Minimum balance to avoid fees in cents
+      - name: monthly_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Monthly maintenance fee in cents
+      - name: fee_waiver_eligible
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether fee can be waived
+      - name: fee_waiver_conditions
+        logicalType: string
+        physicalType: STRING
+        description: Conditions for fee waiver
+      - name: base_interest_rate
+        logicalType: number
+        physicalType: DECIMAL(10, 6)
+        description: Base interest rate (APY)
+      - name: rate_tiers
+        logicalType: string
+        physicalType: STRING
+        description: Interest rate tier structure (JSON)
+        tags: [confidential]
+      - name: max_monthly_transactions
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Maximum transactions per month (Reg D for savings)
+      - name: interest_bearing
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether account earns interest
+      - name: fdic_insured
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: FDIC insurance eligible
+      - name: effective_from
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date product became effective
+      - name: effective_to
+        logicalType: date
+        physicalType: DATE
+        description: Date product was discontinued
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system

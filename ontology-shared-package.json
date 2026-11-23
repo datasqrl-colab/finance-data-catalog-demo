@@ -19,6 +19,11 @@
       "endpoints": "FULL",
       "max-result-depth": 1,
       "add-prefix": true
+    },
+    "tags": {
+      "pii": {}, "spii": {}, "npi": {}, "pci": {}, "confidential": {},
+      "glba": {}, "gdpr": {}, "ccpa": {}, "pci-dss": {}, "bsa": {}, "sox": {},
+      "encrypt": {}, "tokenize": {}, "mask": {}, "erasable": {}
     }
   }
 }
