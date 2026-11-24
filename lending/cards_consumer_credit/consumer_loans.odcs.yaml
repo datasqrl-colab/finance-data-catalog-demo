@@ -1,0 +1,806 @@
+# Data contract (ODCS v3.2) for the tables of consumer_loans.sqrl. DataSQRL checks the connector
+# tables of consumer_loans-test.sqrl and consumer_loans-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:consumer_loans"
+name: Consumer Loans
+version: 1.0.0
+status: active
+domain: lending
+team:
+  name: Cards & Consumer Credit
+  description: Lending line of business
+description:
+  purpose: >-
+    Personal and auto loan data including loan applications, funded loans, payment history, and
+    delinquency tracking. Supports the full consumer lending lifecycle from application through
+    payoff or charge-off. Data is a CDC stream from source system.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, FCRA, TILA, ECOA, SCRA]
+schema:
+  - name: Personal_Loan
+    physicalName: consumer_loans.personal_loan
+    physicalType: topic
+    logicalType: object
+    description: Personal/unsecured loan records.
+    dataGranularityDescription: one row per loan_id
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the loan
+      - name: application_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to application
+      - name: primary_borrower_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to primary borrower
+        tags: [pii]
+      - name: loan_number
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Loan number displayed to customer
+        tags: [mask, npi]
+      - name: loan_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan status: ACTIVE, PAID_OFF, CHARGED_OFF, SETTLED"
+      - name: loan_purpose
+        logicalType: string
+        physicalType: STRING
+        description: "Loan purpose: DEBT_CONSOLIDATION, HOME_IMPROVEMENT, MAJOR_PURCHASE, MEDICAL, VACATION, OTHER"
+      - name: original_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Original loan amount in cents
+        tags: [confidential, npi]
+      - name: current_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current principal balance in cents
+        tags: [confidential, npi]
+      - name: interest_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        required: true
+        description: Interest rate (APR)
+        tags: [confidential]
+      - name: rate_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Rate type: FIXED, VARIABLE"
+      - name: original_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Original term in months
+      - name: remaining_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Remaining term in months
+      - name: monthly_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Monthly payment amount in cents
+        tags: [confidential, npi]
+      - name: funding_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date loan was funded
+      - name: first_payment_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: First payment due date
+      - name: maturity_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Maturity date
+      - name: next_payment_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Next payment due date
+      - name: paid_off_date
+        logicalType: date
+        physicalType: DATE
+        description: Date loan was paid off
+      - name: origination_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Origination fee in cents
+      - name: credit_score_at_origination
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score at origination
+        tags: [confidential, npi]
+      - name: dti_at_origination
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: DTI ratio at origination
+        tags: [confidential, npi]
+      - name: autopay_enrolled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Autopay enrolled
+      - name: disbursement_account_id
+        logicalType: string
+        physicalType: STRING
+        description: Disbursement account
+        tags: [npi]
+      - name: payment_account_id
+        logicalType: string
+        physicalType: STRING
+        description: Payment account
+        tags: [npi]
+      - name: origination_channel
+        logicalType: string
+        physicalType: STRING
+        description: "Origination channel: ONLINE, BRANCH, PHONE, PARTNER"
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Auto_Loan
+    physicalName: consumer_loans.auto_loan
+    physicalType: topic
+    logicalType: object
+    description: Auto loan records with vehicle collateral information.
+    dataGranularityDescription: one row per loan_id
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the loan
+      - name: application_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to application
+      - name: primary_borrower_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to primary borrower
+        tags: [pii]
+      - name: loan_number
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Loan number displayed to customer
+        tags: [mask, npi]
+      - name: loan_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan status: ACTIVE, PAID_OFF, CHARGED_OFF, REPOSSESSED"
+      - name: loan_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan type: NEW_VEHICLE, USED_VEHICLE, REFINANCE, LEASE_BUYOUT"
+      - name: original_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Original loan amount in cents
+        tags: [confidential, npi]
+      - name: current_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current principal balance in cents
+        tags: [confidential, npi]
+      - name: interest_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        required: true
+        description: Interest rate (APR)
+        tags: [confidential]
+      - name: rate_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Rate type: FIXED, VARIABLE"
+      - name: original_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Original term in months
+      - name: remaining_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Remaining term in months
+      - name: monthly_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Monthly payment amount in cents
+        tags: [confidential, npi]
+      - name: funding_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date loan was funded
+      - name: first_payment_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: First payment due date
+      - name: maturity_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Maturity date
+      - name: next_payment_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Next payment due date
+      - name: paid_off_date
+        logicalType: date
+        physicalType: DATE
+        description: Date loan was paid off
+      - name: vehicle_vin
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Vehicle VIN
+        tags: [pii]
+      - name: vehicle_year
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Vehicle year
+      - name: vehicle_make
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Vehicle make
+      - name: vehicle_model
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Vehicle model
+      - name: vehicle_trim
+        logicalType: string
+        physicalType: STRING
+        description: Vehicle trim
+      - name: mileage_at_origination
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Vehicle mileage at origination
+      - name: vehicle_condition
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Vehicle condition: NEW, USED, CERTIFIED"
+      - name: vehicle_value_at_origination_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Vehicle value at origination in cents
+        tags: [confidential, npi]
+      - name: current_vehicle_value_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current estimated vehicle value in cents
+        tags: [confidential, npi]
+      - name: ltv_at_origination
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Loan-to-value ratio at origination
+      - name: current_ltv
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Current LTV
+      - name: dealer_name
+        logicalType: string
+        physicalType: STRING
+        description: Dealer name
+        tags: [pii]
+      - name: dealer_id
+        logicalType: string
+        physicalType: STRING
+        description: Dealer ID
+      - name: gap_insurance
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: GAP insurance included
+      - name: extended_warranty
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Extended warranty included
+      - name: credit_score_at_origination
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score at origination
+        tags: [confidential, npi]
+      - name: dti_at_origination
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: DTI ratio at origination
+        tags: [confidential, npi]
+      - name: title_status
+        logicalType: string
+        physicalType: STRING
+        description: "Title status: HELD, RELEASED, DEFECTIVE"
+      - name: lien_state
+        logicalType: string
+        physicalType: STRING
+        description: Lien holder state
+      - name: autopay_enrolled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Autopay enrolled
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Loan_Payment
+    physicalName: consumer_loans.loan_payment
+    physicalType: topic
+    logicalType: object
+    description: Consumer loan payment records (personal and auto).
+    dataGranularityDescription: one row per payment_id
+    properties:
+      - name: payment_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the payment
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: loan_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan type: PERSONAL, AUTO"
+      - name: payment_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Payment amount in cents
+        tags: [confidential, npi]
+      - name: principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal portion in cents
+        tags: [confidential, npi]
+      - name: interest_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest portion in cents
+        tags: [confidential, npi]
+      - name: late_fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Late fee amount in cents
+      - name: other_fees_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Other fees in cents
+      - name: payment_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Payment type: REGULAR, EXTRA_PRINCIPAL, PAYOFF, PARTIAL"
+      - name: payment_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Payment status: APPLIED, PENDING, RETURNED, REVERSED"
+      - name: due_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date payment was due
+      - name: received_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was received
+      - name: applied_date
+        logicalType: date
+        physicalType: DATE
+        description: Date payment was applied
+      - name: payment_method
+        logicalType: string
+        physicalType: STRING
+        description: "Payment method: ACH, CHECK, DEBIT_CARD, ONLINE"
+      - name: principal_balance_after_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal balance after payment in cents
+        tags: [confidential, npi]
+      - name: days_past_due_at_payment
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days past due at time of payment
+      - name: confirmation_number
+        logicalType: string
+        physicalType: STRING
+        description: Confirmation number
+      - name: return_reason_code
+        logicalType: string
+        physicalType: STRING
+        description: Return reason code (if returned)
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Loan_Application
+    physicalName: consumer_loans.loan_application
+    physicalType: topic
+    logicalType: object
+    description: Consumer loan application records.
+    dataGranularityDescription: one row per application_id
+    properties:
+      - name: application_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the application
+      - name: primary_applicant_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to primary applicant
+        tags: [pii]
+      - name: co_applicant_customer_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to co-applicant (if applicable)
+        tags: [pii]
+      - name: loan_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan type: PERSONAL, AUTO"
+      - name: loan_purpose
+        logicalType: string
+        physicalType: STRING
+        description: "Loan purpose: DEBT_CONSOLIDATION, HOME_IMPROVEMENT, VEHICLE_PURCHASE, REFINANCE, OTHER"
+      - name: requested_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Requested loan amount in cents
+        tags: [confidential, npi]
+      - name: requested_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Requested term in months
+      - name: application_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Application status: SUBMITTED, IN_REVIEW, APPROVED, COUNTER_OFFER, DENIED, WITHDRAWN, FUNDED"
+      - name: submitted_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Date application was submitted
+      - name: decision_date
+        logicalType: date
+        physicalType: DATE
+        description: Date decision was made
+      - name: decision_type
+        logicalType: string
+        physicalType: STRING
+        description: "Decision type: APPROVED, DENIED, COUNTER_OFFER"
+      - name: approved_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Approved amount in cents
+        tags: [confidential, npi]
+      - name: approved_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Approved rate
+        tags: [confidential]
+      - name: approved_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Approved term in months
+      - name: denial_reasons
+        logicalType: string
+        physicalType: STRING
+        description: Denial reason codes (if denied)
+        tags: [confidential]
+      - name: credit_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score at application
+        tags: [confidential, npi]
+      - name: annual_income_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual income stated
+        tags: [confidential, npi]
+      - name: monthly_debt_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Monthly debt obligations
+        tags: [confidential, npi]
+      - name: dti_ratio
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: DTI ratio calculated
+        tags: [confidential, npi]
+      - name: employment_status
+        logicalType: string
+        physicalType: STRING
+        description: "Employment status: EMPLOYED, SELF_EMPLOYED, RETIRED, OTHER"
+      - name: employer_name
+        logicalType: string
+        physicalType: STRING
+        description: Employer name
+        tags: [pii]
+      - name: years_employed
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Years at current employer
+      - name: origination_channel
+        logicalType: string
+        physicalType: STRING
+        description: "Origination channel: ONLINE, BRANCH, PHONE, DEALER, PARTNER"
+      - name: promo_code
+        logicalType: string
+        physicalType: STRING
+        description: Promo code applied
+      - name: funded_date
+        logicalType: date
+        physicalType: DATE
+        description: Date application was funded
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Consumer_Loan_Delinquency_Event
+    physicalName: consumer_loans.consumer_loan_delinquency_event
+    physicalType: topic
+    logicalType: object
+    description: Consumer loan delinquency events.
+    dataGranularityDescription: one row per delinquency_event_id
+    properties:
+      - name: delinquency_event_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the delinquency event
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: loan_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan type: PERSONAL, AUTO"
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: event_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Event type: MISSED_PAYMENT, DELINQUENCY_START, DELINQUENCY_CURED, CHARGE_OFF, REPOSSESSION, COLLECTION_ASSIGNED, RECOVERY"
+      - name: days_past_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Days past due at event
+      - name: delinquency_bucket
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Delinquency bucket: CURRENT, 30_DAY, 60_DAY, 90_DAY, 120_PLUS"
+      - name: amount_past_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Amount past due in cents
+        tags: [confidential, npi]
+      - name: total_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total balance at event in cents
+        tags: [confidential, npi]
+      - name: event_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Event date
+      - name: cured_date
+        logicalType: date
+        physicalType: DATE
+        description: Date cured (if applicable)
+      - name: collection_action
+        logicalType: string
+        physicalType: STRING
+        description: Collection action taken
+        tags: [confidential]
+      - name: collection_agency
+        logicalType: string
+        physicalType: STRING
+        description: Collection agency assigned
+      - name: repossession_date
+        logicalType: date
+        physicalType: DATE
+        description: Repossession date (for auto)
+      - name: repossession_agency
+        logicalType: string
+        physicalType: STRING
+        description: Repossession agency
+      - name: sale_date
+        logicalType: date
+        physicalType: DATE
+        description: Sale date (for repo)
+      - name: sale_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Sale amount in cents
+      - name: deficiency_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Deficiency balance in cents
+        tags: [confidential, npi]
+      - name: charge_off_date
+        logicalType: date
+        physicalType: DATE
+        description: Charge-off date
+      - name: charge_off_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Charge-off amount in cents
+        tags: [confidential, npi]
+      - name: recovery_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Recovery amount in cents
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system

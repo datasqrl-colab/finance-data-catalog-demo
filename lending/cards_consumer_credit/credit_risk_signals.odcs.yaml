@@ -1,0 +1,531 @@
+# Data contract (ODCS v3.2) for the tables of credit_risk_signals.sqrl. DataSQRL checks the
+# connector tables of credit_risk_signals-test.sqrl and credit_risk_signals-prod.sqrl against it
+# when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:credit_risk_signals"
+name: Credit Risk Signals
+version: 1.0.0
+status: active
+domain: lending
+team:
+  name: Cards & Consumer Credit
+  description: Lending line of business
+description:
+  purpose: >-
+    Silver-layer analytics datasets providing aggregated credit risk views across the consumer
+    lending portfolio. Includes customer-level credit exposure, payment behavior patterns,
+    delinquency migration analysis, and utilization metrics.
+customProperties:
+  - property: layer
+    value: silver
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA]
+  - property: upstream
+    value: credit_cards.sqrl, consumer_loans.sqrl
+schema:
+  - name: Customer_Credit_Exposure
+    physicalName: cards_consumer_credit.customer_credit_exposure
+    physicalType: table
+    logicalType: object
+    description: Customer-level credit exposure aggregation across all credit products.
+    dataGranularityDescription: one row per customer_id, snapshot_date combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: snapshot_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of exposure snapshot
+      - name: total_card_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total credit card limit in cents
+        tags: [confidential, npi]
+      - name: total_card_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total credit card balance in cents
+        tags: [confidential, npi]
+      - name: total_card_available_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total credit card available in cents
+        tags: [confidential, npi]
+      - name: credit_card_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of credit card accounts
+      - name: active_card_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of active credit cards
+      - name: total_personal_loan_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total personal loan balance in cents
+        tags: [confidential, npi]
+      - name: personal_loan_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of personal loans
+      - name: total_auto_loan_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total auto loan balance in cents
+        tags: [confidential, npi]
+      - name: auto_loan_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of auto loans
+      - name: total_mortgage_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total mortgage balance in cents
+        tags: [confidential, npi]
+      - name: mortgage_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of mortgages
+      - name: total_exposure_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total credit exposure in cents
+        tags: [confidential, npi]
+      - name: total_available_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total available credit in cents
+        tags: [confidential, npi]
+      - name: overall_utilization
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Overall credit utilization (0-100)
+      - name: revolving_utilization
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Revolving utilization (0-100)
+      - name: installment_ratio
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Installment balance to original ratio
+      - name: current_credit_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Most recent credit score
+        tags: [confidential, npi]
+      - name: credit_score_change_90d
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score change from 90 days ago
+      - name: max_delinquency_bucket
+        logicalType: string
+        physicalType: STRING
+        description: Highest delinquency bucket across all products
+      - name: delinquent_product_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of products currently delinquent
+      - name: total_past_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total past due amount in cents
+        tags: [confidential, npi]
+      - name: risk_tier
+        logicalType: string
+        physicalType: STRING
+        description: "Credit risk tier: PRIME, NEAR_PRIME, SUBPRIME, DEEP_SUBPRIME"
+      - name: risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Risk score (internal model, 0-100)
+        tags: [confidential]
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when exposure was computed
+  - name: Payment_Behavior
+    physicalName: cards_consumer_credit.payment_behavior
+    physicalType: table
+    logicalType: object
+    description: Payment behavior analytics across credit products.
+    dataGranularityDescription: one row per customer_id, analysis_month combination
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: analysis_month
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Analysis month (first day of month)
+      - name: total_payments_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total payments made in cents
+        tags: [confidential, npi]
+      - name: total_minimum_due_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total minimum payments due in cents
+        tags: [confidential, npi]
+      - name: total_statement_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total statement balances in cents
+        tags: [confidential, npi]
+      - name: payment_ratio
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Payment ratio (payments / minimum due)
+      - name: full_payment_ratio
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Full payment ratio (payments / statement balance)
+      - name: payment_behavior
+        logicalType: string
+        physicalType: STRING
+        description: "Payment behavior: FULL_PAYER, REVOLVER, MINIMUM_PAYER, TRANSACTOR, DELINQUENT"
+      - name: on_time_payment_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of on-time payments
+      - name: late_payment_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of late payments
+      - name: missed_payment_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of missed payments
+      - name: avg_days_to_payment
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: "Average days to payment (from due date, negative = early)"
+      - name: returned_payment_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of returned payments
+      - name: on_time_rate_3m
+        logicalType: number
+        physicalType: DECIMAL(5, 4)
+        description: Rolling 3-month on-time payment rate
+      - name: on_time_rate_6m
+        logicalType: number
+        physicalType: DECIMAL(5, 4)
+        description: Rolling 6-month on-time payment rate
+      - name: on_time_rate_12m
+        logicalType: number
+        physicalType: DECIMAL(5, 4)
+        description: Rolling 12-month on-time payment rate
+      - name: months_since_late
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Months since last late payment
+      - name: months_since_missed
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Months since last missed payment
+      - name: autopay_coverage
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: "Autopay coverage (% of products enrolled)"
+      - name: primary_payment_method
+        logicalType: string
+        physicalType: STRING
+        description: "Primary payment method: ACH, CHECK, DEBIT_CARD, ONLINE"
+      - name: payment_consistency_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Payment consistency score (0-100)
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when behavior was computed
+  - name: Delinquency_Rollforward
+    physicalName: cards_consumer_credit.delinquency_rollforward
+    physicalType: table
+    logicalType: object
+    description: Delinquency rollforward analysis tracking migration between buckets.
+    dataGranularityDescription: one row per loan_id, loan_type, from_month, to_month combination
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan or credit card account
+      - name: loan_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Product type: CREDIT_CARD, PERSONAL_LOAN, AUTO_LOAN, MORTGAGE"
+      - name: from_month
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Starting month of transition
+      - name: to_month
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Ending month of transition
+      - name: from_bucket
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Delinquency bucket at start of period
+      - name: to_bucket
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Delinquency bucket at end of period
+      - name: transition_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Transition type: CURE, ROLL, STAY, PAYOFF, CHARGE_OFF"
+      - name: from_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance at start of period in cents
+        tags: [confidential, npi]
+      - name: to_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Balance at end of period in cents
+        tags: [confidential, npi]
+      - name: payment_received_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Payment received during period in cents
+        tags: [confidential, npi]
+      - name: from_days_past_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days past due at start
+      - name: to_days_past_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days past due at end
+      - name: was_contacted
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether customer contacted during period
+      - name: arrangement_made
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether payment arrangement made
+      - name: promise_to_pay
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether promise to pay obtained
+      - name: credit_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score at transition
+        tags: [confidential, npi]
+      - name: months_on_books
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Months on books
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when rollforward was computed
+  - name: Credit_Utilization
+    physicalName: cards_consumer_credit.credit_utilization
+    physicalType: table
+    logicalType: object
+    description: Credit utilization tracking and trends.
+    dataGranularityDescription: one row per credit_card_account_id, utilization_date combination
+    properties:
+      - name: credit_card_account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to credit card account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: utilization_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of utilization calculation
+      - name: current_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current balance in cents
+        tags: [confidential, npi]
+      - name: credit_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Credit limit in cents
+        tags: [confidential, npi]
+      - name: utilization_rate
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Utilization rate (0-100)
+      - name: utilization_band
+        logicalType: string
+        physicalType: STRING
+        description: "Utilization band: LOW (0-10), MODERATE (10-30), ELEVATED (30-50), HIGH (50-75), VERY_HIGH (75-90), MAXED (90+)"
+      - name: avg_utilization_7d
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: "7-day average utilization"
+      - name: avg_utilization_30d
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: "30-day average utilization"
+      - name: avg_utilization_90d
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: "90-day average utilization"
+      - name: utilization_change_30d
+        logicalType: number
+        physicalType: DECIMAL(6, 2)
+        description: Utilization change from 30 days ago
+      - name: utilization_change_90d
+        logicalType: number
+        physicalType: DECIMAL(6, 2)
+        description: Utilization change from 90 days ago
+      - name: peak_utilization_30d
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Peak utilization in trailing 30 days
+      - name: days_over_90_pct
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: "Days at over 90% utilization in trailing 30 days"
+      - name: available_credit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Available credit in cents
+        tags: [confidential, npi]
+      - name: distance_to_limit_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Distance to limit in cents
+      - name: cash_advance_utilization
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Cash advance utilization
+      - name: trend_direction
+        logicalType: string
+        physicalType: STRING
+        description: "Utilization trend: INCREASING, STABLE, DECREASING"
+      - name: high_utilization_flag
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Utilization risk flag
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when utilization was computed

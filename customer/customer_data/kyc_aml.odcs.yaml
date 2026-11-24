@@ -1,0 +1,398 @@
+# Data contract (ODCS v3.2) for the tables of kyc_aml.sqrl. DataSQRL checks the connector tables of
+# kyc_aml-test.sqrl and kyc_aml-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:kyc_aml"
+name: KYC and AML Compliance Data
+version: 1.0.0
+status: active
+domain: customer
+team:
+  name: Customer Data
+  description: Customer line of business
+description:
+  purpose: >-
+    Know Your Customer (KYC) verification records and Anti-Money Laundering (AML) screening data
+    required for regulatory compliance. Includes identity verification results, sanctions and PEP
+    screening outcomes, and customer risk ratings used for ongoing monitoring and due diligence.
+    Data is a CDC stream from source system.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [BSA, USA PATRIOT Act, OFAC, GLBA, GDPR]
+schema:
+  - name: Kyc_Verification
+    physicalName: kyc_aml.kyc_verification
+    physicalType: topic
+    logicalType: object
+    description: KYC verification records documenting customer identity verification events.
+    dataGranularityDescription: one row per verification_id
+    properties:
+      - name: verification_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the verification event
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer being verified
+        tags: [pii]
+      - name: verification_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Type of verification: INITIAL, PERIODIC_REVIEW, ENHANCED_DUE_DILIGENCE, TRIGGER_EVENT"
+      - name: verification_method
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Verification method: DOCUMENTARY, NON_DOCUMENTARY, ELECTRONIC, IN_PERSON"
+      - name: document_type
+        logicalType: string
+        physicalType: STRING
+        description: "Document type used: PASSPORT, DRIVERS_LICENSE, STATE_ID, UTILITY_BILL, BANK_STATEMENT"
+      - name: document_number
+        logicalType: string
+        physicalType: STRING
+        description: Document number
+        tags: [spii, tokenize]
+      - name: document_issuer
+        logicalType: string
+        physicalType: STRING
+        description: Document issuing country or state
+      - name: document_expiration_date
+        logicalType: date
+        physicalType: DATE
+        description: Document expiration date
+      - name: verification_result
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Verification result: PASS, FAIL, PENDING, REVIEW_REQUIRED"
+      - name: verification_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Verification score from identity provider (0-100)
+      - name: verified_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Date and time verification was performed
+      - name: verification_provider
+        logicalType: string
+        physicalType: STRING
+        description: Identity verification provider used
+      - name: provider_reference_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference ID from verification provider
+      - name: verified_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee ID who performed or approved verification
+        tags: [pii]
+      - name: notes
+        logicalType: string
+        physicalType: STRING
+        description: Additional notes or comments
+        tags: [confidential]
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Sanctions_Screening
+    physicalName: kyc_aml.sanctions_screening
+    physicalType: topic
+    logicalType: object
+    description: Sanctions screening results against OFAC and other watchlists.
+    dataGranularityDescription: one row per screening_id
+    properties:
+      - name: screening_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the screening event
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer being screened
+        tags: [pii]
+      - name: screening_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Screening type: ONBOARDING, PERIODIC, REAL_TIME, AD_HOC"
+      - name: lists_screened
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Lists screened against: OFAC_SDN, OFAC_CONSOLIDATED, UN_SANCTIONS, EU_SANCTIONS, PEP, ADVERSE_MEDIA"
+      - name: screening_result
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Screening result: CLEAR, POTENTIAL_MATCH, CONFIRMED_MATCH"
+      - name: match_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of potential matches found
+      - name: highest_match_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Match score for highest-scoring hit (0-100)
+      - name: disposition
+        logicalType: string
+        physicalType: STRING
+        description: "Disposition after review: FALSE_POSITIVE, TRUE_MATCH, PENDING_REVIEW"
+      - name: screened_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Date and time screening was performed
+      - name: screening_provider
+        logicalType: string
+        physicalType: STRING
+        description: Screening vendor or system used
+      - name: provider_reference_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference ID from screening provider
+      - name: reviewed_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee ID who reviewed screening results
+        tags: [pii]
+      - name: reviewed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time review was completed
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Pep_Screening
+    physicalName: kyc_aml.pep_screening
+    physicalType: topic
+    logicalType: object
+    description: Politically Exposed Person (PEP) screening and monitoring results.
+    dataGranularityDescription: one row per screening_id
+    properties:
+      - name: screening_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the PEP screening event
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer being screened
+        tags: [pii]
+      - name: screening_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Screening type: ONBOARDING, PERIODIC, TRIGGER_EVENT"
+      - name: is_pep
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether customer is identified as a PEP
+      - name: pep_category
+        logicalType: string
+        physicalType: STRING
+        description: "PEP category: FOREIGN_OFFICIAL, DOMESTIC_OFFICIAL, INTERNATIONAL_ORG, STATE_OWNED_ENTERPRISE, FAMILY_MEMBER, CLOSE_ASSOCIATE"
+      - name: pep_level
+        logicalType: string
+        physicalType: STRING
+        description: "Level of PEP: SENIOR, MID_LEVEL, JUNIOR"
+      - name: pep_country
+        logicalType: string
+        physicalType: STRING
+        description: Country associated with PEP status
+      - name: pep_position
+        logicalType: string
+        physicalType: STRING
+        description: Position or role that qualifies as PEP
+        tags: [pii]
+      - name: identified_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date PEP status was identified
+      - name: pep_ended_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date PEP status ended (if applicable)
+      - name: edd_required
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Enhanced due diligence required flag
+      - name: pep_source
+        logicalType: string
+        physicalType: STRING
+        description: Source of PEP identification
+      - name: provider_reference_id
+        logicalType: string
+        physicalType: STRING
+        description: Screening provider reference ID
+      - name: screened_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Date and time screening was performed
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Customer_Risk_Rating
+    physicalName: kyc_aml.customer_risk_rating
+    physicalType: topic
+    logicalType: object
+    description: Customer risk ratings for AML and compliance monitoring purposes.
+    dataGranularityDescription: one row per customer_id, effective_from combination (SCD Type 2)
+    properties:
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: risk_rating
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Overall risk rating: LOW, MEDIUM, HIGH, PROHIBITED"
+      - name: risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Numeric risk score (0-100)
+      - name: geographic_risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Geographic risk component score (0-100)
+      - name: product_risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Product risk component score (0-100)
+      - name: customer_type_risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Customer type risk component score (0-100)
+      - name: transaction_risk_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Transaction behavior risk component score (0-100)
+      - name: model_version
+        logicalType: string
+        physicalType: STRING
+        description: Risk rating model version used
+      - name: reason_codes
+        logicalType: string
+        physicalType: STRING
+        description: Reason codes contributing to rating
+        tags: [confidential]
+      - name: effective_from
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date this rating became effective
+      - name: effective_to
+        logicalType: date
+        physicalType: DATE
+        description: Date this rating was superseded
+      - name: is_current
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether this is the current active rating
+      - name: is_override
+        logicalType: boolean
+        physicalType: BOOLEAN
+        required: true
+        description: Whether rating was manually overridden
+      - name: override_approved_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee ID who approved override
+        tags: [pii]
+      - name: override_reason
+        logicalType: string
+        physicalType: STRING
+        description: Reason for manual override
+        tags: [confidential]
+      - name: next_review_date
+        logicalType: date
+        physicalType: DATE
+        description: Next scheduled review date
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system

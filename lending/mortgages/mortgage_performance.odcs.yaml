@@ -1,0 +1,436 @@
+# Data contract (ODCS v3.2) for the tables of mortgage_performance.sqrl. DataSQRL checks the
+# connector tables of mortgage_performance-test.sqrl and mortgage_performance-prod.sqrl against it
+# when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:mortgage_performance"
+name: Mortgage Performance
+version: 1.0.0
+status: active
+domain: lending
+team:
+  name: Mortgages
+  description: Lending line of business
+description:
+  purpose: >-
+    Silver-layer analytics datasets for mortgage portfolio performance monitoring including monthly
+    loan-level performance snapshots, prepayment signal detection, and vintage cohort analysis.
+    Supports portfolio management, investor reporting, and risk assessment.
+customProperties:
+  - property: layer
+    value: silver
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA]
+  - property: upstream
+    value: mortgage_originations.sqrl, mortgage_servicing.sqrl
+schema:
+  - name: Loan_Performance_Monthly
+    physicalName: mortgages.loan_performance_monthly
+    physicalType: table
+    logicalType: object
+    description: Monthly loan-level performance snapshot for portfolio monitoring.
+    dataGranularityDescription: one row per loan_id, reporting_month combination
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: reporting_month
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Reporting month (first day of month)
+      - name: loan_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan status as of month end: CURRENT, DQ_30, DQ_60, DQ_90, DQ_120_PLUS, FORECLOSURE, REO, PAID_OFF, MODIFIED"
+      - name: days_past_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Days past due as of month end
+      - name: current_upb_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current principal balance in cents
+        tags: [confidential, npi]
+      - name: scheduled_upb_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Scheduled principal balance in cents
+        tags: [confidential, npi]
+      - name: principal_paid_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Principal paid down this month in cents
+        tags: [confidential, npi]
+      - name: interest_paid_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Interest paid this month in cents
+        tags: [confidential, npi]
+      - name: prepaid_principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Prepaid principal this month in cents
+        tags: [confidential, npi]
+      - name: curtailment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Curtailment amount this month in cents
+      - name: current_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        required: true
+        description: Current interest rate
+      - name: current_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current monthly payment in cents
+        tags: [confidential, npi]
+      - name: payments_made
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of payments made this month
+      - name: lifetime_payments_made
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Total payments made lifetime
+      - name: lifetime_payments_due
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Total payments scheduled lifetime
+      - name: current_credit_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Current credit score (if refreshed)
+        tags: [confidential, npi]
+      - name: current_ltv
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Current LTV based on AVM
+      - name: current_property_value_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current property value in cents
+        tags: [confidential, npi]
+      - name: is_modified
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether loan was modified
+      - name: modification_date
+        logicalType: date
+        physicalType: DATE
+        description: Modification effective date
+      - name: in_forbearance
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether in forbearance
+      - name: in_foreclosure
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether in foreclosure
+      - name: loan_age_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Loan age in months
+      - name: remaining_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Remaining term in months
+      - name: months_to_maturity
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Months to maturity
+      - name: servicer_id
+        logicalType: string
+        physicalType: STRING
+        description: Servicer ID
+      - name: investor_id
+        logicalType: string
+        physicalType: STRING
+        description: Investor ID
+      - name: pool_id
+        logicalType: string
+        physicalType: STRING
+        description: Pool ID
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when snapshot was computed
+  - name: Prepayment_Signal
+    physicalName: mortgages.prepayment_signal
+    physicalType: table
+    logicalType: object
+    description: Prepayment risk signals and prediction features.
+    dataGranularityDescription: one row per loan_id, signal_date combination
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: signal_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date of signal calculation
+      - name: prepayment_probability
+        logicalType: number
+        logicalTypeOptions:
+          format: f64
+        physicalType: DOUBLE
+        description: Overall prepayment probability (0-1)
+      - name: prepayment_risk_tier
+        logicalType: string
+        physicalType: STRING
+        description: "Prepayment risk tier: LOW, MEDIUM, HIGH, VERY_HIGH"
+      - name: rate_incentive_bps
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Rate incentive (market rate - loan rate) in basis points
+      - name: market_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Current market rate for similar loans
+      - name: loan_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        required: true
+        description: Loan current rate
+      - name: burnout_factor
+        logicalType: number
+        logicalTypeOptions:
+          format: f64
+        physicalType: DOUBLE
+        description: "Burnout factor (0-1, higher = more burnout)"
+      - name: seasoning_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Seasoning in months
+      - name: current_ltv
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Current LTV
+      - name: hpa_since_origination
+        logicalType: number
+        physicalType: DECIMAL(6, 2)
+        description: Home price appreciation since origination
+      - name: local_unemployment_rate
+        logicalType: number
+        physicalType: DECIMAL(4, 2)
+        description: Local unemployment rate
+      - name: credit_score_change
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score change since origination
+      - name: months_since_refi
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Months since last refinance
+      - name: is_assumable
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether loan is assumable
+      - name: has_prepay_penalty
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether loan has prepayment penalty
+      - name: penalty_months_remaining
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Prepayment penalty months remaining
+      - name: primary_driver
+        logicalType: string
+        physicalType: STRING
+        description: "Primary driver: RATE, EQUITY, RELOCATION, CASHOUT"
+      - name: model_version
+        logicalType: string
+        physicalType: STRING
+        description: Model version used
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when signal was computed
+  - name: Vintage_Performance
+    physicalName: mortgages.vintage_performance
+    physicalType: table
+    logicalType: object
+    description: Vintage cohort performance analysis for portfolio comparison.
+    dataGranularityDescription: one row per vintage_month, age_months, loan_program, property_state combination
+    properties:
+      - name: vintage_month
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Origination vintage (month loans were funded)
+      - name: age_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Age in months since origination
+      - name: loan_program
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO"
+      - name: property_state
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Property state
+      - name: loan_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Number of loans in cohort
+      - name: original_upb_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Original UPB in cents
+        tags: [confidential, npi]
+      - name: current_upb_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current UPB in cents
+        tags: [confidential, npi]
+      - name: upb_remaining_pct
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: UPB remaining percentage
+      - name: cumulative_default_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Cumulative default rate
+      - name: cumulative_prepay_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Cumulative prepayment rate
+      - name: current_dq_30_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Current 30+ DPD rate
+      - name: current_dq_60_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Current 60+ DPD rate
+      - name: current_dq_90_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Current 90+ DPD rate
+      - name: smm
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Single month mortality (SMM)
+      - name: cpr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Conditional prepayment rate (CPR)
+      - name: cdr
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Conditional default rate (CDR)
+      - name: loss_severity
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Loss severity rate
+      - name: cumulative_loss_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Cumulative loss in cents
+        tags: [confidential]
+      - name: avg_original_credit_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Average original credit score
+        tags: [confidential]
+      - name: avg_original_ltv
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Average original LTV
+      - name: avg_original_dti
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Average original DTI
+        tags: [confidential]
+      - name: avg_note_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: Average note rate
+      - name: first_time_buyer_pct
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Percentage first-time homebuyers
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when vintage analysis was computed

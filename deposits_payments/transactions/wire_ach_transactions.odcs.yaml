@@ -1,0 +1,457 @@
+# Data contract (ODCS v3.2) for the tables of wire_ach_transactions.sqrl. DataSQRL checks the
+# connector tables of wire_ach_transactions-test.sqrl and wire_ach_transactions-prod.sqrl against it
+# when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:wire_ach_transactions"
+name: Wire and ACH Transactions
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Transactions
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Electronic funds transfer data including ACH transactions, domestic and international wire
+    transfers, and payment returns. Supports regulatory reporting requirements and fraud monitoring
+    for high-value transfers.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, BSA, OFAC, Regulation E]
+schema:
+  - name: Ach_Transaction
+    physicalName: wire_ach_transactions.ach_transaction
+    physicalType: topic
+    logicalType: object
+    description: ACH transaction records for direct deposits, bill payments, and transfers.
+    dataGranularityDescription: one row per ach_transaction_id
+    properties:
+      - name: ach_transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the ACH transaction
+      - name: transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to posted transaction
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: direction
+        logicalType: string
+        physicalType: STRING
+        description: "Direction: INBOUND, OUTBOUND"
+      - name: ach_type
+        logicalType: string
+        physicalType: STRING
+        description: "ACH transaction type: CREDIT, DEBIT"
+      - name: sec_code
+        logicalType: string
+        physicalType: STRING
+        description: "SEC code: PPD, CCD, WEB, TEL, etc."
+      - name: amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Transaction amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: transaction_status
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction status: ORIGINATED, PENDING, POSTED, RETURNED, REJECTED"
+      - name: odfi_routing_number
+        logicalType: string
+        physicalType: STRING
+        description: Originating DFI routing number
+      - name: odfi_name
+        logicalType: string
+        physicalType: STRING
+        description: Originating DFI name
+      - name: rdfi_routing_number
+        logicalType: string
+        physicalType: STRING
+        description: Receiving DFI routing number
+      - name: rdfi_name
+        logicalType: string
+        physicalType: STRING
+        description: Receiving DFI name
+      - name: company_id
+        logicalType: string
+        physicalType: STRING
+        description: Company/batch ID
+      - name: company_name
+        logicalType: string
+        physicalType: STRING
+        description: Company name
+        tags: [pii]
+      - name: entry_description
+        logicalType: string
+        physicalType: STRING
+        description: Company entry description
+      - name: individual_name
+        logicalType: string
+        physicalType: STRING
+        description: Individual/account name
+        tags: [encrypt, pii]
+      - name: individual_id
+        logicalType: string
+        physicalType: STRING
+        description: Individual identification number
+        tags: [pii, tokenize]
+      - name: trace_number
+        logicalType: string
+        physicalType: STRING
+        description: Trace number
+      - name: addenda
+        logicalType: string
+        physicalType: STRING
+        description: Addenda records (JSON)
+        tags: [pii]
+      - name: effective_date
+        logicalType: date
+        physicalType: DATE
+        description: Effective entry date
+      - name: settlement_date
+        logicalType: date
+        physicalType: DATE
+        description: Settlement date
+      - name: processed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time transaction was processed
+      - name: is_same_day
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether transaction is same-day ACH
+      - name: batch_number
+        logicalType: string
+        physicalType: STRING
+        description: Batch reference number
+      - name: file_id
+        logicalType: string
+        physicalType: STRING
+        description: File ID from ACH file
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Wire_Transfer
+    physicalName: wire_ach_transactions.wire_transfer
+    physicalType: topic
+    logicalType: object
+    description: Wire transfer records for domestic and international transfers.
+    dataGranularityDescription: one row per wire_transfer_id
+    properties:
+      - name: wire_transfer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the wire transfer
+      - name: transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to posted transaction
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: direction
+        logicalType: string
+        physicalType: STRING
+        description: "Direction: INBOUND, OUTBOUND"
+      - name: wire_type
+        logicalType: string
+        physicalType: STRING
+        description: "Wire type: DOMESTIC, INTERNATIONAL"
+      - name: amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Transfer amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: fee_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Fee amount in cents
+      - name: total_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Total amount debited/credited in cents
+        tags: [confidential, npi]
+      - name: wire_status
+        logicalType: string
+        physicalType: STRING
+        description: "Wire status: INITIATED, PENDING, SENT, RECEIVED, COMPLETED, RETURNED, CANCELLED"
+      - name: originator_name
+        logicalType: string
+        physicalType: STRING
+        description: Originator name
+        tags: [encrypt, pii]
+      - name: originator_address
+        logicalType: string
+        physicalType: STRING
+        description: Originator address
+        tags: [encrypt, pii]
+      - name: originator_account
+        logicalType: string
+        physicalType: STRING
+        description: Originator account number
+        tags: [mask, npi]
+      - name: originator_bank_name
+        logicalType: string
+        physicalType: STRING
+        description: Originator bank name
+      - name: originator_bank_id
+        logicalType: string
+        physicalType: STRING
+        description: Originator bank routing/SWIFT
+        tags: [bsa]
+      - name: beneficiary_name
+        logicalType: string
+        physicalType: STRING
+        description: Beneficiary name
+        tags: [encrypt, pii]
+      - name: beneficiary_address
+        logicalType: string
+        physicalType: STRING
+        description: Beneficiary address
+        tags: [encrypt, pii]
+      - name: beneficiary_account
+        logicalType: string
+        physicalType: STRING
+        description: Beneficiary account number
+        tags: [mask, npi]
+      - name: beneficiary_bank_name
+        logicalType: string
+        physicalType: STRING
+        description: Beneficiary bank name
+      - name: beneficiary_bank_id
+        logicalType: string
+        physicalType: STRING
+        description: Beneficiary bank routing/SWIFT
+        tags: [bsa]
+      - name: beneficiary_country
+        logicalType: string
+        physicalType: STRING
+        description: Beneficiary bank country
+      - name: intermediary_bank_name
+        logicalType: string
+        physicalType: STRING
+        description: Intermediary bank name (for international)
+      - name: intermediary_bank_id
+        logicalType: string
+        physicalType: STRING
+        description: Intermediary bank SWIFT
+      - name: purpose
+        logicalType: string
+        physicalType: STRING
+        description: Purpose of wire transfer
+        tags: [confidential]
+      - name: reference_for_beneficiary
+        logicalType: string
+        physicalType: STRING
+        description: Reference for beneficiary
+      - name: fed_reference
+        logicalType: string
+        physicalType: STRING
+        description: OMAD/IMAD reference number
+      - name: swift_reference
+        logicalType: string
+        physicalType: STRING
+        description: SWIFT reference (for international)
+      - name: ofac_status
+        logicalType: string
+        physicalType: STRING
+        description: "OFAC screening result: CLEAR, HOLD, BLOCKED"
+      - name: initiated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time wire was initiated
+      - name: sent_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time wire was sent
+      - name: completed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time wire was completed
+      - name: initiated_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee or system initiating wire
+        tags: [pii]
+      - name: approval_status
+        logicalType: string
+        physicalType: STRING
+        description: "Approval status: PENDING, APPROVED, REJECTED"
+      - name: approved_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee approving wire
+        tags: [pii]
+      - name: approved_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time of approval
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Payment_Return
+    physicalName: wire_ach_transactions.payment_return
+    physicalType: topic
+    logicalType: object
+    description: Payment return records for ACH returns and wire rejects.
+    dataGranularityDescription: one row per return_id
+    properties:
+      - name: return_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the return
+      - name: ach_transaction_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to original ACH transaction
+      - name: wire_transfer_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to original wire transfer
+      - name: original_transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to original transaction
+      - name: return_transaction_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to return transaction
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: return_type
+        logicalType: string
+        physicalType: STRING
+        description: "Return type: ACH_RETURN, ACH_NOC, WIRE_RETURN, WIRE_REJECT"
+      - name: return_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Return amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: return_status
+        logicalType: string
+        physicalType: STRING
+        description: "Return status: PENDING, PROCESSED, DISPUTED"
+      - name: return_reason_code
+        logicalType: string
+        physicalType: STRING
+        description: Return reason code (R01-R85 for ACH)
+      - name: return_reason_description
+        logicalType: string
+        physicalType: STRING
+        description: Return reason description
+        tags: [confidential]
+      - name: original_effective_date
+        logicalType: date
+        physicalType: DATE
+        description: Original effective date
+      - name: return_effective_date
+        logicalType: date
+        physicalType: DATE
+        description: Return effective date
+      - name: processed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time return was processed
+      - name: original_trace_number
+        logicalType: string
+        physicalType: STRING
+        description: Trace number of original transaction
+      - name: return_trace_number
+        logicalType: string
+        physicalType: STRING
+        description: Trace number of return
+      - name: addenda
+        logicalType: string
+        physicalType: STRING
+        description: Addenda information (JSON)
+      - name: is_dishonored
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether return was dishonored
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system

@@ -1,0 +1,608 @@
+# Data contract (ODCS v3.2) for the tables of mortgage_originations.sqrl. DataSQRL checks the
+# connector tables of mortgage_originations-test.sqrl and mortgage_originations-prod.sqrl against it
+# when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:mortgage_originations"
+name: Mortgage Originations
+version: 1.0.0
+status: active
+domain: lending
+team:
+  name: Mortgages
+  description: Lending line of business
+description:
+  purpose: >-
+    Mortgage loan application and origination data including applications, funded loans, property
+    collateral information, and borrower details. Supports the full mortgage origination lifecycle
+    from application through funding and boarding to servicing. Data is a CDC stream from source
+    system.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, HMDA, RESPA, TILA, ECOA, Fair Housing Act]
+schema:
+  - name: Mortgage_Application
+    physicalName: mortgage_originations.mortgage_application
+    physicalType: topic
+    logicalType: object
+    description: Mortgage loan application records from initial submission through decision.
+    dataGranularityDescription: one row per application_id
+    properties:
+      - name: application_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the application
+      - name: primary_borrower_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to primary borrower
+        tags: [pii]
+      - name: application_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Application type: PURCHASE, REFINANCE, CASH_OUT_REFINANCE, HOME_EQUITY"
+      - name: loan_purpose
+        logicalType: string
+        physicalType: STRING
+        description: "Loan purpose: PRIMARY_RESIDENCE, SECOND_HOME, INVESTMENT"
+      - name: property_type
+        logicalType: string
+        physicalType: STRING
+        description: "Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED"
+      - name: number_of_units
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of units (for multi-family)
+      - name: requested_loan_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Requested loan amount in cents
+        tags: [confidential, npi]
+      - name: estimated_property_value_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Estimated property value in cents
+        tags: [confidential, npi]
+      - name: ltv_ratio
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Loan-to-value ratio at application
+      - name: cltv_ratio
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Combined loan-to-value ratio
+      - name: requested_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Requested loan term in months
+      - name: requested_rate_type
+        logicalType: string
+        physicalType: STRING
+        description: "Requested rate type: FIXED, ARM"
+      - name: loan_program
+        logicalType: string
+        physicalType: STRING
+        description: "Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO"
+      - name: application_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Application status: SUBMITTED, IN_REVIEW, APPROVED, CONDITIONALLY_APPROVED, DENIED, WITHDRAWN, FUNDED"
+      - name: submitted_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Date application was submitted
+      - name: received_date
+        logicalType: date
+        physicalType: DATE
+        description: Date application was received
+      - name: decision_date
+        logicalType: date
+        physicalType: DATE
+        description: Date decision was made
+      - name: decision_type
+        logicalType: string
+        physicalType: STRING
+        description: "Decision type: APPROVED, DENIED, COUNTER_OFFER"
+      - name: denial_reasons
+        logicalType: string
+        physicalType: STRING
+        description: Denial reason codes (if denied)
+        tags: [confidential]
+      - name: funded_date
+        logicalType: date
+        physicalType: DATE
+        description: Date application was funded
+      - name: loan_officer_id
+        logicalType: string
+        physicalType: STRING
+        description: Loan officer ID
+        tags: [pii]
+      - name: loan_officer_name
+        logicalType: string
+        physicalType: STRING
+        description: Loan officer name
+        tags: [pii]
+      - name: branch_id
+        logicalType: string
+        physicalType: STRING
+        description: Branch ID
+      - name: origination_channel
+        logicalType: string
+        physicalType: STRING
+        description: "Channel: RETAIL, WHOLESALE, CORRESPONDENT, DIRECT"
+      - name: hmda_action_taken
+        logicalType: string
+        physicalType: STRING
+        description: HMDA action taken code
+      - name: hmda_preapproval
+        logicalType: string
+        physicalType: STRING
+        description: HMDA preapproval flag
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Mortgage_Loan
+    physicalName: mortgage_originations.mortgage_loan
+    physicalType: topic
+    logicalType: object
+    description: Funded mortgage loan records with final terms and conditions.
+    dataGranularityDescription: one row per loan_id
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the loan
+      - name: application_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to originating application
+      - name: primary_borrower_customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to primary borrower
+        tags: [pii]
+      - name: loan_number
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Loan number displayed to customer
+        tags: [mask, npi]
+      - name: loan_status
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Loan status: ACTIVE, PAID_OFF, FORECLOSURE, REO, TRANSFERRED, CHARGED_OFF"
+      - name: original_principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Original principal balance in cents
+        tags: [confidential, npi]
+      - name: current_principal_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Current principal balance in cents
+        tags: [confidential, npi]
+      - name: interest_rate
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        required: true
+        description: Interest rate (annual percentage)
+        tags: [confidential]
+      - name: rate_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Rate type: FIXED, ARM"
+      - name: arm_index
+        logicalType: string
+        physicalType: STRING
+        description: "ARM index (if applicable): LIBOR, SOFR, TREASURY, PRIME"
+      - name: arm_margin
+        logicalType: number
+        physicalType: DECIMAL(6, 4)
+        description: ARM margin (if applicable)
+      - name: arm_initial_period_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: ARM initial fixed period in months
+      - name: arm_adjustment_frequency_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: ARM adjustment frequency in months
+      - name: arm_periodic_cap
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: ARM rate cap per adjustment
+      - name: arm_lifetime_cap
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: ARM lifetime rate cap
+      - name: original_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        required: true
+        description: Original loan term in months
+      - name: remaining_term_months
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Remaining term in months
+      - name: monthly_pi_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Monthly principal and interest payment in cents
+        tags: [confidential, npi]
+      - name: monthly_escrow_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Monthly escrow payment in cents
+        tags: [confidential, npi]
+      - name: total_monthly_payment_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Total monthly payment in cents
+        tags: [confidential, npi]
+      - name: loan_program
+        logicalType: string
+        physicalType: STRING
+        description: "Loan program: CONVENTIONAL, FHA, VA, USDA, JUMBO"
+      - name: lien_position
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Lien position: FIRST, SECOND, HELOC"
+      - name: loan_purpose
+        logicalType: string
+        physicalType: STRING
+        description: "Loan purpose: PURCHASE, REFINANCE, CASH_OUT, HOME_EQUITY"
+      - name: occupancy_type
+        logicalType: string
+        physicalType: STRING
+        description: "Occupancy type: PRIMARY, SECOND_HOME, INVESTMENT"
+      - name: funding_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Date loan was funded
+      - name: first_payment_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: First payment due date
+      - name: maturity_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Maturity date
+      - name: next_payment_due_date
+        logicalType: date
+        physicalType: DATE
+        description: Next payment due date
+      - name: paid_off_date
+        logicalType: date
+        physicalType: DATE
+        description: Date loan was paid off
+      - name: property_id
+        logicalType: string
+        physicalType: STRING
+        description: Property ID reference
+      - name: escrow_account_id
+        logicalType: string
+        physicalType: STRING
+        description: Escrow account ID
+        tags: [npi]
+      - name: servicer_id
+        logicalType: string
+        physicalType: STRING
+        description: Servicer ID
+      - name: investor_id
+        logicalType: string
+        physicalType: STRING
+        description: Investor ID (if sold)
+      - name: pool_id
+        logicalType: string
+        physicalType: STRING
+        description: Pool ID (if securitized)
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Property_Collateral
+    physicalName: mortgage_originations.property_collateral
+    physicalType: topic
+    logicalType: object
+    description: Property collateral information for mortgage loans.
+    dataGranularityDescription: one row per property_id
+    properties:
+      - name: property_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the property
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: property_address
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Property street address
+        tags: [encrypt, pii]
+      - name: property_city
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Property city
+        tags: [pii]
+      - name: property_state
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Property state
+      - name: property_zip
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Property zip code
+        tags: [pii]
+      - name: property_county
+        logicalType: string
+        physicalType: STRING
+        description: Property county
+      - name: property_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Property type: SINGLE_FAMILY, CONDO, TOWNHOUSE, MULTI_FAMILY, MANUFACTURED"
+      - name: number_of_units
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of units
+      - name: year_built
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Year property was built
+      - name: square_footage
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Square footage
+      - name: lot_size_sqft
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Lot size in square feet
+      - name: bedrooms
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of bedrooms
+      - name: bathrooms
+        logicalType: number
+        physicalType: DECIMAL(3, 1)
+        description: Number of bathrooms
+      - name: original_appraised_value_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        required: true
+        description: Original appraised value in cents
+        tags: [confidential, npi]
+      - name: original_appraisal_date
+        logicalType: date
+        physicalType: DATE
+        required: true
+        description: Original appraisal date
+      - name: current_estimated_value_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Current estimated value in cents
+        tags: [confidential, npi]
+      - name: current_value_date
+        logicalType: date
+        physicalType: DATE
+        description: Current value as-of date
+      - name: value_source
+        logicalType: string
+        physicalType: STRING
+        description: "Value source: APPRAISAL, AVM, BPO"
+      - name: parcel_number
+        logicalType: string
+        physicalType: STRING
+        description: APN/parcel number
+      - name: flood_zone
+        logicalType: string
+        physicalType: STRING
+        description: Flood zone designation
+      - name: flood_insurance_required
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether flood insurance is required
+      - name: census_tract
+        logicalType: string
+        physicalType: STRING
+        description: Census tract for HMDA
+      - name: msa_code
+        logicalType: string
+        physicalType: STRING
+        description: MSA code for HMDA
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system
+  - name: Mortgage_Borrower
+    physicalName: mortgage_originations.mortgage_borrower
+    physicalType: topic
+    logicalType: object
+    description: Borrower information for mortgage loans (may have multiple per loan).
+    dataGranularityDescription: one row per loan_id, customer_id combination
+    properties:
+      - name: loan_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to loan
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: borrower_type
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: "Borrower type: PRIMARY, CO_BORROWER, GUARANTOR"
+      - name: ownership_percentage
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Ownership percentage
+      - name: credit_score_at_origination
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Credit score at origination
+        tags: [confidential, npi]
+      - name: credit_score_source
+        logicalType: string
+        physicalType: STRING
+        description: "Credit score source: FICO, VANTAGE"
+      - name: monthly_income_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Monthly income at origination in cents
+        tags: [confidential, npi]
+      - name: monthly_debt_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Monthly debt at origination in cents
+        tags: [confidential, npi]
+      - name: dti_ratio
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Debt-to-income ratio at origination
+        tags: [confidential, npi]
+      - name: front_end_dti
+        logicalType: number
+        physicalType: DECIMAL(5, 2)
+        description: Front-end DTI ratio
+      - name: employment_status
+        logicalType: string
+        physicalType: STRING
+        description: "Employment status at origination: EMPLOYED, SELF_EMPLOYED, RETIRED, OTHER"
+      - name: employer_name
+        logicalType: string
+        physicalType: STRING
+        description: Employer name at origination
+        tags: [pii]
+      - name: years_employed
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Years at current employer
+      - name: first_time_homebuyer
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: First-time homebuyer flag (HMDA)
+      - name: citizenship_status
+        logicalType: string
+        physicalType: STRING
+        description: "Citizenship status: US_CITIZEN, PERMANENT_RESIDENT, NON_RESIDENT"
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when record was last updated in source system

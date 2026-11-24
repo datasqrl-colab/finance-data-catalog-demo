@@ -1,0 +1,468 @@
+# Data contract (ODCS v3.2) for the tables of enriched_transactions.sqrl. DataSQRL checks the
+# connector tables of enriched_transactions-test.sqrl and enriched_transactions-prod.sqrl against it
+# when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:enriched_transactions"
+name: Enriched Transactions
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Transactions
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Silver-layer transaction data combining and enriching information from multiple bronze sources
+    to create unified transaction views with merchant enrichment, categorization, and recurring
+    payment detection.
+customProperties:
+  - property: layer
+    value: silver
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA]
+  - property: upstream
+    value: core_transactions.sqrl (Account_Transaction), card_transactions.sqrl, wire_ach_transactions.sqrl
+schema:
+  - name: Unified_Transaction
+    physicalName: transactions.unified_transaction
+    physicalType: table
+    logicalType: object
+    description: Unified transaction view combining all transaction types with standardized attributes.
+    dataGranularityDescription: one row per transaction_id
+    properties:
+      - name: transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the transaction
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to customer
+        tags: [pii]
+      - name: transaction_source
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction source: CORE, CARD, ACH, WIRE"
+      - name: source_transaction_id
+        logicalType: string
+        physicalType: STRING
+        description: Original source system transaction ID
+      - name: transaction_type
+        logicalType: string
+        physicalType: STRING
+        description: Standardized transaction type
+      - name: debit_credit
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction category: DEBIT, CREDIT"
+      - name: amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Transaction amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: transaction_status
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction status: PENDING, POSTED, REVERSED, RETURNED"
+      - name: transaction_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time transaction occurred
+      - name: posted_date
+        logicalType: date
+        physicalType: DATE
+        description: Date transaction was posted
+      - name: original_description
+        logicalType: string
+        physicalType: STRING
+        description: Original description
+        tags: [pii]
+      - name: clean_description
+        logicalType: string
+        physicalType: STRING
+        description: Cleaned/standardized description
+        tags: [pii]
+      - name: channel
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, POS, CHECK"
+      - name: merchant_id
+        logicalType: string
+        physicalType: STRING
+        description: Merchant or counterparty ID (enriched)
+      - name: merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Merchant or counterparty name (enriched)
+        tags: [pii]
+      - name: mcc_code
+        logicalType: string
+        physicalType: STRING
+        description: Merchant category code
+      - name: category_id
+        logicalType: string
+        physicalType: STRING
+        description: Transaction category ID
+      - name: category_name
+        logicalType: string
+        physicalType: STRING
+        description: Transaction category name
+      - name: subcategory_name
+        logicalType: string
+        physicalType: STRING
+        description: Transaction subcategory name
+      - name: is_recurring
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether transaction is identified as recurring
+      - name: recurring_payment_id
+        logicalType: string
+        physicalType: STRING
+        description: Recurring payment ID if applicable
+      - name: location
+        logicalType: string
+        physicalType: STRING
+        description: Geographic location of transaction
+        tags: [pii]
+      - name: city
+        logicalType: string
+        physicalType: STRING
+        description: City of transaction
+        tags: [pii]
+      - name: state
+        logicalType: string
+        physicalType: STRING
+        description: State/province of transaction
+      - name: country
+        logicalType: string
+        physicalType: STRING
+        description: Country of transaction
+      - name: running_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Running balance after transaction in cents
+        tags: [confidential, npi]
+      - name: is_disputed
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether transaction has been disputed
+      - name: is_suspicious
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether transaction is potentially fraudulent
+      - name: fraud_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Fraud score (0-100)
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when enrichment was computed
+  - name: Merchant_Enrichment
+    physicalName: transactions.merchant_enrichment
+    physicalType: table
+    logicalType: object
+    description: Merchant enrichment data providing standardized merchant information.
+    dataGranularityDescription: one row per merchant_id
+    properties:
+      - name: merchant_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the merchant
+      - name: raw_merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Raw merchant name as received
+      - name: clean_merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Cleaned/standardized merchant name
+      - name: parent_company
+        logicalType: string
+        physicalType: STRING
+        description: Parent company name
+      - name: logo_url
+        logicalType: string
+        physicalType: STRING
+        description: Merchant logo URL
+      - name: website
+        logicalType: string
+        physicalType: STRING
+        description: Merchant website
+      - name: primary_mcc
+        logicalType: string
+        physicalType: STRING
+        description: Primary MCC code
+      - name: primary_category
+        logicalType: string
+        physicalType: STRING
+        description: Primary category
+      - name: primary_subcategory
+        logicalType: string
+        physicalType: STRING
+        description: Primary subcategory
+      - name: merchant_type
+        logicalType: string
+        physicalType: STRING
+        description: "Merchant type: RETAIL, RESTAURANT, SERVICE, UTILITY, SUBSCRIPTION, GOVERNMENT"
+      - name: is_subscription
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether merchant is a subscription service
+      - name: is_utility
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether merchant is a utility provider
+      - name: is_financial_institution
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether merchant is a financial institution
+      - name: enrichment_source
+        logicalType: string
+        physicalType: STRING
+        description: "Enrichment provider: PLAID, YODLEE, MX, INTERNAL"
+      - name: confidence_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Confidence score for enrichment (0-100)
+      - name: last_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date enrichment was last updated
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when enrichment was computed
+  - name: Transaction_Category
+    physicalName: transactions.transaction_category
+    physicalType: table
+    logicalType: object
+    description: Transaction category reference for spending classification.
+    dataGranularityDescription: one row per category_id
+    properties:
+      - name: category_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the category
+      - name: category_name
+        logicalType: string
+        physicalType: STRING
+        description: Category name
+      - name: parent_category_id
+        logicalType: string
+        physicalType: STRING
+        description: Parent category ID for hierarchy
+      - name: category_level
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: "Category level in hierarchy (1=top level)"
+      - name: category_path
+        logicalType: string
+        physicalType: STRING
+        description: Full category path
+      - name: description
+        logicalType: string
+        physicalType: STRING
+        description: Category description
+      - name: icon
+        logicalType: string
+        physicalType: STRING
+        description: Category icon
+      - name: color
+        logicalType: string
+        physicalType: STRING
+        description: Display color
+      - name: is_system
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether this is a system-defined category
+      - name: is_active
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether category is currently active
+      - name: sort_order
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Sort order for display
+      - name: created_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when category was created
+      - name: updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when category was last updated
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when category set was computed
+  - name: Recurring_Payment
+    physicalName: transactions.recurring_payment
+    physicalType: table
+    logicalType: object
+    description: Recurring payment detection and tracking.
+    dataGranularityDescription: one row per recurring_payment_id
+    properties:
+      - name: recurring_payment_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the recurring payment series
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to account
+        tags: [npi]
+      - name: customer_id
+        logicalType: string
+        physicalType: STRING
+        description: Reference to customer
+        tags: [pii]
+      - name: merchant_id
+        logicalType: string
+        physicalType: STRING
+        description: Merchant ID for this recurring payment
+      - name: merchant_name
+        logicalType: string
+        physicalType: STRING
+        description: Merchant name
+        tags: [pii]
+      - name: payment_type
+        logicalType: string
+        physicalType: STRING
+        description: "Recurring payment type: SUBSCRIPTION, BILL, LOAN_PAYMENT, MEMBERSHIP, INSURANCE"
+      - name: typical_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Typical amount in cents
+        tags: [confidential, npi]
+      - name: amount_variance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Amount variance tolerance in cents
+      - name: frequency
+        logicalType: string
+        physicalType: STRING
+        description: "Payment frequency: WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, ANNUAL"
+      - name: typical_day
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Typical day of month or week for payment
+      - name: day_variance
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Day variance tolerance
+      - name: first_occurrence_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of first detected occurrence
+      - name: last_occurrence_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of most recent occurrence
+      - name: next_expected_date
+        logicalType: date
+        physicalType: DATE
+        description: Date of next expected occurrence
+      - name: occurrence_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of occurrences detected
+      - name: missed_count
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Number of missed/late occurrences
+      - name: status
+        logicalType: string
+        physicalType: STRING
+        description: "Recurring payment status: ACTIVE, PAUSED, ENDED, UNCERTAIN"
+      - name: confidence_score
+        logicalType: integer
+        logicalTypeOptions:
+          format: i32
+        physicalType: INT
+        description: Confidence score for detection (0-100)
+      - name: category_name
+        logicalType: string
+        physicalType: STRING
+        description: Category of recurring payment
+      - name: is_essential
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether payment is essential (utility, insurance, etc.)
+      - name: annual_cost_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Annual cost in cents
+        tags: [confidential, npi]
+      - name: detection_method
+        logicalType: string
+        physicalType: STRING
+        description: "Detection method: AMOUNT_FREQUENCY, MERCHANT_MATCH, DESCRIPTION_MATCH"
+      - name: computed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        required: true
+        description: Timestamp when detection was last computed

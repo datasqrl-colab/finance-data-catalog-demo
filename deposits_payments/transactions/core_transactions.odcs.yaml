@@ -1,0 +1,287 @@
+# Data contract (ODCS v3.2) for the tables of core_transactions.sqrl. DataSQRL checks the connector
+# tables of core_transactions-test.sqrl and core_transactions-prod.sqrl against it when it compiles.
+apiVersion: v3.2.0
+kind: DataContract
+id: "urn:retail-bank:datacontract:core_transactions"
+name: Core Transactions
+version: 1.0.0
+status: active
+domain: deposits_payments
+team:
+  name: Transactions
+  description: Deposits & Payments line of business
+description:
+  purpose: >-
+    Foundation transaction data capturing all monetary movements across accounts. Includes the
+    primary transaction ledger, transaction type reference data, and reversal/correction records.
+    This dataset serves as the authoritative source for all account-level transaction activity.
+customProperties:
+  - property: layer
+    value: bronze
+  - property: classification
+    value: Restricted
+  - property: regulatoryScope
+    value: [GLBA, GDPR, CCPA, Regulation E, BSA]
+schema:
+  - name: Account_Transaction
+    physicalName: core_transactions.account_transaction
+    physicalType: topic
+    logicalType: object
+    description: Primary transaction ledger recording all account monetary movements.
+    dataGranularityDescription: one row per transaction_id
+    properties:
+      - name: transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the transaction
+      - name: account_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to account
+        tags: [npi]
+      - name: transaction_type_code
+        logicalType: string
+        physicalType: STRING
+        description: Transaction type code reference
+      - name: transaction_category
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction category: DEBIT, CREDIT"
+      - name: amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Transaction amount in cents
+        tags: [confidential, npi]
+      - name: currency_code
+        logicalType: string
+        physicalType: STRING
+        description: Currency code (ISO 4217)
+      - name: transaction_status
+        logicalType: string
+        physicalType: STRING
+        description: "Transaction status: PENDING, POSTED, REVERSED, RETURNED"
+      - name: posted_date
+        logicalType: date
+        physicalType: DATE
+        description: Date transaction was posted to account
+      - name: transaction_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time transaction occurred
+      - name: effective_date
+        logicalType: date
+        physicalType: DATE
+        description: Effective date for interest calculation
+      - name: description
+        logicalType: string
+        physicalType: STRING
+        description: Transaction description
+        tags: [pii]
+      - name: memo
+        logicalType: string
+        physicalType: STRING
+        description: Memo or reference text
+        tags: [pii]
+      - name: running_balance_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Running balance after transaction in cents
+        tags: [confidential, npi]
+      - name: channel
+        logicalType: string
+        physicalType: STRING
+        description: "Channel: BRANCH, ATM, ONLINE, MOBILE, ACH, WIRE, CHECK, POS, INTERNAL"
+      - name: external_reference
+        logicalType: string
+        physicalType: STRING
+        description: Reference number for external transactions
+      - name: trace_number
+        logicalType: string
+        physicalType: STRING
+        description: Trace number for ACH transactions
+      - name: check_number
+        logicalType: string
+        physicalType: STRING
+        description: Check number if applicable
+      - name: branch_id
+        logicalType: string
+        physicalType: STRING
+        description: Branch ID where transaction occurred
+      - name: terminal_id
+        logicalType: string
+        physicalType: STRING
+        description: Terminal or device ID
+      - name: teller_id
+        logicalType: string
+        physicalType: STRING
+        description: Employee ID if branch transaction
+        tags: [pii]
+      - name: counterparty_account_id
+        logicalType: string
+        physicalType: STRING
+        description: Counterparty account reference
+        tags: [npi]
+      - name: counterparty_name
+        logicalType: string
+        physicalType: STRING
+        description: Counterparty name
+        tags: [pii]
+      - name: is_reconciled
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether transaction has been reconciled
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Transaction_Type
+    physicalName: core_transactions.transaction_type
+    physicalType: topic
+    logicalType: object
+    description: Transaction type reference data defining transaction classifications.
+    dataGranularityDescription: one row per transaction_type_code
+    properties:
+      - name: transaction_type_code
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique transaction type code
+      - name: transaction_type_name
+        logicalType: string
+        physicalType: STRING
+        description: Transaction type name
+      - name: description
+        logicalType: string
+        physicalType: STRING
+        description: Transaction type description
+      - name: category
+        logicalType: string
+        physicalType: STRING
+        description: "Category: DEBIT, CREDIT"
+      - name: subcategory
+        logicalType: string
+        physicalType: STRING
+        description: Subcategory for reporting
+      - name: is_customer_initiated
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether this type is customer-initiated
+      - name: affects_available_balance
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether this type affects available balance
+      - name: is_fee
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether this type is fee-related
+      - name: is_interest
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether this type is interest-related
+      - name: gl_account_code
+        logicalType: string
+        physicalType: STRING
+        description: GL account code for posting
+      - name: is_active
+        logicalType: boolean
+        physicalType: BOOLEAN
+        description: Whether type is currently active
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
+  - name: Transaction_Reversal
+    physicalName: core_transactions.transaction_reversal
+    physicalType: topic
+    logicalType: object
+    description: Transaction reversals and corrections linking to original transactions.
+    dataGranularityDescription: one row per reversal_id
+    properties:
+      - name: reversal_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Unique identifier for the reversal
+      - name: original_transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to original transaction being reversed
+      - name: reversing_transaction_id
+        logicalType: string
+        physicalType: STRING
+        required: true
+        description: Reference to the reversing transaction
+      - name: reversal_type
+        logicalType: string
+        physicalType: STRING
+        description: "Reversal type: FULL, PARTIAL, CORRECTION"
+      - name: reversal_amount_cents
+        logicalType: integer
+        logicalTypeOptions:
+          format: i64
+        physicalType: BIGINT
+        description: Amount reversed in cents
+        tags: [confidential, npi]
+      - name: reason_code
+        logicalType: string
+        physicalType: STRING
+        description: Reason code for reversal
+      - name: reason_description
+        logicalType: string
+        physicalType: STRING
+        description: Reason description
+        tags: [confidential]
+      - name: reversed_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Date and time reversal was initiated
+      - name: posted_date
+        logicalType: date
+        physicalType: DATE
+        description: Date reversal was posted
+      - name: reversed_by
+        logicalType: string
+        physicalType: STRING
+        description: Employee or system initiating reversal
+      - name: approved_by
+        logicalType: string
+        physicalType: STRING
+        description: Supervisor approval if required
+        tags: [pii]
+      - name: channel
+        logicalType: string
+        physicalType: STRING
+        description: Channel through which reversal was made
+      - name: source_system
+        logicalType: string
+        physicalType: STRING
+        description: Source system identifier
+      - name: source_updated_at
+        logicalType: timestamp
+        logicalTypeOptions:
+          timezone: true
+        physicalType: TIMESTAMP_LTZ(3)
+        description: Timestamp when record was last updated in source system
